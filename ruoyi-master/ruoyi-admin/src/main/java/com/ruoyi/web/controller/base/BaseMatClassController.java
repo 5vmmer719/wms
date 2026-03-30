@@ -46,9 +46,8 @@ public class BaseMatClassController extends BaseController {
     }
 
     /**
-     * 查询物料分类列表(所有)
+     * 查询物料分类列表(所有) - 下拉选择框数据，登录即可访问
      */
-    @PreAuthorize("@ss.hasPermi('base:class:list')")
     @GetMapping("/listAll")
     public List<BaseMatClass> listAll(BaseMatClass baseMatClass) {
         List<BaseMatClass> list = baseMatClassService.selectBaseMatClassList(baseMatClass);

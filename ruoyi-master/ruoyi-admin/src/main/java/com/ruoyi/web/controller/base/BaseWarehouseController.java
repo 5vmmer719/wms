@@ -57,9 +57,8 @@ public class BaseWarehouseController extends BaseController {
     }
 
     /**
-     * 查询仓库列表（所有）
+     * 查询仓库列表（所有） - 下拉选择框数据，登录即可访问
      */
-    @PreAuthorize("@ss.hasPermi('base:warehouse:list')")
     @GetMapping("/listAll")
     public List<BaseWarehouse> listAll(BaseWarehouse baseWarehouse) {
         List<BaseWarehouse> list = baseWarehouseService.selectBaseWarehouseList(baseWarehouse);

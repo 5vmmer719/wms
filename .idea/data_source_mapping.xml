@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourcePerFileMappings">
-    <file url="file://$PROJECT_DIR$/database/wms.sql" value="04c83b37-b062-4766-b017-53ffe5b2531e" />
+    <file url="file://$PROJECT_DIR$/database/sql/wms.sql" value="04c83b37-b062-4766-b017-53ffe5b2531e" />
+    <file url="file://$PROJECT_DIR$/database/sql/wms_permission_fix.sql" value="04c83b37-b062-4766-b017-53ffe5b2531e" />
+    <file url="file://$PROJECT_DIR$/database/sql/wms_qrtz_mysql56.sql" value="04c83b37-b062-4766-b017-53ffe5b2531e" />
+    <file url="file://$PROJECT_DIR$/database/sql/wms_remove_generator.sql" value="04c83b37-b062-4766-b017-53ffe5b2531e" />
+    <file url="file://$PROJECT_DIR$/database/sql/wms_role_permission_upgrade.sql" value="04c83b37-b062-4766-b017-53ffe5b2531e" />
     <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/04c83b37-b062-4766-b017-53ffe5b2531e/console.sql" value="04c83b37-b062-4766-b017-53ffe5b2531e" />
   </component>
 </project>

@@ -46,9 +46,8 @@ public class BaseMatGroupController extends BaseController {
     }
 
     /**
-     * 查询物料组列表（所有）
+     * 查询物料组列表（所有） - 下拉选择框数据，登录即可访问
      */
-    @PreAuthorize("@ss.hasPermi('base:group:list')")
     @GetMapping("/listAll")
     public List<BaseMatGroup> listAll(BaseMatGroup baseMatGroup) {
         List<BaseMatGroup> list = baseMatGroupService.selectBaseMatGroupList(baseMatGroup);

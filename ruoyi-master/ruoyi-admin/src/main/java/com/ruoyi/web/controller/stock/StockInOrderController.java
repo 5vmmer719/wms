@@ -211,6 +211,7 @@ public class StockInOrderController extends BaseController {
     /**
      * 入库单质检
      */
+    @PreAuthorize("@ss.hasPermi('check:inOrder:check')")
     @Log(title = "入库单", businessType = BusinessType.UPDATE)
     @PutMapping("check")
     public AjaxResult check(@RequestBody List<StockInDetail> detailList) {

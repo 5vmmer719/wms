@@ -12,11 +12,12 @@
         <module name="ruoyi-system" />
         <module name="ruoyi-base" />
         <module name="ruoyi-common" />
-        <module name="ruoyi-generator" />
         <module name="ruoyi-quartz" />
         <module name="ruoyi-admin" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel target="17" />
+    <bytecodeTargetLevel target="17">
+      <module name="ruoyi-generator" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
 </project>

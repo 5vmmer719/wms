@@ -47,9 +47,8 @@ public class BaseWorkshopController extends BaseController {
     }
 
     /**
-     * 查询车间列表（所有）
+     * 查询车间列表（所有） - 下拉选择框数据，登录即可访问
      */
-    @PreAuthorize("@ss.hasPermi('base:workshop:list')")
     @GetMapping("/listAll")
     public List<BaseWorkshop> listAll(BaseWorkshop baseWorkshop) {
         List<BaseWorkshop> list = baseWorkshopService.selectBaseWorkshopList(baseWorkshop);

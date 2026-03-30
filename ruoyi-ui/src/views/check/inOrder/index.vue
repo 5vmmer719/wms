@@ -62,7 +62,7 @@
             type="text"
             icon="el-icon-edit"
             @click="handleCheck(scope.row)"
-            v-hasPermi="['stock:inOrder:edit']"
+            v-hasPermi="['check:inOrder:check']"
           >检验</el-button>
           <el-button
             v-if="scope.row.checkStatus === 'checkout'"
@@ -70,12 +70,12 @@
             type="text"
             icon="el-icon-edit"
             @click="handleCheck(scope.row)"
-            v-hasPermi="['stock:inOrder:edit']"
+            v-hasPermi="['check:inOrder:query']"
           >详情</el-button>
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -121,7 +121,7 @@
         <el-table-column label="数量" align="center" prop="quantity" width="80" />
         <el-table-column label="合格数量" align="center" prop="qualifiedQuantity" width="100">
           <template slot-scope="scope">
-            <el-input-number v-if="form.checkStatus === 'un_checkout'" v-model="scope.row.qualifiedQuantity" 
+            <el-input-number v-if="form.checkStatus === 'un_checkout'" v-model="scope.row.qualifiedQuantity"
               style="width: 90px" size="small" controls-position="right" :min="0" />
             <span v-if="form.checkStatus === 'checkout'">{{scope.row.qualifiedQuantity}}</span>
           </template>

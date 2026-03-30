@@ -101,7 +101,7 @@
             type="text"
             icon="el-icon-edit"
             @click="handleDetail(scope.row)"
-            v-hasPermi="['stock:outOrder:edit']"
+            v-hasPermi="['stock:outReturn:query']"
           >详情</el-button>
           <el-button
             size="mini"

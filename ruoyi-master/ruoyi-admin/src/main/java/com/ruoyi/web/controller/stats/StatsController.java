@@ -128,6 +128,7 @@ public class StatsController extends BaseController {
     /**
      * 查询入库统计列表
      */
+    @PreAuthorize("@ss.hasPermi('stats:stockIn:list')")
     @GetMapping("/stockIn")
     public TableDataInfo stockIn(String matCode, String matName) {
         startPage();
@@ -138,6 +139,7 @@ public class StatsController extends BaseController {
     /**
      * 查询出库统计列表
      */
+    @PreAuthorize("@ss.hasPermi('stats:stockOut:list')")
     @GetMapping("/stockOut")
     public TableDataInfo stockOut(String matCode, String matName) {
         startPage();
@@ -148,6 +150,7 @@ public class StatsController extends BaseController {
     /**
      * 查询库存操作统计列表
      */
+    @PreAuthorize("@ss.hasPermi('stats:stockRecord:list')")
     @GetMapping("/stockRecord")
     public TableDataInfo stockRecord(StockRecordStats recordStats) {
         startPage();
