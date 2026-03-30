@@ -1,0 +1,115 @@
+@startuml 出库管理模块类图
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+' Controller层
+class OutOrderController {
+  - outOrderService: OutOrderService
+  + list(): AjaxResult
+  + add(): AjaxResult
+  + edit(): AjaxResult
+  + remove(): AjaxResult
+  + confirm(): AjaxResult
+}
+
+' Service层
+interface OutOrderService {
+  + selectOutOrderList(): List<StockOutOrder>
+  + insertOutOrder(): int
+  + updateOutOrder(): int
+  + deleteOutOrder(): int
+  + confirmOutOrder(): int
+}
+
+class OutOrderServiceImpl {
+  - outOrderMapper: OutOrderMapper
+  - labelService: MatLabelService
+  - stockService: StockInfoService
+  + selectOutOrderList(): List<StockOutOrder>
+  + insertOutOrder(): int
+  + updateOutOrder(): int
+  + deleteOutOrder(): int
+  + confirmOutOrder(): int
+}
+
+' 实体类
+class StockOutOrder {
+  - orderId: Long
+  - orderNo: String
+  - orderType: String
+  - prodOrderNo: String
+  - warehouseCode: String
+  - workshopCode: String
+  - orderStatus: String
+  - warehouseKeeper: String
+  - delFlag: String
+  - createBy: String
+  - createTime: Date
+}
+
+class StockOutDetail {
+  - detailId: Long
+  - orderNo: String
+  - matCode: String
+  - locationCode: String
+  - planQuantity: BigDecimal
+  - actualQuantity: BigDecimal
+  - batchNo: String
+}
+
+class StockProdOrder {
+  - prodOrderId: Long
+  - prodOrderNo: String
+  - prodMatCode: String
+  - prodQuantity: BigDecimal
+  - workshopCode: String
+  - planStartDate: Date
+  - planEndDate: Date
+  - orderStatus: String
+}
+
+class StockMatLabel {
+  - labelId: Long
+  - labelNo: String
+  - matCode: String
+  - usableQuantity: BigDecimal
+}
+
+class BaseMat {
+  - matId: Long
+  - matCode: String
+  - matName: String
+}
+
+class BaseWarehouse {
+  - warehouseId: Long
+  - warehouseCode: String
+  - warehouseName: String
+}
+
+class BaseLocation {
+  - locationId: Long
+  - locationCode: String
+  - locationName: String
+}
+
+class BaseWorkshop {
+  - workshopId: Long
+  - workshopCode: String
+  - workshopName: String
+}
+
+' 关联关系
+OutOrderController --|> OutOrderService : 依赖
+OutOrderService <|.. OutOrderServiceImpl : 实现
+OutOrderServiceImpl --|> StockOutOrder : 操作
+StockOutOrder --|> StockProdOrder : 关联
+StockOutOrder --|> StockOutDetail : 包含
+StockOutDetail --|> StockMatLabel : 消耗
+StockOutOrder --|> BaseWarehouse : 关联
+StockOutOrder --|> BaseWorkshop : 关联
+StockOutDetail --|> BaseMat : 关联
+StockOutDetail --|> BaseLocation : 关联
+
+@enduml
+

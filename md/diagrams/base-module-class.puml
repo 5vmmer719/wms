@@ -1,0 +1,108 @@
+@startuml 基础数据管理模块类图
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+' Controller层
+class MatController {
+  - matService: MatService
+  + list(): AjaxResult
+  + add(): AjaxResult
+  + edit(): AjaxResult
+  + remove(): AjaxResult
+}
+
+' Service层
+interface MatService {
+  + selectMatList(): List<BaseMat>
+  + insertMat(): int
+  + updateMat(): int
+  + deleteMat(): int
+}
+
+class MatServiceImpl {
+  - matMapper: MatMapper
+  + selectMatList(): List<BaseMat>
+  + insertMat(): int
+  + updateMat(): int
+  + deleteMat(): int
+}
+
+' 实体类
+class BaseMat {
+  - matId: Long
+  - matCode: String
+  - matName: String
+  - figNum: String
+  - specModel: String
+  - matGroup: String
+  - matClass: String
+  - unit: String
+  - safetyStock: BigDecimal
+  - delFlag: String
+  - createBy: String
+  - createTime: Date
+}
+
+class BaseMatClass {
+  - classId: Long
+  - classCode: String
+  - className: String
+  - parentCode: String
+  - orderNum: Integer
+  - delFlag: String
+}
+
+class BaseMatGroup {
+  - groupId: Long
+  - groupCode: String
+  - groupName: String
+  - remark: String
+  - delFlag: String
+}
+
+class BaseMatBom {
+  - bomId: Long
+  - parentMatCode: String
+  - matCode: String
+  - quantity: BigDecimal
+  - delFlag: String
+}
+
+class BaseWarehouse {
+  - warehouseId: Long
+  - warehouseCode: String
+  - warehouseName: String
+  - warehouseType: String
+  - warehouseKeeper: String
+  - delFlag: String
+}
+
+class BaseLocation {
+  - locationId: Long
+  - locationCode: String
+  - locationName: String
+  - warehouseCode: String
+  - delFlag: String
+}
+
+class BaseSupplier {
+  - supplierId: Long
+  - supplierCode: String
+  - supplierName: String
+  - contact: String
+  - phone: String
+  - address: String
+  - delFlag: String
+}
+
+' 关联关系
+MatController --|> MatService : 依赖
+MatService <|.. MatServiceImpl : 实现
+MatServiceImpl --|> BaseMat : 操作
+BaseMat --|> BaseMatClass : 关联
+BaseMat --|> BaseMatGroup : 关联
+BaseMat --|> BaseMatBom : 关联
+BaseLocation --|> BaseWarehouse : 关联
+
+@enduml
+
