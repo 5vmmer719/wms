@@ -1,0 +1,142 @@
+<mxfile host="app.diagrams.net" modified="2026-04-02T09:48:00.000Z" agent="CodeFuse" version="21.0.0">
+  <diagram name="库存管理与调拨模块类图" id="stock-allot-module-class">
+    <mxGraphModel dx="1434" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1000" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Controller层 -->
+        <mxCell id="controller_label" value="Controller层" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="StockInfoController" value="&lt;b&gt;StockInfoController&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;- stockInfoService: StockInfoService&lt;br&gt;-----------------&lt;br&gt;+ list(): AjaxResult&lt;br&gt;+ getInfo(): AjaxResult&lt;br&gt;+ export(): void" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="230" height="150" as="geometry" />
+        </mxCell>
+        <mxCell id="AllotOrderController" value="&lt;b&gt;AllotOrderController&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;- allotOrderService: AllotOrderService&lt;br&gt;-----------------&lt;br&gt;+ list(): AjaxResult&lt;br&gt;+ add(): AjaxResult&lt;br&gt;+ edit(): AjaxResult&lt;br&gt;+ remove(): AjaxResult&lt;br&gt;+ confirm(): AjaxResult" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="310" y="60" width="230" height="170" as="geometry" />
+        </mxCell>
+        
+        <!-- Service层 -->
+        <mxCell id="service_label" value="Service层" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="40" y="260" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="StockInfoService" value="&lt;&lt;interface&gt;&gt;&lt;br&gt;&lt;b&gt;StockInfoService&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;+ selectStockInfoList(): List&amp;lt;StockInfo&amp;gt;&lt;br&gt;+ selectStockInfo(): StockInfo&lt;br&gt;+ updateStock(): int&lt;br&gt;+ checkSafetyStock(): void" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=46;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="300" width="230" height="140" as="geometry" />
+        </mxCell>
+        <mxCell id="AllotOrderService" value="&lt;&lt;interface&gt;&gt;&lt;br&gt;&lt;b&gt;AllotOrderService&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;+ selectAllotOrderList(): List&amp;lt;StockAllotOrder&amp;gt;&lt;br&gt;+ insertAllotOrder(): int&lt;br&gt;+ updateAllotOrder(): int&lt;br&gt;+ deleteAllotOrder(): int&lt;br&gt;+ confirmAllot(): int" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=46;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="310" y="300" width="240" height="160" as="geometry" />
+        </mxCell>
+        <mxCell id="StockInfoServiceImpl" value="&lt;b&gt;StockInfoServiceImpl&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;- stockInfoMapper: StockInfoMapper&lt;br&gt;- recordService: StockRecordService&lt;br&gt;-----------------&lt;br&gt;+ selectStockInfoList(): List&amp;lt;StockInfo&amp;gt;&lt;br&gt;+ selectStockInfo(): StockInfo&lt;br&gt;+ updateStock(): int&lt;br&gt;+ checkSafetyStock(): void" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="590" y="260" width="250" height="180" as="geometry" />
+        </mxCell>
+        <mxCell id="AllotOrderServiceImpl" value="&lt;b&gt;AllotOrderServiceImpl&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;- allotOrderMapper: AllotOrderMapper&lt;br&gt;- stockInfoService: StockInfoService&lt;br&gt;-----------------&lt;br&gt;+ selectAllotOrderList(): List&amp;lt;StockAllotOrder&amp;gt;&lt;br&gt;+ insertAllotOrder(): int&lt;br&gt;+ updateAllotOrder(): int&lt;br&gt;+ deleteAllotOrder(): int&lt;br&gt;+ confirmAllot(): int" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="880" y="260" width="260" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- 实体类 -->
+        <mxCell id="entity_label" value="Entity实体类" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="40" y="480" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- StockInfo -->
+        <mxCell id="StockInfo" value="&lt;b&gt;StockInfo&lt;/b&gt; (库存信息)&lt;br&gt;-----------------&lt;br&gt;- infoId: Long&lt;br&gt;- warehouseCode: String&lt;br&gt;- locationCode: String&lt;br&gt;- matCode: String&lt;br&gt;- batchNo: String&lt;br&gt;- quantity: BigDecimal&lt;br&gt;- supplierCode: String&lt;br&gt;- delFlag: String&lt;br&gt;- createTime: Date" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="520" width="200" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- StockRecord -->
+        <mxCell id="StockRecord" value="&lt;b&gt;StockRecord&lt;/b&gt; (库存流水)&lt;br&gt;-----------------&lt;br&gt;- recordId: Long&lt;br&gt;- warehouseCode: String&lt;br&gt;- locationCode: String&lt;br&gt;- labelId: Long&lt;br&gt;- recordType: String&lt;br&gt;- matCode: String&lt;br&gt;- batchNo: String&lt;br&gt;- quantity: BigDecimal&lt;br&gt;- orderNo: String&lt;br&gt;- supplierCode: String&lt;br&gt;- workshopCode: String&lt;br&gt;- createTime: Date" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="280" y="520" width="200" height="260" as="geometry" />
+        </mxCell>
+        
+        <!-- StockAllotOrder -->
+        <mxCell id="StockAllotOrder" value="&lt;b&gt;StockAllotOrder&lt;/b&gt; (调拨单)&lt;br&gt;-----------------&lt;br&gt;- allotId: Long&lt;br&gt;- allotNo: String&lt;br&gt;- fromWarehouseCode: String&lt;br&gt;- fromLocationCode: String&lt;br&gt;- toWarehouseCode: String&lt;br&gt;- toLocationCode: String&lt;br&gt;- allotStatus: String&lt;br&gt;- allotProgress: String&lt;br&gt;- delFlag: String" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="520" y="520" width="200" height="200" as="geometry" />
+        </mxCell>
+        
+        <!-- StockAllotDetail -->
+        <mxCell id="StockAllotDetail" value="&lt;b&gt;StockAllotDetail&lt;/b&gt; (调拨明细)&lt;br&gt;-----------------&lt;br&gt;- detailId: Long&lt;br&gt;- allotNo: String&lt;br&gt;- matCode: String&lt;br&gt;- batchNo: String&lt;br&gt;- allotQuantity: BigDecimal" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="760" y="520" width="180" height="150" as="geometry" />
+        </mxCell>
+        
+        <!-- 关联关系箭头 -->
+        <!-- Controller 依赖 Service -->
+        <mxCell id="rel1" value="依赖" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" parent="1" source="StockInfoController" target="StockInfoService">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel2" value="依赖" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" parent="1" source="AllotOrderController" target="AllotOrderService">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Service 实现关系 -->
+        <mxCell id="rel3" value="实现" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;strokeWidth=2;" edge="1" parent="1" source="StockInfoServiceImpl" target="StockInfoService">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel4" value="实现" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;strokeWidth=2;" edge="1" parent="1" source="AllotOrderServiceImpl" target="AllotOrderService">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Service 操作 Entity -->
+        <mxCell id="rel5" value="操作" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=2;" edge="1" parent="1" source="StockInfoServiceImpl" target="StockInfo">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel6" value="操作" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=2;" edge="1" parent="1" source="AllotOrderServiceImpl" target="StockAllotOrder">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- StockInfoServiceImpl 生成 StockRecord -->
+        <mxCell id="rel7" value="生成" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=1;" edge="1" parent="1" source="StockInfoServiceImpl" target="StockRecord">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- AllotOrderServiceImpl 依赖 StockInfoService -->
+        <mxCell id="rel8" value="依赖" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;strokeWidth=1;" edge="1" parent="1" source="AllotOrderServiceImpl" target="StockInfoService">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- StockAllotOrder 包含 StockAllotDetail -->
+        <mxCell id="rel9" value="包含" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=1;" edge="1" parent="1" source="StockAllotOrder" target="StockAllotDetail">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- StockAllotDetail 更新 StockInfo -->
+        <mxCell id="rel10" value="更新" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=1;" edge="1" parent="1" source="StockAllotDetail" target="StockInfo">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 图例 -->
+        <mxCell id="legend_box" value="图例" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#f5f5f5;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="60" width="200" height="104" as="geometry" />
+        </mxCell>
+        <mxCell id="legend1" value="Controller层 (蓝色)" style="text;strokeColor=none;fillColor=#dae8fc;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;" vertex="1" parent="legend_box">
+          <mxGeometry y="26" width="200" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="legend2" value="Service层 (黄色)" style="text;strokeColor=none;fillColor=#fff2cc;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;" vertex="1" parent="legend_box">
+          <mxGeometry y="52" width="200" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="legend3" value="Entity层 (绿色)" style="text;strokeColor=none;fillColor=#d5e8d4;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;" vertex="1" parent="legend_box">
+          <mxGeometry y="78" width="200" height="26" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

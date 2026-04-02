@@ -1,0 +1,133 @@
+<mxfile host="app.diagrams.net" modified="2026-04-02T09:44:00.000Z" agent="CodeFuse" version="21.0.0">
+  <diagram name="基础数据管理模块类图" id="base-module-class">
+    <mxGraphModel dx="1434" dy="844" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1400" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        
+        <!-- Controller层 -->
+        <mxCell id="controller_label" value="Controller层" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="MatController" value="&lt;b&gt;MatController&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;- matService: MatService&lt;br&gt;-----------------&lt;br&gt;+ list(): AjaxResult&lt;br&gt;+ add(): AjaxResult&lt;br&gt;+ edit(): AjaxResult&lt;br&gt;+ remove(): AjaxResult" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="200" height="150" as="geometry" />
+        </mxCell>
+        
+        <!-- Service层 -->
+        <mxCell id="service_label" value="Service层" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="40" y="240" width="120" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="MatService" value="&lt;&lt;interface&gt;&gt;&lt;br&gt;&lt;b&gt;MatService&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;+ selectMatList(): List&amp;lt;BaseMat&amp;gt;&lt;br&gt;+ insertMat(): int&lt;br&gt;+ updateMat(): int&lt;br&gt;+ deleteMat(): int" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=46;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="40" y="280" width="200" height="130" as="geometry" />
+        </mxCell>
+        <mxCell id="MatServiceImpl" value="&lt;b&gt;MatServiceImpl&lt;/b&gt;&lt;br&gt;-----------------&lt;br&gt;- matMapper: MatMapper&lt;br&gt;-----------------&lt;br&gt;+ selectMatList(): List&amp;lt;BaseMat&amp;gt;&lt;br&gt;+ insertMat(): int&lt;br&gt;+ updateMat(): int&lt;br&gt;+ deleteMat(): int" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#fff2cc;strokeColor=#d6b656;" vertex="1" parent="1">
+          <mxGeometry x="280" y="240" width="220" height="170" as="geometry" />
+        </mxCell>
+        
+        <!-- 实体类 -->
+        <mxCell id="entity_label" value="Entity实体类" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=14;fontStyle=1;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="40" y="440" width="120" height="30" as="geometry" />
+        </mxCell>
+        
+        <!-- BaseMat -->
+        <mxCell id="BaseMat" value="&lt;b&gt;BaseMat&lt;/b&gt; (物料主数据)&lt;br&gt;-----------------&lt;br&gt;- matId: Long&lt;br&gt;- matCode: String&lt;br&gt;- matName: String&lt;br&gt;- figNum: String&lt;br&gt;- specModel: String&lt;br&gt;- matGroup: String&lt;br&gt;- matClass: String&lt;br&gt;- unit: String&lt;br&gt;- safetyStock: BigDecimal&lt;br&gt;- delFlag: String&lt;br&gt;- createBy: String&lt;br&gt;- createTime: Date" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="40" y="480" width="200" height="230" as="geometry" />
+        </mxCell>
+        
+        <!-- BaseMatClass -->
+        <mxCell id="BaseMatClass" value="&lt;b&gt;BaseMatClass&lt;/b&gt; (物料分类)&lt;br&gt;-----------------&lt;br&gt;- classId: Long&lt;br&gt;- classCode: String&lt;br&gt;- className: String&lt;br&gt;- parentCode: String&lt;br&gt;- orderNum: Integer&lt;br&gt;- delFlag: String" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="280" y="480" width="180" height="160" as="geometry" />
+        </mxCell>
+        
+        <!-- BaseMatGroup -->
+        <mxCell id="BaseMatGroup" value="&lt;b&gt;BaseMatGroup&lt;/b&gt; (物料分组)&lt;br&gt;-----------------&lt;br&gt;- groupId: Long&lt;br&gt;- groupCode: String&lt;br&gt;- groupName: String&lt;br&gt;- remark: String&lt;br&gt;- delFlag: String" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="500" y="480" width="180" height="150" as="geometry" />
+        </mxCell>
+        
+        <!-- BaseMatBom -->
+        <mxCell id="BaseMatBom" value="&lt;b&gt;BaseMatBom&lt;/b&gt; (物料BOM)&lt;br&gt;-----------------&lt;br&gt;- bomId: Long&lt;br&gt;- parentMatCode: String&lt;br&gt;- matCode: String&lt;br&gt;- quantity: BigDecimal&lt;br&gt;- delFlag: String" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="720" y="480" width="180" height="150" as="geometry" />
+        </mxCell>
+        
+        <!-- BaseWarehouse -->
+        <mxCell id="BaseWarehouse" value="&lt;b&gt;BaseWarehouse&lt;/b&gt; (仓库)&lt;br&gt;-----------------&lt;br&gt;- warehouseId: Long&lt;br&gt;- warehouseCode: String&lt;br&gt;- warehouseName: String&lt;br&gt;- warehouseType: String&lt;br&gt;- warehouseKeeper: String&lt;br&gt;- delFlag: String" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="940" y="480" width="180" height="160" as="geometry" />
+        </mxCell>
+        
+        <!-- BaseLocation -->
+        <mxCell id="BaseLocation" value="&lt;b&gt;BaseLocation&lt;/b&gt; (库位)&lt;br&gt;-----------------&lt;br&gt;- locationId: Long&lt;br&gt;- locationCode: String&lt;br&gt;- locationName: String&lt;br&gt;- warehouseCode: String&lt;br&gt;- delFlag: String" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="940" y="680" width="180" height="150" as="geometry" />
+        </mxCell>
+        
+        <!-- BaseSupplier -->
+        <mxCell id="BaseSupplier" value="&lt;b&gt;BaseSupplier&lt;/b&gt; (供应商)&lt;br&gt;-----------------&lt;br&gt;- supplierId: Long&lt;br&gt;- supplierCode: String&lt;br&gt;- supplierName: String&lt;br&gt;- contact: String&lt;br&gt;- phone: String&lt;br&gt;- address: String&lt;br&gt;- delFlag: String" style="swimlane;fontStyle=0;childLayout=stackLayout;horizontal=1;startSize=30;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;fillColor=#d5e8d4;strokeColor=#82b366;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="480" width="180" height="170" as="geometry" />
+        </mxCell>
+        
+        <!-- 关联关系箭头 -->
+        <!-- Controller 依赖 Service -->
+        <mxCell id="rel1" value="依赖" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#6c8ebf;strokeWidth=2;" edge="1" parent="1" source="MatController" target="MatService">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Service 实现关系 -->
+        <mxCell id="rel2" value="实现" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;dashed=1;edgeStyle=orthogonalEdgeStyle;strokeColor=#d6b656;strokeWidth=2;" edge="1" parent="1" source="MatServiceImpl" target="MatService">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- Service 操作 Entity -->
+        <mxCell id="rel3" value="操作" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=2;" edge="1" parent="1" source="MatServiceImpl" target="BaseMat">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- BaseMat 关联 BaseMatClass -->
+        <mxCell id="rel4" value="关联" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=1;" edge="1" parent="1" source="BaseMat" target="BaseMatClass">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- BaseMat 关联 BaseMatGroup -->
+        <mxCell id="rel5" value="关联" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=1;" edge="1" parent="1" source="BaseMat" target="BaseMatGroup">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- BaseMat 关联 BaseMatBom -->
+        <mxCell id="rel6" value="关联" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=1;" edge="1" parent="1" source="BaseMat" target="BaseMatBom">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- BaseLocation 关联 BaseWarehouse -->
+        <mxCell id="rel7" value="关联" style="endArrow=open;html=1;endSize=12;startArrow=diamondThin;startSize=14;startFill=0;edgeStyle=orthogonalEdgeStyle;strokeColor=#82b366;strokeWidth=1;" edge="1" parent="1" source="BaseLocation" target="BaseWarehouse">
+          <mxGeometry x="-1" relative="1" as="geometry">
+            <mxPoint as="offset" />
+          </mxGeometry>
+        </mxCell>
+        
+        <!-- 图例 -->
+        <mxCell id="legend_box" value="图例" style="swimlane;fontStyle=1;childLayout=stackLayout;horizontal=1;startSize=26;fillColor=#f5f5f5;horizontalStack=0;resizeParent=1;resizeParentMax=0;resizeLast=0;collapsible=0;marginBottom=0;html=1;strokeColor=#666666;fontColor=#333333;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="60" width="200" height="120" as="geometry" />
+        </mxCell>
+        <mxCell id="legend1" value="Controller层 (蓝色)" style="text;strokeColor=none;fillColor=#dae8fc;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;" vertex="1" parent="legend_box">
+          <mxGeometry y="26" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend2" value="Service层 (黄色)" style="text;strokeColor=none;fillColor=#fff2cc;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;" vertex="1" parent="legend_box">
+          <mxGeometry y="56" width="200" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="legend3" value="Entity层 (绿色)" style="text;strokeColor=none;fillColor=#d5e8d4;align=left;verticalAlign=middle;spacingLeft=4;spacingRight=4;overflow=hidden;rotatable=0;points=[[0,0.5],[1,0.5]];portConstraint=eastwest;html=1;" vertex="1" parent="legend_box">
+          <mxGeometry y="86" width="200" height="30" as="geometry" />
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
