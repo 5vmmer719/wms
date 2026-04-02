@@ -3,6 +3,7 @@ package com.ruoyi.stock.service.impl;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -199,15 +200,36 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
                 continue;
             }
 
+            // Bug修复4: 校验物料是否在出库单中
+            StockOutDetail outDetail = detailMap.get(matCode);
+            if (outDetail == null) {
+                return AjaxResult.error("物料编码[" + matCode + "]不在出库单中！");
+            }
+
+            // Bug修复4: 校验领料数量不超过剩余应出库数量
+            BigDecimal planQuantity = outDetail.getQuantity() != null ? outDetail.getQuantity() : BigDecimal.ZERO;
+            BigDecimal alreadyReceived = outDetail.getReceivedQuantity() != null ? outDetail.getReceivedQuantity() : BigDecimal.ZERO;
+            BigDecimal remaining = planQuantity.subtract(alreadyReceived);
+            if (receivedQuantity.compareTo(remaining) > 0) {
+                return AjaxResult.error("物料[" + matCode + "]出库数量超出剩余应出库数量！剩余：" + remaining + "，申请：" + receivedQuantity);
+            }
+
+            // Bug修复3: 检查库存是否充足
+            StockInfo stockInfo = stockInfoMapper.selectStockInfoByMatCode(warehouseCode, matCode);
+            if (stockInfo == null || stockInfo.getQuantity() == null || stockInfo.getQuantity().compareTo(receivedQuantity) < 0) {
+                BigDecimal currentStock = (stockInfo != null && stockInfo.getQuantity() != null) ? stockInfo.getQuantity() : BigDecimal.ZERO;
+                return AjaxResult.error("物料[" + matCode + "]库存不足！当前库存：" + currentStock + "，申请出库：" + receivedQuantity);
+            }
+
             // 更新出库单详情的已领数量
             stockOutDetailMapper.updateReceivedQuantity(orderNo, matCode, username, nowDate, receivedQuantity);
 
-            // 从详情中获取批次和供应商信息，精确扣减库存
-            StockOutDetail outDetail = detailMap.get(matCode);
-            if (outDetail != null) {
+            // Bug修复2: 处理批次/供应商为null的情况
+            String batch = outDetail.getBatch();
+            String supplierCode = outDetail.getSupplierCode();
+            if (batch != null && !batch.isEmpty() && supplierCode != null && !supplierCode.isEmpty()) {
                 // 按仓库+物料+批次+供应商精确扣减库存
-                stockInfoMapper.updateQuantityByMatCodeAndBatch(warehouseCode, matCode,
-                    outDetail.getBatch(), outDetail.getSupplierCode(), receivedQuantity);
+                stockInfoMapper.updateQuantityByMatCodeAndBatch(warehouseCode, matCode, batch, supplierCode, receivedQuantity);
             } else {
                 // 兜底：只按仓库+物料扣减
                 stockInfoMapper.updateQuantityByMatCode(warehouseCode, matCode, receivedQuantity);
@@ -259,11 +281,16 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
             String inOrderNo = OrderNoUtil.generate(OrderNoUtil.OrderPrefix.IN_ALLOT);
             inOrder.setOrderNo(inOrderNo);
 
-            // 查询出库单详情，创建对应的入库单详情
-            List<StockOutDetail> outDetails = stockOutDetailMapper.selectStockOutDetailListByOrderNo(orderNo);
+            // 创建对应的入库单详情（复用之前查询的outDetails）
             List<StockInDetail> inDetails = new ArrayList<>();
             int lineNo = 1;
             for (StockOutDetail outDetail : outDetails) {
+                // Bug修复1: 处理receivedQuantity为null的情况
+                BigDecimal receivedQty = outDetail.getReceivedQuantity();
+                if (receivedQty == null || receivedQty.compareTo(BigDecimal.ZERO) <= 0) {
+                    continue; // 跳过没有实际出库数量的明细
+                }
+
                 StockInDetail inDetail = new StockInDetail();
                 inDetail.setOrderNo(inOrderNo);
                 inDetail.setLineNo(lineNo++);
@@ -278,8 +305,8 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
                 inDetail.setBatch(outDetail.getBatch());
                 inDetail.setSupplierCode(outDetail.getSupplierCode());
                 inDetail.setSupplierName(outDetail.getSupplierName());
-                inDetail.setQuantity(outDetail.getReceivedQuantity());
-                inDetail.setQualifiedQuantity(outDetail.getReceivedQuantity());
+                inDetail.setQuantity(receivedQty);
+                inDetail.setQualifiedQuantity(receivedQty);
                 inDetail.setStockInQuantity(BigDecimal.ZERO);
                 inDetail.setCreateBy(username);
                 inDetail.setCreateTime(nowDate);

@@ -2,21 +2,22 @@
 /.idea/
 *.iml
 
-# 前端构建产物
+# 前锟剿癸拷锟斤拷锟斤拷锟斤拷
 dist/
 build/
 
-# 依赖目录
+# 锟斤拷锟斤拷目录
 node_modules/
 
-# 系统文件
+# 系统锟侥硷拷
 .DS_Store
 Thumbs.db
 
-# 日志
+# 锟斤拷志
 logs/
 *.log
 
-# 临时文件
+# 锟斤拷时锟侥硷拷
 *.tmp
 *.temp
+/.idea/

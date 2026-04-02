@@ -200,4 +200,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         LIMIT 3
     </select>
 
+    <select id="selectStockInfoByMatCode" resultMap="StockInfoResult">
+        <include refid="selectStockInfoVo"/>
+        where del_flag = 0
+          and warehouse_code = #{warehouseCode}
+          and mat_code = #{matCode}
+          and quantity > 0
+        order by create_time desc
+        limit 1
+    </select>
+
 </mapper>

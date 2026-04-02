@@ -68,6 +68,11 @@ public interface StockInfoMapper {
     public int updateQuantityByMatCode(@Param("warehouseCode") String warehouseCode, @Param("matCode") String matCode, @Param("quantity") BigDecimal quantity);
 
     /**
+     * 按仓库和物料编码查询库存信息
+     */
+    public StockInfo selectStockInfoByMatCode(@Param("warehouseCode") String warehouseCode, @Param("matCode") String matCode);
+
+    /**
      * 按物料编码+批次+供应商扣减库存（精确扣减）
      */
     public int updateQuantityByMatCodeAndBatch(@Param("warehouseCode") String warehouseCode, @Param("matCode") String matCode,
