@@ -155,6 +155,21 @@ export default {
     labelIdArr:{
       type: Array,
       default: [],
+    },
+    // 仓库编码（调拨入库场景使用）
+    warehouseCode:{
+      type: String,
+      default: '',
+    },
+    // 仓库类型（入库单场景使用，根据物料组的默认仓库类型过滤）
+    warehouseType:{
+      type: String,
+      default: '',
+    },
+    // 是否限制order_no为空，默认true（入库单场景），调拨单传false
+    filterOrderNo:{
+      type: Boolean,
+      default: true,
     }
   },
   data() {
@@ -210,6 +225,23 @@ export default {
     /** 查询物料标签列表 */
     getList() {
       this.loading = true;
+      // 如果传入了仓库编码，设置查询参数（调拨入库场景）
+      if(this.warehouseCode){
+        this.queryParams.warehouseCode = this.warehouseCode;
+      }
+      // 如果传入了仓库类型，设置查询参数（入库单场景，根据物料组过滤）
+      if(this.warehouseType){
+        this.queryParams.warehouseType = this.warehouseType;
+      }
+      // 是否限制order_no为空
+      if(this.filterOrderNo){
+        this.queryParams.remark = 'filterOrderNo';
+      } else {
+        this.queryParams.remark = null;
+      }
+      // 确保分页参数正确
+      this.queryParams.pageNum = 1;
+      this.queryParams.pageSize = 10;
       listMatLabelDialog(this.queryParams).then(response => {
         this.matLabelList = response.rows;
         this.total = response.total;

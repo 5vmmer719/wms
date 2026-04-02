@@ -98,6 +98,22 @@ public class StockOutOrder extends BaseEntity {
     private String warehouseKeeper;
 
     /**
+     * 关联调拨单号（调拨出库时使用）
+     */
+    @Excel(name = "调拨单号")
+    private String allotNo;
+
+    /**
+     * 目标仓库编码（调拨出库时使用）
+     */
+    private String destWarehouseCode;
+
+    /**
+     * 目标仓库名称（调拨出库时使用）
+     */
+    private String destWarehouseName;
+
+    /**
      * 删除标识
      */
     private String delFlag;

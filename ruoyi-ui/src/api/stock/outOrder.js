@@ -64,3 +64,12 @@ export function printOutOrder(orderId) {
   })
 }
 
+// 查询物料在指定仓库的库存货位
+export function getMatLocation(matCode, warehouseCode) {
+  return request({
+    url: '/stock/outOrder/matLocation',
+    method: 'get',
+    params: { matCode, warehouseCode }
+  })
+}
+

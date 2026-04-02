@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.base.service.IBaseWarehouseService;
 import com.ruoyi.base.service.IBaseWorkshopService;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.bean.InReturnDetailPdfData;
 import com.ruoyi.common.bean.InReturnPdfData;
 import com.ruoyi.common.bean.OutReturnDetailPdfData;
@@ -116,9 +117,9 @@ public class StockOutReturnController extends BaseController {
     }
 
     /**
-     * 获取出库单退货详细信息
+     * 获取出库单退货详细信息（扫码端使用）
      */
-    @PreAuthorize("@ss.hasPermi('stock:outReturn:query')")
+    @Anonymous
     @GetMapping(value = "/m/{returnNo}")
     public AjaxResult getInfo(@PathVariable("returnNo") String returnNo) {
         StockOutReturn outReturn = stockOutReturnService.selectStockOutReturnByReturnNo(returnNo);
@@ -216,12 +217,14 @@ public class StockOutReturnController extends BaseController {
     /**
      * 扫码提交出库单退货-退货
      */
+    @Anonymous
     @PostMapping("submitOutReturn")
     public AjaxResult submitOutReturn(@RequestBody StockOutReturn stockOutReturn){
         if(stockOutReturn == null){
             return error("系统繁忙，请稍后再试！");
         }
-        return stockOutReturnService.submitOutReturn(getUsername(), stockOutReturn);
+        String username = "admin";
+        return stockOutReturnService.submitOutReturn(username, stockOutReturn);
     }
 
 }

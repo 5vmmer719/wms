@@ -94,6 +94,13 @@ import { listInOrder } from "@/api/stock/inOrder";
 export default {
   name: "InOrder",
   dicts: ['base_mat_unit'],
+  props: {
+    // 是否只显示已入库的入库单（退货场景）
+    onlyEntered:{
+      type: Boolean,
+      default: false,
+    },
+  },
   data() {
     return {
       // 遮罩层
@@ -140,6 +147,10 @@ export default {
     };
   },
   created() {
+    // 退货场景只显示已入库的入库单
+    if(this.onlyEntered){
+      this.queryParams.orderStatus = 'entered';
+    }
     this.getList();
   },
   methods: {

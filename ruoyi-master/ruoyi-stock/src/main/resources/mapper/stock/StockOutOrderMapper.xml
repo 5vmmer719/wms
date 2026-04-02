@@ -10,6 +10,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="orderType"    column="order_type"    />
         <result property="prodOrderNo"    column="prod_order_no"    />
         <result property="warehouseCode"    column="warehouse_code"    />
+        <result property="warehouseName"    column="warehouse_name"    />
         <result property="workshopCode"    column="workshop_code"    />
         <result property="orderReason"    column="order_reason"    />
         <result property="matCode"    column="mat_code"    />
@@ -17,6 +18,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="quantity"    column="quantity"    />
         <result property="orderStatus"    column="order_status"    />
         <result property="warehouseKeeper"    column="warehouse_keeper"    />
+        <result property="allotNo"    column="allot_no"    />
+        <result property="destWarehouseCode"    column="dest_warehouse_code"    />
+        <result property="destWarehouseName"    column="dest_warehouse_name"    />
         <result property="delFlag"    column="del_flag"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
@@ -25,7 +29,13 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStockOutOrderVo">
-        select order_id, order_no, order_type, prod_order_no, warehouse_code, workshop_code, order_reason, mat_code, mat_name, quantity, order_status, warehouse_keeper, del_flag, create_by, create_time, update_by, update_time from stock_out_order
+        select o.order_id, o.order_no, o.order_type, o.prod_order_no, o.warehouse_code, w1.warehouse_name as warehouse_name,
+               o.workshop_code, o.order_reason, o.mat_code, o.mat_name, o.quantity, o.order_status, o.warehouse_keeper,
+               o.allot_no, o.dest_warehouse_code, w2.warehouse_name as dest_warehouse_name,
+               o.del_flag, o.create_by, o.create_time, o.update_by, o.update_time
+        from stock_out_order o
+        left join base_warehouse w1 on o.warehouse_code = w1.warehouse_code
+        left join base_warehouse w2 on o.dest_warehouse_code = w2.warehouse_code
     </sql>
 
     <select id="selectStockOutOrderTotal" resultType="java.util.Map">
@@ -41,35 +51,37 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectStockOutOrderList" parameterType="StockOutOrder" resultMap="StockOutOrderResult">
         <include refid="selectStockOutOrderVo"/>
-        WHERE del_flag = 0
-        <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
-        <if test="orderType != null  and orderType != ''"> and order_type = #{orderType}</if>
-        <if test="prodOrderNo != null  and prodOrderNo != ''"> and prod_order_no = #{prodOrderNo}</if>
-        <if test="warehouseCode != null  and warehouseCode != ''"> and warehouse_code = #{warehouseCode}</if>
-        <if test="workshopCode != null  and workshopCode != ''"> and workshop_code = #{workshopCode}</if>
-        <if test="orderReason != null  and orderReason != ''"> and order_reason = #{orderReason}</if>
-        <if test="matCode != null  and matCode != ''"> and mat_code = #{matCode}</if>
-        <if test="matName != null  and matName != ''"> and mat_name like concat('%', #{matName}, '%')</if>
-        <if test="quantity != null "> and quantity = #{quantity}</if>
-        <if test="orderStatus != null  and orderStatus != ''"> and order_status = #{orderStatus}</if>
-        <if test="warehouseKeeper != null  and warehouseKeeper != ''"> and warehouse_keeper = #{warehouseKeeper}</if>
+        WHERE o.del_flag = 0
+        <if test="orderNo != null  and orderNo != ''"> and o.order_no = #{orderNo}</if>
+        <if test="orderType != null  and orderType != ''"> and o.order_type = #{orderType}</if>
+        <if test="prodOrderNo != null  and prodOrderNo != ''"> and o.prod_order_no = #{prodOrderNo}</if>
+        <if test="warehouseCode != null  and warehouseCode != ''"> and o.warehouse_code = #{warehouseCode}</if>
+        <if test="workshopCode != null  and workshopCode != ''"> and o.workshop_code = #{workshopCode}</if>
+        <if test="orderReason != null  and orderReason != ''"> and o.order_reason = #{orderReason}</if>
+        <if test="matCode != null  and matCode != ''"> and o.mat_code = #{matCode}</if>
+        <if test="matName != null  and matName != ''"> and o.mat_name like concat('%', #{matName}, '%')</if>
+        <if test="quantity != null "> and o.quantity = #{quantity}</if>
+        <if test="orderStatus != null  and orderStatus != ''"> and o.order_status = #{orderStatus}</if>
+        <if test="warehouseKeeper != null  and warehouseKeeper != ''"> and o.warehouse_keeper = #{warehouseKeeper}</if>
+        <if test="allotNo != null  and allotNo != ''"> and o.allot_no = #{allotNo}</if>
+        <if test="destWarehouseCode != null  and destWarehouseCode != ''"> and o.dest_warehouse_code = #{destWarehouseCode}</if>
         <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
-            AND date_format(create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            AND date_format(o.create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
         </if>
         <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
-            AND date_format(create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            AND date_format(o.create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
         </if>
-        ORDER BY create_time DESC
+        ORDER BY o.create_time DESC
     </select>
-    
+
     <select id="selectStockOutOrderByOrderId" parameterType="Long" resultMap="StockOutOrderResult">
         <include refid="selectStockOutOrderVo"/>
-        where del_flag = 0 AND order_id = #{orderId}
+        where o.del_flag = 0 AND o.order_id = #{orderId}
     </select>
 
     <select id="selectStockOutOrderByOrderNo" resultMap="StockOutOrderResult">
         <include refid="selectStockOutOrderVo"/>
-        where del_flag = 0 AND order_no = #{orderNo}
+        where o.del_flag = 0 AND o.order_no = #{orderNo}
     </select>
         
     <insert id="insertStockOutOrder" parameterType="StockOutOrder" useGeneratedKeys="true" keyProperty="orderId">
@@ -86,6 +98,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="quantity != null">quantity,</if>
             <if test="orderStatus != null">order_status,</if>
             <if test="warehouseKeeper != null">warehouse_keeper,</if>
+            <if test="allotNo != null">allot_no,</if>
+            <if test="destWarehouseCode != null">dest_warehouse_code,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
@@ -104,6 +118,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="quantity != null">#{quantity},</if>
             <if test="orderStatus != null">#{orderStatus},</if>
             <if test="warehouseKeeper != null">#{warehouseKeeper},</if>
+            <if test="allotNo != null">#{allotNo},</if>
+            <if test="destWarehouseCode != null">#{destWarehouseCode},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>

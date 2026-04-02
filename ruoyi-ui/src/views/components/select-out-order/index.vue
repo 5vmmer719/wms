@@ -140,6 +140,11 @@ export default {
       type: String,
       default: 'production',
     },
+    // 是否只显示已领料的出库单（退货场景）
+    onlyReceived:{
+      type: Boolean,
+      default: false,
+    },
   },
   data() {
     return {
@@ -201,6 +206,10 @@ export default {
   },
   created() {
     this.queryParams.orderType = this.outOrderType;
+    // 退货场景只显示已领料的出库单
+    if(this.onlyReceived){
+      this.queryParams.orderStatus = 'received';
+    }
     this.getList();
     this.getWarehouseList();
     this.getWorkshopList();

@@ -67,6 +67,8 @@ public enum StockRecordTypeEnum {
             recordType = StockRecordTypeEnum.IN_OUTSOURCING.getValue();
         }else if(InOrderTypeEnum.PRODUCTION.getValue().equals(orderType)){
             recordType = StockRecordTypeEnum.IN_PRODUCTION.getValue();
+        }else if(InOrderTypeEnum.ALLOT.getValue().equals(orderType)){
+            recordType = StockRecordTypeEnum.ALLOT_IN.getValue();
         }
         return recordType;
     }
@@ -93,6 +95,8 @@ public enum StockRecordTypeEnum {
             recordType = StockRecordTypeEnum.OUT_REPAIR.getValue();
         }else if(OutOrderTypeEnum.COMMON.getValue().equals(orderType)){
             recordType = StockRecordTypeEnum.OUT_COMMON.getValue();
+        }else if(OutOrderTypeEnum.ALLOT.getValue().equals(orderType)){
+            recordType = StockRecordTypeEnum.ALLOT_OUT.getValue();
         }
         return recordType;
     }

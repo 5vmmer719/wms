@@ -66,4 +66,28 @@ public interface IBaseWarehouseService {
      * @return 结果
      */
     public int deleteBaseWarehouseByWarehouseId(Long warehouseId);
+
+    /**
+     * 按仓库类型查询仓库列表
+     *
+     * @param warehouseType 仓库类型
+     * @return 仓库集合
+     */
+    public List<BaseWarehouse> selectWarehouseListByType(String warehouseType);
+
+    /**
+     * 根据物料组编码获取推荐仓库类型
+     *
+     * @param matGroup 物料组编码
+     * @return 仓库类型
+     */
+    public String getWarehouseTypeByMatGroup(String matGroup);
+
+    /**
+     * 根据物料组获取推荐仓库列表
+     *
+     * @param matGroup 物料组编码
+     * @return 仓库集合
+     */
+    public List<BaseWarehouse> getRecommendWarehouseList(String matGroup);
 }

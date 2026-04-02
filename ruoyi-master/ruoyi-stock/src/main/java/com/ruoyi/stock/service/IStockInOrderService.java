@@ -91,4 +91,9 @@ public interface IStockInOrderService {
      */
     public List<StockInStats> selectStockInStatsList(String matCode, String matName);
 
+    /**
+     * 新增入库单并返回完整信息（用于调拨入库单生成）
+     */
+    public StockInOrder insertStockInOrderAndReturn(String username, StockInOrder stockInOrder);
+
 }

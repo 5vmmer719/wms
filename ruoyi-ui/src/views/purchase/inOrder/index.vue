@@ -134,6 +134,21 @@
       <el-form ref="form" :model="form" :rules="rules" label-width="100px">
         <el-row>
           <el-col :span="8">
+            <el-form-item label="入库仓库" prop="warehouseCode">
+              <el-select v-model="form.warehouseCode" placeholder="请选择仓库" @change="handleWarehouseChange">
+                <el-option
+                  v-for="item in warehouseList"
+                  :key="item.warehouseCode"
+                  :label="item.warehouseName"
+                  :value="item.warehouseCode"
+                >
+                  <span>{{ item.warehouseName }}</span>
+                  <dict-tag style="float: right" :options="dict.type.warehouse_type" :value="item.warehouseType"/>
+                </el-option>
+              </el-select>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
             <el-form-item label="选择物料标签">
               <el-button size="small" type="success" icon="el-icon-search" @click="openSelectMatLabelDialog">物料标签清单</el-button>
             </el-form-item>
@@ -173,7 +188,7 @@
     </el-dialog>
 
     <el-dialog :title="'选择物料标签'" :visible.sync="selectMatLabelOpen" width="1200px" append-to-body :close-on-click-modal="false">
-      <selectMatLabel ref="matLabelPage" :labelIdArr="labelIdArr" 
+      <selectMatLabel ref="matLabelPage" :labelIdArr="labelIdArr" :warehouseType="form.warehouseType" :filterOrderNo="false"
         @confirmSelectArr="confirmSelectMatLabelArr" @confirmSelect="confirmSelectMatLabel">
       </selectMatLabel>
       <div slot="footer" class="dialog-footer">
@@ -235,11 +250,12 @@
 
 <script>
 import { listInOrder, getInOrder, delInOrder, addInOrder, printInOrder } from "@/api/stock/inOrder";
+import { listAllWarehouse } from "@/api/base/warehouse";
 import selectMatLabel from "../../components/select-mat-label/index";
 
 export default {
   name: "InOrder",
-  dicts: ['base_mat_unit'],
+  dicts: ['base_mat_unit', 'warehouse_type'],
   components: { selectMatLabel },
   data() {
     return {
@@ -276,6 +292,9 @@ export default {
       form: {},
       // 表单校验
       rules: {
+        warehouseCode: [
+          { required: true, message: "请选择入库仓库", trigger: "blur" },
+        ],
       },
 
       // 日期范围
@@ -285,10 +304,13 @@ export default {
       checkStatusOptions:[{value: 'un_checkout', label: '未检验'}, {value: 'checkout', label: '已检验'}],
       //单据状态
       orderStatusOptions:[
-        {value: 'created', label: '已创建'}, 
+        {value: 'created', label: '已创建'},
         {value: 'printed', label: '已打印'},
         {value: 'entered', label: '已入库'},
       ],
+
+      //仓库列表
+      warehouseList: [],
 
       //选择物料标签
       selectMatLabelOpen: false,
@@ -303,6 +325,7 @@ export default {
   },
   created() {
     this.getList();
+    this.getWarehouseList();
   },
   methods: {
     /** 查询入库单列表 */
@@ -327,6 +350,8 @@ export default {
         orderId: null,
         orderNo: null,
         orderType: null,
+        warehouseCode: null,
+        warehouseType: null,
         orderStatus: "0",
         checkStatus: "0",
         checkBy: null,
@@ -424,8 +449,12 @@ export default {
     },
     //选择物料标签
     openSelectMatLabelDialog(){
+      if(!this.form.warehouseCode){
+        this.$modal.msgWarning("请先选择入库仓库");
+        return;
+      }
       this.selectMatLabelOpen = true;
-      this.$nextTick(function(){ 
+      this.$nextTick(function(){
         this.$refs.matLabelPage.getList();
       })
     },
@@ -449,6 +478,22 @@ export default {
     handleRemove(index, row){
       this.labelIdArr.splice(this.labelIdArr.indexOf(row.labelId), 1);
       this.matLabelList.splice(index, 1);
+    },
+    //查询仓库列表
+    getWarehouseList(){
+      listAllWarehouse().then(response => {
+        this.warehouseList = response;
+      });
+    },
+    // 仓库选择变化时设置仓库类型
+    handleWarehouseChange(warehouseCode){
+      const warehouse = this.warehouseList.find(item => item.warehouseCode === warehouseCode);
+      if(warehouse){
+        this.form.warehouseType = warehouse.warehouseType;
+        // 清空已选物料标签（因为仓库类型可能变了）
+        this.matLabelList = [];
+        this.labelIdArr = [];
+      }
     },
   }
 };

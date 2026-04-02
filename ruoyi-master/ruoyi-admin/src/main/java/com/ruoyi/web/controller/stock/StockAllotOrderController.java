@@ -6,9 +6,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.base.service.IBaseWarehouseService;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.bean.AllotDetailPdfData;
 import com.ruoyi.common.bean.AllotOrderPdfData;
 import com.ruoyi.common.bean.OutDetailPdfData;
@@ -115,9 +117,9 @@ public class StockAllotOrderController extends BaseController {
     }
 
     /**
-     * 获取调拨单详细信息
+     * 获取调拨单详细信息（扫码端使用）
      */
-    @PreAuthorize("@ss.hasPermi('stock:allotOrder:query')")
+    @Anonymous
     @GetMapping(value = "/m/{allotNo}")
     public AjaxResult getInfo(@PathVariable("allotNo") String allotNo) {
         StockAllotOrder order = stockAllotOrderService.selectStockAllotOrderByAllotNo(allotNo);
@@ -214,6 +216,7 @@ public class StockAllotOrderController extends BaseController {
     /**
      * 扫码提交调拨单
      */
+    @Anonymous
     @PostMapping("submitAllot")
     public AjaxResult submitAllot(@RequestBody StockAllotOrder stockAllotOrder){
         if(stockAllotOrder == null){
@@ -221,11 +224,27 @@ public class StockAllotOrderController extends BaseController {
         }
         String allotProgress = stockAllotOrder.getAllotProgress();
         if(AllotProgressEnum.CREATED.getValue().equals(allotProgress)){
-            return stockAllotOrderService.submitAllotPicking(getUsername(), stockAllotOrder);
+            String username = "admin";
+            return stockAllotOrderService.submitAllotPicking(username, stockAllotOrder);
         }else if(AllotProgressEnum.PICKING.getValue().equals(allotProgress)){
-            return stockAllotOrderService.submitAllotReceive(getUsername(), stockAllotOrder);
+            String username = "admin";
+            return stockAllotOrderService.submitAllotReceive(username, stockAllotOrder);
         }
         return error("系统繁忙，请稍后再试！");
+    }
+
+    /**
+     * 扫码确认调拨单并生成调拨出库单
+     */
+    @Anonymous
+    @PostMapping("confirmAllot")
+    public AjaxResult confirmAllot(@RequestBody Map<String, String> params) {
+        String allotNo = params.get("allotNo");
+        if (allotNo == null || allotNo.isEmpty()) {
+            return error("调拨单号不能为空");
+        }
+        String username = "admin";
+        return stockAllotOrderService.confirmAllotAndCreateOutOrder(username, allotNo);
     }
 
 }

@@ -88,4 +88,9 @@ public interface IStockOutOrderService {
      */
     public List<StockOutStats> selectStockOutStatsList(String matCode, String matName);
 
+    /**
+     * 新增出库单并返回完整信息（用于调拨出库单生成）
+     */
+    public StockOutOrder insertStockOutOrderAndReturn(String username, StockOutOrder stockOutOrder);
+
 }

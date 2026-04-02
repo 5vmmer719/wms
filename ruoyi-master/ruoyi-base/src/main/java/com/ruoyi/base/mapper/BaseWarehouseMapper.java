@@ -61,9 +61,17 @@ public interface BaseWarehouseMapper
 
     /**
      * 批量删除仓库
-     * 
+     *
      * @param warehouseIds 需要删除的数据主键集合
      * @return 结果
      */
     public int deleteBaseWarehouseByWarehouseIds(Long[] warehouseIds);
+
+    /**
+     * 按仓库类型查询仓库列表
+     *
+     * @param warehouseType 仓库类型
+     * @return 仓库集合
+     */
+    public List<BaseWarehouse> selectWarehouseListByType(String warehouseType);
 }

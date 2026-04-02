@@ -222,6 +222,9 @@ public class PDFService {
             pdfPrintData.setTemplatePath("pdf/production_out_order.pdf");
         }else if(OutOrderTypeEnum.COMMON.getValue().equals(orderType)){
             pdfPrintData.setTemplatePath("pdf/common_out_order.pdf");
+        }else if(OutOrderTypeEnum.ALLOT.getValue().equals(orderType)){
+            // 调拨出库单复用通用出库单模板
+            pdfPrintData.setTemplatePath("pdf/common_out_order.pdf");
         }
         return PDFUtils.pdfout(pdfPrintData, Color.LIGHT_GRAY, Color.BLACK);
     }

@@ -205,13 +205,18 @@ public class StockInOrderServiceImpl implements IStockInOrderService {
             BigDecimal qualifiedQuantity = detail.getQualifiedQuantity();
             String warehouseCode = detail.getWarehouseCode();
             String locationCode = detail.getLocationCode();
-            //修改物料标签
-            stockMatLabelMapper.updateUsableQuantity(detail.getLabelId(), username, nowDate, warehouseCode, locationCode, qualifiedQuantity);
+
+            // 如果有物料标签ID，才更新物料标签（调拨入库没有labelId）
+            if (detail.getLabelId() != null) {
+                stockMatLabelMapper.updateUsableQuantity(detail.getLabelId(), username, nowDate, warehouseCode, locationCode, qualifiedQuantity);
+            }
+
             //修改入库单详情信息
             detail.setStockInQuantity(qualifiedQuantity);
             detail.setUpdateBy(username);
             detail.setUpdateTime(nowDate);
             stockInDetailMapper.updateStockInDetail(detail);
+
             //修改库存信息
             info = new StockInfo();
             info.setWarehouseCode(warehouseCode);
@@ -247,7 +252,7 @@ public class StockInOrderServiceImpl implements IStockInOrderService {
         inOrder.setOrderStatus(OrderStatusEnum.ENTERED.getValue());
         inOrder.setUpdateBy(username);
         inOrder.setUpdateTime(nowDate);
-        stockInOrderMapper.updateStockInOrder(inOrder);
+        stockInOrderMapper.updateStockInOrderByOrderNo(inOrder);
         return AjaxResult.success("提交成功");
     }
 
@@ -257,6 +262,16 @@ public class StockInOrderServiceImpl implements IStockInOrderService {
     @Override
     public List<StockInStats> selectStockInStatsList(String matCode, String matName){
         return stockInDetailMapper.selectStockInStatsList(matCode, matName);
+    }
+
+    /**
+     * 新增入库单并返回完整信息（用于调拨入库单生成）
+     */
+    @Override
+    @Transactional
+    public StockInOrder insertStockInOrderAndReturn(String username, StockInOrder stockInOrder) {
+        insertStockInOrder(username, stockInOrder);
+        return stockInOrder;
     }
 
 }

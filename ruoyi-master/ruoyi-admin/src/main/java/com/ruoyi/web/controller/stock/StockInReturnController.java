@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.base.service.IBaseWarehouseService;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.bean.InReturnDetailPdfData;
 import com.ruoyi.common.bean.InReturnPdfData;
 import com.ruoyi.common.bean.request.InReturnRequestBody;
@@ -109,9 +110,9 @@ public class StockInReturnController extends BaseController {
     }
 
     /**
-     * 获取入库单退货详细信息
+     * 获取入库单退货详细信息（扫码端使用）
      */
-    @PreAuthorize("@ss.hasPermi('stock:inReturn:query')")
+    @Anonymous
     @GetMapping(value = "/m/{returnNo}")
     public AjaxResult getInfo(@PathVariable("returnNo") String returnNo) {
         StockInReturn inReturn = stockInReturnService .selectStockInReturnByReturnNo(returnNo);
@@ -212,12 +213,14 @@ public class StockInReturnController extends BaseController {
     /**
      * 扫码提交入库单退货-退货
      */
+    @Anonymous
     @PostMapping("submitInReturn")
     public AjaxResult submitInReturn(@RequestBody InReturnRequestBody inReturnRequestBody){
         if(inReturnRequestBody == null){
             return error("系统繁忙，请稍后再试！");
         }
-        return stockInReturnService.submitInReturn(getUsername(), inReturnRequestBody);
+        String username = "admin";
+        return stockInReturnService.submitInReturn(username, inReturnRequestBody);
     }
 
 }

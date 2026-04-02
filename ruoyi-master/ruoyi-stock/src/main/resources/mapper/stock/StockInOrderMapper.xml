@@ -11,6 +11,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="orderStatus"    column="order_status"    />
         <result property="checkStatus"    column="check_status"    />
         <result property="checkBy"    column="check_by"    />
+        <result property="allotNo"    column="allot_no"    />
+        <result property="warehouseCode"    column="warehouse_code"    />
+        <result property="warehouseName"    column="warehouse_name"    />
         <result property="delFlag"    column="del_flag"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
@@ -19,7 +22,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStockInOrderVo">
-        select order_id, order_no, order_type, order_status, check_status, check_by, del_flag, create_by, create_time, update_by, update_time from stock_in_order
+        select o.order_id, o.order_no, o.order_type, o.order_status, o.check_status, o.check_by, o.allot_no,
+               o.warehouse_code, w.warehouse_name as warehouse_name,
+               o.del_flag, o.create_by, o.create_time, o.update_by, o.update_time
+        from stock_in_order o
+        left join base_warehouse w on o.warehouse_code = w.warehouse_code
     </sql>
 
     <select id="selectStockInOrderTotal" resultType="java.util.Map">
@@ -34,29 +41,31 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectStockInOrderList" parameterType="StockInOrder" resultMap="StockInOrderResult">
         <include refid="selectStockInOrderVo"/>
-        WHERE del_flag = 0
-        <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
-        <if test="orderType != null  and orderType != ''"> and order_type = #{orderType}</if>
-        <if test="orderStatus != null  and orderStatus != ''"> and order_status = #{orderStatus}</if>
-        <if test="checkStatus != null  and checkStatus != ''"> and check_status = #{checkStatus}</if>
-        <if test="checkBy != null  and checkBy != ''"> and check_by = #{checkBy}</if>
+        WHERE o.del_flag = 0
+        <if test="orderNo != null  and orderNo != ''"> and o.order_no = #{orderNo}</if>
+        <if test="orderType != null  and orderType != ''"> and o.order_type = #{orderType}</if>
+        <if test="orderStatus != null  and orderStatus != ''"> and o.order_status = #{orderStatus}</if>
+        <if test="checkStatus != null  and checkStatus != ''"> and o.check_status = #{checkStatus}</if>
+        <if test="checkBy != null  and checkBy != ''"> and o.check_by = #{checkBy}</if>
+        <if test="allotNo != null  and allotNo != ''"> and o.allot_no = #{allotNo}</if>
+        <if test="warehouseCode != null  and warehouseCode != ''"> and o.warehouse_code = #{warehouseCode}</if>
         <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
-            AND date_format(create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
+            AND date_format(o.create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
         </if>
         <if test="params.endTime != null and params.endTime != ''"><!-- 结束时间检索 -->
-            AND date_format(create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
+            AND date_format(o.create_time,'%y%m%d') &lt;= date_format(#{params.endTime},'%y%m%d')
         </if>
-        ORDER BY create_time DESC
+        ORDER BY o.create_time DESC
     </select>
-    
+
     <select id="selectStockInOrderByOrderId" parameterType="Long" resultMap="StockInOrderResult">
         <include refid="selectStockInOrderVo"/>
-        where del_flag = 0 AND order_id = #{orderId}
+        where o.del_flag = 0 AND o.order_id = #{orderId}
     </select>
 
     <select id="selectStockInOrderByOrderNo" resultMap="StockInOrderResult">
         <include refid="selectStockInOrderVo"/>
-        where del_flag = 0 AND order_no = #{orderNo}
+        where o.del_flag = 0 AND o.order_no = #{orderNo}
     </select>
         
     <insert id="insertStockInOrder" parameterType="StockInOrder" useGeneratedKeys="true" keyProperty="orderId">
@@ -67,6 +76,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="orderStatus != null">order_status,</if>
             <if test="checkStatus != null">check_status,</if>
             <if test="checkBy != null">check_by,</if>
+            <if test="allotNo != null">allot_no,</if>
+            <if test="warehouseCode != null">warehouse_code,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
@@ -79,6 +90,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="orderStatus != null">#{orderStatus},</if>
             <if test="checkStatus != null">#{checkStatus},</if>
             <if test="checkBy != null">#{checkBy},</if>
+            <if test="allotNo != null">#{allotNo},</if>
+            <if test="warehouseCode != null">#{warehouseCode},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
@@ -107,6 +120,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <update id="updateStockInOrderByOrderNo" parameterType="StockInOrder">
         update stock_in_order
         <trim prefix="SET" suffixOverrides=",">
+            <if test="orderStatus != null">order_status = #{orderStatus},</if>
             <if test="checkStatus != null">check_status = #{checkStatus},</if>
             <if test="checkBy != null">check_by = #{checkBy},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>

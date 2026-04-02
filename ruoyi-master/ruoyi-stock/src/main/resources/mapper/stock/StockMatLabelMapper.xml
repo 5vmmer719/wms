@@ -63,7 +63,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
 
     <select id="selectStockMatLabelListDialog" parameterType="StockMatLabel" resultMap="StockMatLabelResult">
         <include refid="selectStockMatLabelVo"/>
-        WHERE del_flag = 0 AND (order_no IS NULL OR order_no = '')
+        WHERE del_flag = 0
         <if test="warehouseCode != null  and warehouseCode != ''"> and warehouse_code = #{warehouseCode}</if>
         <if test="locationCode != null  and locationCode != ''"> and location_code = #{locationCode}</if>
         <if test="labelType != null  and labelType != ''"> and label_type = #{labelType}</if>
@@ -80,6 +80,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="prodTime != null "> and prod_time = #{prodTime}</if>
         <if test="quantity != null "> and quantity = #{quantity}</if>
         <if test="unitPrice != null "> and unit_price = #{unitPrice}</if>
+        <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
+        <if test="orderType != null  and orderType != ''"> and order_type = #{orderType}</if>
+        <if test="remark != null  and remark == 'filterOrderNo'"> AND (order_no IS NULL OR order_no = '')</if>
+        <if test="warehouseType != null  and warehouseType != ''">
+            AND mat_group IN (
+                SELECT group_code FROM base_mat_group WHERE default_warehouse_type = #{warehouseType}
+            )
+        </if>
     </select>
     
     <select id="selectStockMatLabelByLabelId" parameterType="Long" resultMap="StockMatLabelResult">

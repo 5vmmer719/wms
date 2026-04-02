@@ -1,0 +1,1967 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WMS扫码工具</title>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui@2.15.8/lib/theme-chalk/index.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container { max-width: 1400px; margin: 0 auto; }
+
+        .header {
+            text-align: center;
+            color: #303133;
+            padding: 20px 0 30px;
+        }
+        .header h1 {
+            font-size: 26px;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .header p { color: #909399; font-size: 14px; }
+
+        .card {
+            background: white;
+            border-radius: 4px;
+            box-shadow: 0 2px 12px 0 rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        .card-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid #ebeef5;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-header h3 {
+            font-size: 16px;
+            color: #303133;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        .card-header h3 .icon { color: #409eff; font-size: 18px; }
+        .card-body { padding: 20px; }
+
+        .scan-area {
+            border: 1px dashed #dcdfe6;
+            border-radius: 4px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 16px;
+            background: #fafafa;
+        }
+        .scan-area:hover {
+            border-color: #409eff;
+            background: #ecf5ff;
+        }
+        .scan-area .icon { font-size: 40px; color: #c0c4cc; margin-bottom: 10px; }
+        .scan-area p { color: #606266; font-size: 14px; }
+        .scan-area em { color: #409eff; font-style: normal; }
+
+        .scan-result {
+            margin-top: 16px;
+            padding: 12px 16px;
+            background: #f0f9eb;
+            border-radius: 4px;
+            border-left: 3px solid #67c23a;
+        }
+        .result-label { font-size: 12px; color: #909399; margin-bottom: 4px; }
+        .result-value { font-size: 14px; font-weight: 500; color: #303133; word-break: break-all; }
+        .result-type { margin-top: 6px; font-size: 12px; }
+        .prefix-hint { font-size: 12px; color: #909399; margin-left: 4px; }
+
+        .tabs-nav {
+            display: flex;
+            background: #f5f7fa;
+            border-radius: 4px;
+            padding: 4px;
+            margin-bottom: 20px;
+        }
+        .tab-item {
+            flex: 1;
+            padding: 10px 16px;
+            text-align: center;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            color: #606266;
+            transition: all 0.2s;
+        }
+        .tab-item:hover { color: #409eff; }
+        .tab-item.active {
+            background: #409eff;
+            color: white;
+        }
+
+        .form-group { margin-bottom: 16px; }
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            color: #606266;
+            margin-bottom: 8px;
+        }
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #606266;
+            transition: border-color 0.2s;
+            background: white;
+        }
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #409eff;
+        }
+        .form-group input::placeholder { color: #c0c4cc; }
+        .input-group { display: flex; gap: 8px; }
+        .input-group input { flex: 1; }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: #409eff;
+            color: white;
+        }
+        .btn-primary:hover { background: #66b1ff; }
+        .btn-primary:disabled { background: #a0cfff; cursor: not-allowed; }
+        .btn-success { background: #67c23a; color: white; }
+        .btn-success:hover { background: #85ce61; }
+        .btn-warning { background: #e6a23c; color: white; }
+        .btn-warning:hover { background: #ebb563; }
+        .btn-danger { background: #f56c6c; color: white; }
+        .btn-danger:hover { background: #f78989; }
+        .btn-default { background: white; color: #606266; border: 1px solid #dcdfe6; }
+        .btn-default:hover { color: #409eff; border-color: #c6e2ff; background: #ecf5ff; }
+        .btn-small { padding: 7px 15px; font-size: 12px; }
+
+        .btn-group { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .status-created { background: #ecf5ff; color: #409eff; }
+        .status-printed { background: #fdf6ec; color: #e6a23c; }
+        .status-entered { background: #f0f9eb; color: #67c23a; }
+        .status-received { background: #f4f4f5; color: #909399; }
+        .status-picking { background: #fef0f0; color: #f56c6c; }
+
+        .info-box {
+            margin-bottom: 16px;
+            padding: 16px;
+            background: #f5f7fa;
+            border-radius: 4px;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid #ebeef5;
+        }
+        .info-row:last-child { border-bottom: none; }
+        .info-label { color: #909399; font-size: 13px; }
+        .info-value { color: #303133; font-size: 13px; font-weight: 500; }
+
+        .detail-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 12px;
+            font-size: 13px;
+        }
+        .detail-table th, .detail-table td {
+            padding: 10px 8px;
+            border: 1px solid #ebeef5;
+            text-align: left;
+        }
+        .detail-table th {
+            background: #f5f7fa;
+            font-weight: 500;
+            color: #303133;
+        }
+        .detail-table td { color: #606266; }
+        .detail-table tr:hover { background: #f5f7fa; }
+
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        .history-list { max-height: 250px; overflow-y: auto; }
+        .history-item {
+            padding: 10px 0;
+            border-bottom: 1px solid #ebeef5;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .history-item:last-child { border-bottom: none; }
+        .history-time { font-size: 12px; color: #909399; width: 70px; }
+        .history-content { flex: 1; font-size: 13px; color: #303133; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+        .toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+        }
+        .toast {
+            padding: 12px 20px;
+            border-radius: 4px;
+            color: white;
+            margin-bottom: 10px;
+            animation: slideIn 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .toast-success { background: #67c23a; }
+        .toast-error { background: #f56c6c; }
+        .toast-warning { background: #e6a23c; }
+        .toast-info { background: #409eff; }
+        @keyframes slideIn {
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
+        }
+
+        .mat-label-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f5f7fa;
+            border-radius: 4px;
+            border: 1px solid #ebeef5;
+        }
+        .mat-label-item.selected {
+            border-color: #409eff;
+            background: #ecf5ff;
+        }
+        .mat-label-item .checkbox { margin-right: 12px; }
+        .mat-label-item .info { flex: 1; }
+        .mat-label-item .mat-name { font-weight: 500; color: #303133; margin-bottom: 4px; }
+        .mat-label-item .mat-code { font-size: 12px; color: #909399; }
+        .mat-label-item .quantity-input {
+            width: 80px;
+            padding: 6px 10px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #909399;
+        }
+        .empty-state .icon { font-size: 40px; margin-bottom: 12px; }
+
+        .prefix-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        .prefix-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 10px;
+            background: #f5f7fa;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .prefix-code {
+            display: inline-block;
+            min-width: 36px;
+            padding: 2px 6px;
+            background: #409eff;
+            color: white;
+            border-radius: 3px;
+            font-weight: 500;
+            margin-right: 8px;
+            text-align: center;
+        }
+        .prefix-name {
+            color: #606266;
+        }
+
+        @media (max-width: 960px) {
+            .grid-2 { grid-template-columns: 1fr; }
+            .tabs-nav { flex-wrap: wrap; }
+            .tab-item { flex: 1 1 50%; }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Toast 提示 -->
+        <div class="toast-container">
+            <transition-group name="fade">
+                <div v-for="(toast, index) in toasts" :key="index"
+                     :class="['toast', 'toast-' + toast.type]">
+                    {{ toast.message }}
+                </div>
+            </transition-group>
+        </div>
+
+        <div class="container">
+            <div class="header">
+                <h1>📦 WMS扫码工具</h1>
+                <p>上传二维码图片，快速完成仓库作业</p>
+            </div>
+
+            <div class="grid-2">
+                <!-- 左侧：扫码区域 -->
+                <div>
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><span class="icon">📷</span> 二维码扫描</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="scan-area" @click="triggerUpload" @dragover.prevent @drop.prevent="handleDrop">
+                                <input type="file" ref="fileInput" @change="handleFileChange" accept="image/*" style="display:none">
+                                <div class="icon">📎</div>
+                                <p>将二维码图片拖到此处，或<em>点击上传</em></p>
+                            </div>
+                            <div v-if="scanResult" class="scan-result">
+                                <div class="result-label">扫描结果：</div>
+                                <div class="result-value">{{ scanResult }}</div>
+                                <div v-if="scanType" class="result-type" style="margin-top:6px;font-size:12px;">
+                                    <span style="color:#67c23a;">✓ 识别为：{{ scanType }}</span>
+                                </div>
+                                <div style="margin-top:10px">
+                                    <button class="btn btn-small btn-default" @click="copyResult">复制结果</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><span class="icon">📋</span> 扫描历史</h3>
+                            <button class="btn btn-small btn-default" @click="clearHistory">清空</button>
+                        </div>
+                        <div class="card-body">
+                            <div class="history-list">
+                                <div v-if="history.length === 0" class="empty-state">
+                                    <div class="icon">📭</div>
+                                    <p>暂无扫描记录</p>
+                                </div>
+                                <div v-for="(item, index) in history" :key="index" class="history-item">
+                                    <span class="history-time">{{ item.time }}</span>
+                                    <span class="history-content" :title="item.content">{{ item.content }}</span>
+                                    <span :class="['status-badge', item.status === 'success' ? 'status-entered' : 'status-printed']">
+                                        {{ item.status === 'success' ? '成功' : '失败' }}
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 单号前缀说明卡片 -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h3><span class="icon">📝</span> 单号前缀说明</h3>
+                        </div>
+                        <div class="card-body" style="padding:12px 16px;">
+                            <div class="prefix-grid">
+                                <div v-for="(config, key) in prefixList" :key="key" class="prefix-item">
+                                    <span class="prefix-code">{{ config.prefix }}</span>
+                                    <span class="prefix-name">{{ config.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧：操作区域 -->
+                <div>
+                    <div class="card">
+                        <div class="card-body">
+                            <!-- Tab 导航 -->
+                            <div class="tabs-nav">
+                                <div v-for="tab in tabs" :key="tab.key"
+                                     :class="['tab-item', { active: activeTab === tab.key }]"
+                                     @click="activeTab = tab.key">
+                                    {{ tab.label }}
+                                </div>
+                            </div>
+
+                            <!-- 入库模块 -->
+                            <div v-show="activeTab === 'in'">
+                                <div class="card-header" style="padding: 0 0 16px 0; border: none;">
+                                    <h3><span class="icon">📥</span> 入库作业</h3>
+                                </div>
+                                <div class="form-group">
+                                    <label>入库单号 <span style="color:#909399;font-size:12px;">（前缀：{{ OrderPrefix.IN_PURCHASE.prefix }}）</span></label>
+                                    <div class="input-group">
+                                        <input v-model="inForm.orderNo" placeholder="扫描或输入入库单号"
+                                               @keyup.enter="loadInOrder">
+                                        <button class="btn btn-small btn-default" @click="loadInOrder">查询</button>
+                                    </div>
+                                </div>
+                                <div v-if="inOrder.orderNo" class="info-box">
+                                    <div class="info-row">
+                                        <span class="info-label">单据编号</span>
+                                        <span class="info-value">{{ inOrder.orderNo }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">单据类型</span>
+                                        <span class="info-value">{{ inOrder.orderTypeLabel }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">单据状态</span>
+                                        <span :class="['status-badge', 'status-' + inOrder.orderStatus]">{{ inOrder.orderStatusLabel }}</span>
+                                    </div>
+                                </div>
+                                <div v-if="inOrder.detailList && inOrder.detailList.length > 0">
+                                    <label style="font-size:13px;color:#606266;margin-bottom:8px;display:block;">物料明细</label>
+                                    <table class="detail-table">
+                                        <thead>
+                                            <tr>
+                                                <th>物料编码</th>
+                                                <th>物料名称</th>
+                                                <th>批次</th>
+                                                <th>应收数量</th>
+                                                <th>已入库</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(item, idx) in inOrder.detailList" :key="idx">
+                                                <td>{{ item.matCode }}</td>
+                                                <td>{{ item.matName }}</td>
+                                                <td>{{ item.batch }}</td>
+                                                <td>{{ item.qualifiedQuantity }}</td>
+                                                <td>{{ item.stockInQuantity || 0 }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div v-if="inOrderError" class="error-msg" style="color:#f56c6c;font-size:12px;margin-top:8px;">{{ inOrderError }}</div>
+                                <div class="form-group" style="margin-top:16px;">
+                                    <label>货位编码 <span style="color:#909399;font-size:12px;">（仓库已从入库单自动获取）</span></label>
+                                    <input v-model="inForm.locationCode" placeholder="输入或扫描货位编码（如 A-01-01）">
+                                </div>
+                                <div class="btn-group">
+                                    <button class="btn btn-primary" @click="submitIn" :disabled="inLoading">
+                                        {{ inLoading ? '处理中...' : '确认入库' }}
+                                    </button>
+                                    <button class="btn btn-default" @click="resetInForm">重置</button>
+                                </div>
+                            </div>
+
+                            <!-- 出库模块 -->
+                            <div v-show="activeTab === 'out'">
+                                <div class="card-header" style="padding: 0 0 16px 0; border: none;">
+                                    <h3><span class="icon">📤</span> 出库作业</h3>
+                                </div>
+                                <div class="form-group">
+                                    <label>出库单号 <span style="color:#909399;font-size:12px;">（前缀：{{ OrderPrefix.OUT_PRODUCTION.prefix }}/{{ OrderPrefix.OUT_REPAIR.prefix }}/{{ OrderPrefix.OUT_COMMON.prefix }}）</span></label>
+                                    <div class="input-group">
+                                        <input v-model="outForm.orderNo" placeholder="扫描或输入出库单号"
+                                               @keyup.enter="loadOutOrder">
+                                        <button class="btn btn-small btn-default" @click="loadOutOrder">查询</button>
+                                    </div>
+                                </div>
+                                <div v-if="outOrder.orderNo" class="info-box">
+                                    <div class="info-row">
+                                        <span class="info-label">单据编号</span>
+                                        <span class="info-value">{{ outOrder.orderNo }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">单据类型</span>
+                                        <span class="info-value">{{ outOrder.orderTypeLabel }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">领用仓库</span>
+                                        <span class="info-value">{{ outOrder.warehouseName }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">领用车间</span>
+                                        <span class="info-value">{{ outOrder.workshopName }}</span>
+                                    </div>
+                                </div>
+                                <div v-if="outOrder.detailList && outOrder.detailList.length > 0">
+                                    <label style="font-size:13px;color:#666;margin-bottom:8px;display:block;">物料明细（勾选需要领料的物料）</label>
+                                    <table class="detail-table">
+                                        <thead>
+                                            <tr>
+                                                <th style="width:40px;">选择</th>
+                                                <th>物料编码</th>
+                                                <th>物料名称</th>
+                                                <th>需领数量</th>
+                                                <th>已领数量</th>
+                                                <th>待领数量</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(item, idx) in outOrder.detailList" :key="idx"
+                                                :style="{ background: item.selected ? '#ecf5ff' : '' }">
+                                                <td style="text-align:center;">
+                                                    <input type="checkbox" v-model="item.selected" @change="toggleOutItemSelection(item)">
+                                                </td>
+                                                <td>{{ item.matCode }}</td>
+                                                <td>{{ item.matName }}</td>
+                                                <td>{{ item.quantity }}</td>
+                                                <td>{{ item.receivedQuantity || 0 }}</td>
+                                                <td style="color:#409eff;font-weight:500;">{{ (item.quantity || 0) - (item.receivedQuantity || 0) }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div v-if="outOrderError" class="error-msg" style="color:#f56c6c;font-size:12px;margin-top:8px;">{{ outOrderError }}</div>
+
+                                <!-- 已选物料列表 -->
+                                <div v-if="outSelectedList.length > 0" style="margin-top:16px;">
+                                    <label style="font-size:14px;color:#303133;margin-bottom:10px;display:block;font-weight:500;">
+                                        已选物料 <span style="color:#909399;font-weight:normal;font-size:12px;">（请输入领料数量）</span>
+                                    </label>
+                                    <div v-for="(item, idx) in outSelectedList" :key="item.matCode" class="mat-label-item selected">
+                                        <div class="checkbox" @click="removeOutSelected(item.matCode)" style="cursor:pointer;">
+                                            <input type="checkbox" checked @click.stop>
+                                        </div>
+                                        <div class="info" style="flex:1;">
+                                            <div class="mat-name">{{ item.matName }}</div>
+                                            <div class="mat-code">编码: {{ item.matCode }} | 待领: {{ item.pendingQuantity }}</div>
+                                        </div>
+                                        <input class="quantity-input" type="number" v-model.number="item.inputQuantity"
+                                               placeholder="数量" :min="1" :max="item.pendingQuantity"
+                                               style="width:80px;margin-left:10px;">
+                                        <button class="btn btn-small btn-danger" style="margin-left:10px;" @click="removeOutSelected(item.matCode)">移除</button>
+                                    </div>
+                                </div>
+
+                                <div class="btn-group" style="margin-top:20px;">
+                                    <button class="btn btn-primary" @click="submitOut" :disabled="outLoading || outSelectedList.length === 0">
+                                        {{ outLoading ? '处理中...' : '确认出库' }}
+                                    </button>
+                                    <button class="btn btn-default" @click="resetOutForm">重置</button>
+                                </div>
+                            </div>
+
+                            <!-- 调拨模块 -->
+                            <div v-show="activeTab === 'allot'">
+                                <div class="card-header" style="padding: 0 0 16px 0; border: none;">
+                                    <h3><span class="icon">🔄</span> 调拨作业</h3>
+                                </div>
+                                <div class="form-group">
+                                    <label>调拨单号 <span style="color:#909399;font-size:12px;">（前缀：{{ OrderPrefix.ALLOT.prefix }}）</span></label>
+                                    <div class="input-group">
+                                        <input v-model="allotForm.allotNo" placeholder="扫描或输入调拨单号"
+                                               @keyup.enter="loadAllotOrder">
+                                        <button class="btn btn-small btn-default" @click="loadAllotOrder">查询</button>
+                                    </div>
+                                </div>
+                                <div v-if="allotOrder.allotNo" class="info-box">
+                                    <div class="info-row">
+                                        <span class="info-label">单据编号</span>
+                                        <span class="info-value">{{ allotOrder.allotNo }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">源仓库</span>
+                                        <span class="info-value">{{ allotOrder.srcWarehouseName }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">目标仓库</span>
+                                        <span class="info-value">{{ allotOrder.destWarehouseName }}</span>
+                                    </div>
+                                    <div class="info-row">
+                                        <span class="info-label">当前进度</span>
+                                        <span :class="['status-badge',
+                                            allotOrder.allotProgress === 'created' ? 'status-created' :
+                                            (allotOrder.allotProgress === 'confirmed' ? 'status-printed' :
+                                            (allotOrder.allotProgress === 'picking' ? 'status-picking' : 'status-entered'))]">
+                                            {{ allotOrder.allotProgressLabel || (allotOrder.allotProgress === 'confirmed' ? '已确认' : allotOrder.allotProgress) }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- 已创建：确认调拨单，生成出库单 -->
+                                <div v-if="allotOrder.allotProgress === 'created'" style="margin-top:16px;">
+                                    <div v-if="allotOrder.detailList && allotOrder.detailList.length > 0">
+                                        <label style="font-size:13px;color:#606266;margin-bottom:8px;display:block;">物料明细</label>
+                                        <table class="detail-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>物料编码</th>
+                                                    <th>物料名称</th>
+                                                    <th>批次</th>
+                                                    <th>调拨数量</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(item, idx) in allotOrder.detailList" :key="idx">
+                                                    <td>{{ item.matCode }}</td>
+                                                    <td>{{ item.matName }}</td>
+                                                    <td>{{ item.batch }}</td>
+                                                    <td>{{ item.quantity }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="btn-group" style="margin-top:16px;">
+                                        <button class="btn btn-primary" @click="confirmAllot" :disabled="allotLoading">
+                                            {{ allotLoading ? '处理中...' : '确认调拨单' }}
+                                        </button>
+                                        <button class="btn btn-default" @click="resetAllotForm">重置</button>
+                                    </div>
+                                </div>
+
+                                <!-- 已确认：已生成出库单，提示去出库模块 -->
+                                <div v-if="allotOrder.allotProgress === 'confirmed'" style="margin-top:16px;">
+                                    <div style="background:#fdf6ec;border:1px solid #f5dab1;border-radius:4px;padding:20px;text-align:center;">
+                                        <div style="color:#e6a23c;font-size:16px;font-weight:500;margin-bottom:8px;">已确认，请完成出库</div>
+                                        <div style="color:#909399;font-size:13px;margin-bottom:12px;">
+                                            已生成调拨出库单：<span style="color:#409eff;font-weight:500;">{{ allotOrder.remark || '请在出库模块查看' }}</span>
+                                        </div>
+                                        <div style="color:#909399;font-size:12px;">
+                                            请前往【出库】模块，扫描出库单号完成出库<br>出库完成后将自动生成入库单并完成入库
+                                        </div>
+                                    </div>
+                                    <div class="btn-group" style="margin-top:16px;">
+                                        <button class="btn btn-primary" @click="goToOutTab">前往出库模块</button>
+                                        <button class="btn btn-default" @click="resetAllotForm">重置</button>
+                                    </div>
+                                </div>
+
+                                <!-- 已完成 -->
+                                <div v-if="allotOrder.allotProgress === 'receive'" style="margin-top:16px;">
+                                    <div style="background:#f0f9eb;border:1px solid #c2e7b0;border-radius:4px;padding:20px;text-align:center;">
+                                        <div style="color:#67c23a;font-size:18px;font-weight:500;margin-bottom:8px;">✓ 调拨已完成</div>
+                                        <div style="color:#909399;font-size:13px;">物料已从【{{ allotOrder.srcWarehouseName }}】调拨至【{{ allotOrder.destWarehouseName }}】</div>
+                                    </div>
+                                </div>
+
+                                <div v-if="allotOrderError" class="error-msg" style="color:#f56c6c;font-size:12px;margin-top:8px;">{{ allotOrderError }}</div>
+                            </div>
+
+                            <!-- 退货模块 -->
+                            <div v-show="activeTab === 'return'">
+                                <div class="card-header" style="padding: 0 0 16px 0; border: none;">
+                                    <h3><span class="icon">↩️</span> 退货作业</h3>
+                                </div>
+                                <!-- 子Tab -->
+                                <div class="tabs-nav" style="margin-bottom:16px;">
+                                    <div :class="['tab-item', { active: returnTab === 'inReturn' }]" @click="returnTab = 'inReturn'">
+                                        入库退货
+                                    </div>
+                                    <div :class="['tab-item', { active: returnTab === 'outReturn' }]" @click="returnTab = 'outReturn'">
+                                        出库退货
+                                    </div>
+                                </div>
+                                <!-- 入库退货 -->
+                                <div v-show="returnTab === 'inReturn'">
+                                    <div class="form-group">
+                                        <label>入库退货单号 <span style="color:#909399;font-size:12px;">（前缀：{{ OrderPrefix.IN_PURCHASE_RETURN.prefix }}）</span></label>
+                                        <div class="input-group">
+                                            <input v-model="inReturnForm.returnNo" placeholder="扫描或输入入库退货单号"
+                                                   @keyup.enter="loadInReturn">
+                                            <button class="btn btn-small btn-default" @click="loadInReturn">查询</button>
+                                        </div>
+                                    </div>
+                                    <div v-if="inReturnOrder.returnNo" class="info-box">
+                                        <div class="info-row">
+                                            <span class="info-label">单据编号</span>
+                                            <span class="info-value">{{ inReturnOrder.returnNo }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">退货类型</span>
+                                            <span class="info-value">{{ inReturnOrder.returnTypeLabel }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">仓库</span>
+                                            <span class="info-value">{{ inReturnOrder.warehouseName }}</span>
+                                        </div>
+                                    </div>
+                                    <div v-if="inReturnOrder.detailList && inReturnOrder.detailList.length > 0">
+                                        <label style="font-size:13px;color:#606266;margin-bottom:8px;display:block;">物料明细</label>
+                                        <table class="detail-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>物料编码</th>
+                                                    <th>物料名称</th>
+                                                    <th>应退数量</th>
+                                                    <th>已退数量</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(item, idx) in inReturnOrder.detailList" :key="idx">
+                                                    <td>{{ item.matCode }}</td>
+                                                    <td>{{ item.matName }}</td>
+                                                    <td>{{ item.quantity }}</td>
+                                                    <td>{{ item.returnQuantity || 0 }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div v-if="inReturnError" class="error-msg" style="color:#f56c6c;font-size:12px;margin-top:8px;">{{ inReturnError }}</div>
+                                    <div class="form-group" style="margin-top:16px;">
+                                        <label>物料标签ID</label>
+                                        <input v-model="inReturnForm.labelId" placeholder="扫描物料标签二维码">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>退货数量</label>
+                                        <input v-model.number="inReturnForm.quantity" type="number" placeholder="输入退货数量" min="0">
+                                    </div>
+                                    <div v-if="inReturnReceivedList.length > 0" style="margin:12px 0;">
+                                        <label style="font-size:13px;color:#606266;margin-bottom:8px;display:block;">已扫描物料</label>
+                                        <div v-for="(item, idx) in inReturnReceivedList" :key="idx" class="mat-label-item">
+                                            <div class="info">
+                                                <div class="mat-name">{{ item.labelId }}</div>
+                                                <div class="mat-code">数量: {{ item.quantity }}</div>
+                                            </div>
+                                            <button class="btn btn-small btn-danger" @click="removeInReturnReceived(idx)">删除</button>
+                                        </div>
+                                    </div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-default" @click="addToInReturnReceived" :disabled="!inReturnForm.labelId || !inReturnForm.quantity">
+                                            添加标签
+                                        </button>
+                                        <button class="btn btn-primary" @click="submitInReturn" :disabled="inReturnLoading || inReturnReceivedList.length === 0">
+                                            {{ inReturnLoading ? '处理中...' : '确认退货' }}
+                                        </button>
+                                        <button class="btn btn-default" @click="resetInReturnForm">重置</button>
+                                    </div>
+                                </div>
+
+                                <!-- 出库退货 -->
+                                <div v-show="returnTab === 'outReturn'">
+                                    <div class="form-group">
+                                        <label>出库退货单号 <span style="color:#909399;font-size:12px;">（前缀：{{ OrderPrefix.OUT_PRODUCTION_RETURN.prefix }}/{{ OrderPrefix.OUT_REPAIR_RETURN.prefix }}/{{ OrderPrefix.OUT_COMMON_RETURN.prefix }}）</span></label>
+                                        <div class="input-group">
+                                            <input v-model="outReturnForm.returnNo" placeholder="扫描或输入出库退货单号"
+                                                   @keyup.enter="loadOutReturn">
+                                            <button class="btn btn-small btn-default" @click="loadOutReturn">查询</button>
+                                        </div>
+                                    </div>
+                                    <div v-if="outReturnOrder.returnNo" class="info-box">
+                                        <div class="info-row">
+                                            <span class="info-label">单据编号</span>
+                                            <span class="info-value">{{ outReturnOrder.returnNo }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">退货类型</span>
+                                            <span class="info-value">{{ outReturnOrder.returnTypeLabel }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">仓库</span>
+                                            <span class="info-value">{{ outReturnOrder.warehouseName }}</span>
+                                        </div>
+                                    </div>
+                                    <div v-if="outReturnOrder.detailList && outReturnOrder.detailList.length > 0">
+                                        <label style="font-size:13px;color:#666;margin-bottom:8px;display:block;">物料明细</label>
+                                        <table class="detail-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>物料编码</th>
+                                                    <th>物料名称</th>
+                                                    <th>应退数量</th>
+                                                    <th>已退数量</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr v-for="(item, idx) in outReturnOrder.detailList" :key="idx">
+                                                    <td>{{ item.matCode }}</td>
+                                                    <td>{{ item.matName }}</td>
+                                                    <td>{{ item.quantity }}</td>
+                                                    <td>{{ item.returnQuantity || 0 }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div v-if="outReturnError" class="error-msg" style="color:#f56c6c;font-size:12px;margin-top:8px;">{{ outReturnError }}</div>
+                                    <div class="btn-group">
+                                        <button class="btn btn-primary" @click="submitOutReturn" :disabled="outReturnLoading">
+                                            {{ outReturnLoading ? '处理中...' : '确认退货' }}
+                                        </button>
+                                        <button class="btn btn-default" @click="resetOutReturnForm">重置</button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 上下架模块 -->
+                            <div v-show="activeTab === 'location'">
+                                <div class="card-header" style="padding: 0 0 16px 0; border: none;">
+                                    <h3><span class="icon">📍</span> 上架/下架</h3>
+                                </div>
+                                <!-- 子Tab -->
+                                <div class="tabs-nav" style="margin-bottom:16px;">
+                                    <div :class="['tab-item', { active: locationTab === 'putOn' }]" @click="locationTab = 'putOn'">
+                                        上架
+                                    </div>
+                                    <div :class="['tab-item', { active: locationTab === 'putOff' }]" @click="locationTab = 'putOff'">
+                                        下架
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label>仓库</label>
+                                    <select v-model="locationForm.warehouseCode" @change="loadLocationMatList">
+                                        <option value="">请选择仓库</option>
+                                        <option v-for="wh in warehouseList" :key="wh.warehouseCode" :value="wh.warehouseCode">
+                                            {{ wh.warehouseName }}
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>货位编码</label>
+                                    <div class="input-group">
+                                        <input v-model="locationForm.locationCode" placeholder="输入或扫描货位编码">
+                                        <button class="btn btn-small btn-default" @click="loadLocationMatList">查询</button>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label>物料标签ID</label>
+                                    <input v-model="locationForm.labelId" placeholder="扫描物料标签二维码">
+                                </div>
+                                <div class="form-group">
+                                    <label>数量</label>
+                                    <input v-model.number="locationForm.quantity" type="number" placeholder="输入数量" min="0">
+                                </div>
+
+                                <div v-if="locationMatList.length > 0">
+                                    <label style="font-size:13px;color:#666;margin-bottom:8px;display:block;">当前货位物料</label>
+                                    <table class="detail-table">
+                                        <thead>
+                                            <tr>
+                                                <th>物料编码</th>
+                                                <th>物料名称</th>
+                                                <th>批次</th>
+                                                <th>数量</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(item, idx) in locationMatList" :key="idx">
+                                                <td>{{ item.matCode }}</td>
+                                                <td>{{ item.matName }}</td>
+                                                <td>{{ item.batch }}</td>
+                                                <td>{{ item.quantity }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <div class="btn-group">
+                                    <button v-if="locationTab === 'putOn'" class="btn btn-success"
+                                            @click="submitPutOn" :disabled="locationLoading || !locationForm.labelId || !locationForm.quantity">
+                                        {{ locationLoading ? '处理中...' : '确认上架' }}
+                                    </button>
+                                    <button v-else class="btn btn-warning"
+                                            @click="submitPutOff" :disabled="locationLoading || !locationForm.labelId || !locationForm.quantity">
+                                        {{ locationLoading ? '处理中...' : '确认下架' }}
+                                    </button>
+                                    <button class="btn btn-default" @click="resetLocationForm">重置</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Vue 2 -->
+    <script src="https://unpkg.com/vue@2.6.14/dist/vue.min.js"></script>
+    <!-- Axios -->
+    <script src="https://unpkg.com/axios@1.7.7/dist/axios.min.js"></script>
+    <!-- jsQR 二维码解析库 -->
+    <script src="https://unpkg.com/jsqr@1.4.0/dist/jsQR.js"></script>
+
+    <script>
+        /**
+         * 单号前缀配置（与后端 OrderNoUtil.OrderPrefix 枚举保持一致）
+         * 统一管理所有单号前缀，便于维护和扩展
+         */
+        const OrderPrefix = {
+            // 入库单
+            IN_PURCHASE: { prefix: 'IP', name: '原料入库单', tab: 'in', subTab: null },
+            IN_ALLOT: { prefix: 'IA', name: '调拨入库单', tab: 'in', subTab: null },
+            // 出库单
+            OUT_PRODUCTION: { prefix: 'OP', name: '生产领料出库单', tab: 'out', subTab: null },
+            OUT_REPAIR: { prefix: 'OR', name: '补领料出库单', tab: 'out', subTab: null },
+            OUT_COMMON: { prefix: 'OC', name: '通用领料出库单', tab: 'out', subTab: null },
+            OUT_ALLOT: { prefix: 'OA', name: '调拨出库单', tab: 'out', subTab: null },
+            // 入库退货单
+            IN_PURCHASE_RETURN: { prefix: 'IPR', name: '原料入库退货单', tab: 'return', subTab: 'inReturn' },
+            // 出库退货单
+            OUT_PRODUCTION_RETURN: { prefix: 'OPR', name: '生产领料退货单', tab: 'return', subTab: 'outReturn' },
+            OUT_REPAIR_RETURN: { prefix: 'ORR', name: '补领料退货单', tab: 'return', subTab: 'outReturn' },
+            OUT_COMMON_RETURN: { prefix: 'OCR', name: '通用领料退货单', tab: 'return', subTab: 'outReturn' },
+            // 调拨单
+            ALLOT: { prefix: 'A', name: '调拨单', tab: 'allot', subTab: null },
+            // 生产订单
+            PRODUCTION: { prefix: 'P', name: '生产订单', tab: 'out', subTab: null }
+        };
+
+        // 前缀到配置的映射（用于扫码识别）
+        const PREFIX_MAP = {};
+        Object.values(OrderPrefix).forEach(config => {
+            PREFIX_MAP[config.prefix] = config;
+        });
+
+        new Vue({
+            el: '#app',
+            data: {
+                // Toast 提示
+                toasts: [],
+                // Tab 导航
+                tabs: [
+                    { key: 'in', label: '入库' },
+                    { key: 'out', label: '出库' },
+                    { key: 'allot', label: '调拨' },
+                    { key: 'return', label: '退货' },
+                    { key: 'location', label: '上下架' }
+                ],
+                activeTab: 'in',
+                returnTab: 'inReturn',
+                locationTab: 'putOn',
+
+                // 单号前缀列表（用于显示）
+                prefixList: [
+                    OrderPrefix.IN_PURCHASE,
+                    OrderPrefix.IN_ALLOT,
+                    OrderPrefix.OUT_PRODUCTION,
+                    OrderPrefix.OUT_REPAIR,
+                    OrderPrefix.OUT_COMMON,
+                    OrderPrefix.OUT_ALLOT,
+                    OrderPrefix.IN_PURCHASE_RETURN,
+                    OrderPrefix.OUT_PRODUCTION_RETURN,
+                    OrderPrefix.ALLOT,
+                    OrderPrefix.PRODUCTION
+                ],
+
+                // 扫码相关
+                scanResult: '',
+                scanType: '',  // 扫描识别的单据类型
+                history: [],
+
+                // 仓库列表
+                warehouseList: [],
+
+                // 入库表单
+                inForm: { orderNo: '', locationCode: '' },
+                inOrder: {},
+                inOrderError: '',
+                inLoading: false,
+
+                // 出库表单
+                outForm: { orderNo: '' },
+                outOrder: {},
+                outOrderError: '',
+                outLoading: false,
+                outSelectedList: [], // 已选中的物料列表
+
+                // 调拨表单
+                allotForm: { allotNo: '', destLocationCode: '' },
+                allotOrder: {},
+                allotOrderError: '',
+                allotLoading: false,
+                allotSelectedList: [], // 已选拣货物料
+
+                // 入库退货
+                inReturnForm: { returnNo: '', labelId: '', quantity: null },
+                inReturnOrder: {},
+                inReturnError: '',
+                inReturnLoading: false,
+                inReturnReceivedList: [],
+
+                // 出库退货
+                outReturnForm: { returnNo: '' },
+                outReturnOrder: {},
+                outReturnError: '',
+                outReturnLoading: false,
+
+                // 上下架
+                locationForm: { warehouseCode: '', locationCode: '', labelId: '', quantity: null },
+                locationMatList: [],
+                locationLoading: false
+            },
+            mounted() {
+                this.loadHistory();
+                this.loadWarehouseList();
+            },
+            methods: {
+                // Toast 提示
+                showToast(message, type = 'info') {
+                    const toast = { message, type };
+                    this.toasts.push(toast);
+                    setTimeout(() => {
+                        this.toasts.shift();
+                    }, 3000);
+                },
+
+                // 扫码触发
+                triggerUpload() {
+                    this.$refs.fileInput.click();
+                },
+
+                async handleFileChange(e) {
+                    const file = e.target.files[0];
+                    if (file) {
+                        await this.parseQRCode(file);
+                    }
+                    e.target.value = '';
+                },
+
+                async handleDrop(e) {
+                    const file = e.dataTransfer.files[0];
+                    if (file && file.type.startsWith('image/')) {
+                        await this.parseQRCode(file);
+                    }
+                },
+
+                // 解析二维码
+                async parseQRCode(file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = new Image();
+                        img.onload = () => {
+                            const canvas = document.createElement('canvas');
+                            canvas.width = img.width;
+                            canvas.height = img.height;
+                            const ctx = canvas.getContext('2d');
+                            ctx.drawImage(img, 0, 0);
+
+                            const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                            const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+                            if (code) {
+                                this.scanResult = code.data;
+                                this.addScanHistory(code.data, 'success');
+                                this.handleScanResult(code.data);
+                            } else {
+                                this.scanResult = '';
+                                this.addScanHistory('识别失败', 'fail');
+                                this.showToast('未识别到二维码，请上传清晰的图片', 'error');
+                            }
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                },
+
+                // 添加扫描历史
+                async addScanHistory(content, status) {
+                    this.history.unshift({
+                        time: new Date().toLocaleTimeString(),
+                        content,
+                        status
+                    });
+                    if (this.history.length > 50) {
+                        this.history.pop();
+                    }
+                },
+
+                /**
+                 * 识别单号类型
+                 * @param {string} code 扫描的代码
+                 * @returns {Object|null} { prefix, name, tab, subTab } 或 null
+                 */
+                identifyOrderType(code) {
+                    if (!code) return null;
+
+                    // 按前缀长度降序排列检查（先检查长前缀，避免误判）
+                    const sortedPrefixes = Object.keys(PREFIX_MAP).sort((a, b) => b.length - a.length);
+                    for (const prefix of sortedPrefixes) {
+                        if (code.startsWith(prefix)) {
+                            const config = PREFIX_MAP[prefix];
+                            if (config) {
+                                return { prefix, ...config };
+                            }
+                        }
+                    }
+                    return null;
+                },
+
+                /**
+                 * 自动生成单号
+                 * @param {string} prefix 单号前缀
+                 * @returns {string} 生成的单号
+                 */
+                generateOrderNo(prefix) {
+                    const now = new Date();
+                    const year = now.getFullYear();
+                    const month = String(now.getMonth() + 1).padStart(2, '0');
+                    const day = String(now.getDate()).padStart(2, '0');
+                    const hour = String(now.getHours()).padStart(2, '0');
+                    const minute = String(now.getMinutes()).padStart(2, '0');
+                    const random = Math.floor(Math.random() * 90 + 10); // 10-99
+                    return prefix + year + month + day + hour + minute + random;
+                },
+
+                /**
+                 * 根据当前tab生成对应类型的单号
+                 */
+                generateOrderNoByTab() {
+                    let prefix = '';
+                    let field = '';
+                    let form = null;
+
+                    if (this.activeTab === 'in') {
+                        prefix = ORDER_PREFIX.IN_PURCHASE;
+                        field = 'orderNo';
+                        form = this.inForm;
+                    } else if (this.activeTab === 'out') {
+                        // 默认生成生产领料单
+                        prefix = ORDER_PREFIX.OUT_PROD;
+                        field = 'orderNo';
+                        form = this.outForm;
+                    } else if (this.activeTab === 'allot') {
+                        prefix = ORDER_PREFIX.ALLOT;
+                        field = 'allotNo';
+                        form = this.allotForm;
+                    } else if (this.activeTab === 'return') {
+                        if (this.returnTab === 'inReturn') {
+                            prefix = ORDER_PREFIX.IN_PURCHASE_RETURN;
+                            field = 'returnNo';
+                            form = this.inReturnForm;
+                        } else {
+                            prefix = ORDER_PREFIX.OUT_PROD_RETURN;
+                            field = 'returnNo';
+                            form = this.outReturnForm;
+                        }
+                    }
+
+                    if (prefix && form) {
+                        const orderNo = this.generateOrderNo(prefix);
+                        this.$set(form, field, orderNo);
+                        this.showToast('已生成单号：' + orderNo, 'success');
+                        return orderNo;
+                    }
+                    return null;
+                },
+
+                // 处理扫码结果
+                handleScanResult(result) {
+                    let code = result;
+                    // 处理二维码内容中的冒号分隔符
+                    if (result.includes(':')) {
+                        code = result.split(':').pop(); // 取最后一部分
+                    }
+
+                    console.log('扫码结果:', code);
+
+                    // 清除之前的识别类型
+                    this.scanType = '';
+
+                    // 识别单号类型
+                    const orderType = this.identifyOrderType(code);
+
+                    if (orderType) {
+                        // 记录识别的单据类型
+                        this.scanType = orderType.name;
+
+                        // 跳转到对应的tab
+                        this.activeTab = orderType.tab;
+                        if (orderType.subTab) {
+                            if (this.activeTab === 'return') {
+                                this.returnTab = orderType.subTab;
+                            } else if (this.activeTab === 'location') {
+                                this.locationTab = orderType.subTab;
+                            }
+                        }
+
+                        // 填充单号并查询
+                        this.showToast('识别到' + orderType.name + '：' + code, 'success');
+                        this.fillOrderNoAndLoad(orderType, code);
+                    }
+                    // 纯数字可能是标签ID
+                    else if (/^\d+$/.test(code)) {
+                        this.handleLabelOrLocation(code);
+                    }
+                    // 包含横线的可能是货位编码
+                    else if (code.includes('-')) {
+                        this.handleLabelOrLocation(code);
+                    }
+                    // 其他情况当作标签或货位处理
+                    else {
+                        this.handleLabelOrLocation(code);
+                    }
+                },
+
+                /**
+                 * 根据单据类型填充单号并加载数据
+                 */
+                fillOrderNoAndLoad(orderType, code) {
+                    const prefix = orderType.prefix;
+                    // 入库单
+                    if (prefix === OrderPrefix.IN_PURCHASE.prefix || prefix === OrderPrefix.IN_ALLOT.prefix) {
+                        this.inForm.orderNo = code;
+                        this.loadInOrder();
+                    }
+                    // 出库单
+                    else if (prefix === OrderPrefix.OUT_PRODUCTION.prefix ||
+                             prefix === OrderPrefix.OUT_REPAIR.prefix ||
+                             prefix === OrderPrefix.OUT_COMMON.prefix ||
+                             prefix === OrderPrefix.OUT_ALLOT.prefix) {
+                        this.outForm.orderNo = code;
+                        this.loadOutOrder();
+                    }
+                    // 入库退货单
+                    else if (prefix === OrderPrefix.IN_PURCHASE_RETURN.prefix) {
+                        this.inReturnForm.returnNo = code;
+                        this.loadInReturn();
+                    }
+                    // 出库退货单
+                    else if (prefix === OrderPrefix.OUT_PRODUCTION_RETURN.prefix ||
+                             prefix === OrderPrefix.OUT_REPAIR_RETURN.prefix ||
+                             prefix === OrderPrefix.OUT_COMMON_RETURN.prefix) {
+                        this.outReturnForm.returnNo = code;
+                        this.loadOutReturn();
+                    }
+                    // 调拨单
+                    else if (prefix === OrderPrefix.ALLOT.prefix) {
+                        this.allotForm.allotNo = code;
+                        this.loadAllotOrder();
+                    }
+                    // 生产订单
+                    else if (prefix === OrderPrefix.PRODUCTION.prefix) {
+                        this.outForm.orderNo = code;
+                        this.loadOutOrder();
+                    }
+                },
+
+                /**
+                 * 处理标签ID或货位编码
+                 */
+                handleLabelOrLocation(code) {
+                    // 判断是否为货位编码（通常包含横线或特定格式）
+                    const isLocationCode = code.includes('-') && /^[A-Za-z0-9\-]+$/.test(code);
+
+                    if (this.activeTab === 'out') {
+                        // 出库模块现在使用勾选方式，不再需要扫描标签
+                        this.showToast('出库作业请在下方物料明细中勾选物料', 'warning');
+                    } else if (this.activeTab === 'allot') {
+                        if (isLocationCode && !this.allotForm.srcLocationCode) {
+                            this.allotForm.srcLocationCode = code;
+                            this.showToast('已填入源货位：' + code, 'success');
+                        } else {
+                            this.allotForm.labelId = code;
+                            this.showToast('已填入物料标签：' + code, 'success');
+                        }
+                    } else if (this.activeTab === 'return') {
+                        if (this.returnTab === 'inReturn') {
+                            this.inReturnForm.labelId = code;
+                            this.showToast('已填入退货物料标签：' + code, 'success');
+                        } else {
+                            this.outReturnForm.labelId = code;
+                            this.showToast('已填入退货物料标签：' + code, 'success');
+                        }
+                    } else if (this.activeTab === 'location') {
+                        if (isLocationCode) {
+                            this.locationForm.locationCode = code;
+                            this.showToast('已填入货位编码：' + code, 'success');
+                            this.loadLocationMatList();
+                        } else {
+                            this.locationForm.labelId = code;
+                            this.showToast('已填入物料标签：' + code, 'success');
+                        }
+                    } else if (this.activeTab === 'in') {
+                        // 入库tab下，如果有可能是货位编码
+                        if (isLocationCode) {
+                            this.inForm.locationCode = code;
+                            this.showToast('已填入货位编码：' + code, 'success');
+                        } else {
+                            this.showToast('入库作业请先扫描入库单号', 'warning');
+                        }
+                    } else {
+                        this.showToast('请先扫描单据或选择操作类型', 'warning');
+                    }
+                },
+
+                copyResult() {
+                    // 复制时去掉 "order:" 前缀
+                    let textToCopy = this.scanResult;
+                    if (textToCopy && textToCopy.startsWith('order:')) {
+                        textToCopy = textToCopy.substring(6);
+                    }
+                    navigator.clipboard.writeText(textToCopy).then(() => {
+                        this.showToast('已复制：' + textToCopy, 'success');
+                    });
+                },
+
+                async loadHistory() {
+                    try {
+                        const res = await axios.get('/api/history');
+                        this.history = res.data.data || [];
+                    } catch (err) {
+                        console.error('加载历史失败', err);
+                    }
+                },
+
+                async clearHistory() {
+                    await axios.delete('/api/history');
+                    this.history = [];
+                    this.showToast('历史已清空', 'success');
+                },
+
+                async loadWarehouseList() {
+                    try {
+                        const res = await axios.get('/api/warehouse/listAll');
+                        if (Array.isArray(res.data)) {
+                            this.warehouseList = res.data;
+                        } else if (res.data.data) {
+                            this.warehouseList = res.data.data;
+                        } else if (res.data.rows) {
+                            this.warehouseList = res.data.rows;
+                        } else {
+                            this.warehouseList = [];
+                        }
+                    } catch (err) {
+                        console.error('加载仓库列表失败', err);
+                        this.warehouseList = [];
+                    }
+                },
+
+                // ========== 入库相关 ==========
+                async loadInOrder() {
+                    if (!this.inForm.orderNo) return;
+                    this.inOrderError = '';
+                    try {
+                        const res = await axios.get('/api/inOrder/' + this.inForm.orderNo);
+                        if (res.data.code === 200) {
+                            this.inOrder = res.data.data || {};
+                            this.showToast('已获取入库单信息', 'success');
+                        } else {
+                            this.inOrderError = res.data.msg || '获取入库单失败';
+                            this.inOrder = {};
+                        }
+                    } catch (err) {
+                        this.inOrderError = '获取入库单失败：' + (err.response?.data?.msg || err.message);
+                        this.inOrder = {};
+                    }
+                },
+
+                async submitIn() {
+                    if (!this.inForm.orderNo) {
+                        this.showToast('请输入入库单号', 'error');
+                        return;
+                    }
+                    if (!this.inForm.locationCode) {
+                        this.showToast('请输入货位编码', 'error');
+                        return;
+                    }
+                    if (!this.inOrder.detailList || this.inOrder.detailList.length === 0) {
+                        this.showToast('入库单明细为空', 'error');
+                        return;
+                    }
+
+                    this.inLoading = true;
+                    try {
+                        // 从第一个明细中获取仓库编码
+                        const warehouseCode = this.inOrder.detailList[0].warehouseCode;
+                        if (!warehouseCode) {
+                            this.showToast('入库单缺少仓库信息', 'error');
+                            this.inLoading = false;
+                            return;
+                        }
+
+                        const submitData = {
+                            orderNo: this.inForm.orderNo,
+                            orderType: this.inOrder.orderType,
+                            detailList: (this.inOrder.detailList || []).map(item => ({
+                                ...item,
+                                warehouseCode: warehouseCode,
+                                locationCode: this.inForm.locationCode,
+                                qualifiedQuantity: item.qualifiedQuantity || item.quantity
+                            }))
+                        };
+
+                        const res = await axios.post('/api/submitIn', submitData);
+                        if (res.data.code === 200) {
+                            this.showToast('入库成功！', 'success');
+                            this.resetInForm();
+                        } else {
+                            this.showToast(res.data.msg || '入库失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('入库失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.inLoading = false;
+                    }
+                },
+
+                resetInForm() {
+                    this.inForm = { orderNo: '', locationCode: '' };
+                    this.inOrder = {};
+                    this.inOrderError = '';
+                },
+
+                // ========== 出库相关 ==========
+                async loadOutOrder() {
+                    if (!this.outForm.orderNo) return;
+                    this.outOrderError = '';
+                    try {
+                        const res = await axios.get('/api/outOrder/' + this.outForm.orderNo);
+                        if (res.data.code === 200) {
+                            this.outOrder = res.data.data || {};
+                            // 为每个明细添加 selected 属性和待领数量计算
+                            if (this.outOrder.detailList) {
+                                this.outOrder.detailList.forEach(item => {
+                                    this.$set(item, 'selected', false);
+                                    item.pendingQuantity = (item.quantity || 0) - (item.receivedQuantity || 0);
+                                });
+                            }
+                            this.showToast('已获取出库单信息', 'success');
+                        } else {
+                            this.outOrderError = res.data.msg || '获取出库单失败';
+                            this.outOrder = {};
+                        }
+                    } catch (err) {
+                        this.outOrderError = '获取出库单失败：' + (err.response?.data?.msg || err.message);
+                        this.outOrder = {};
+                    }
+                },
+
+                // 勾选/取消勾选物料
+                toggleOutItemSelection(item) {
+                    if (item.selected) {
+                        // 添加到已选列表
+                        const existItem = this.outSelectedList.find(i => i.matCode === item.matCode);
+                        if (!existItem) {
+                            this.outSelectedList.push({
+                                matCode: item.matCode,
+                                matName: item.matName,
+                                pendingQuantity: item.pendingQuantity,
+                                inputQuantity: item.pendingQuantity // 默认领全部待领数量
+                            });
+                        }
+                    } else {
+                        // 从已选列表移除
+                        this.removeOutSelected(item.matCode);
+                    }
+                },
+
+                // 从已选列表移除物料
+                removeOutSelected(matCode) {
+                    const idx = this.outSelectedList.findIndex(i => i.matCode === matCode);
+                    if (idx > -1) {
+                        this.outSelectedList.splice(idx, 1);
+                    }
+                    // 同时取消明细中的勾选状态
+                    const detail = this.outOrder.detailList.find(i => i.matCode === matCode);
+                    if (detail) {
+                        detail.selected = false;
+                    }
+                },
+
+                async submitOut() {
+                    if (this.outSelectedList.length === 0) {
+                        this.showToast('请选择需要领料的物料', 'error');
+                        return;
+                    }
+
+                    // 校验数量
+                    let hasError = false;
+                    this.outSelectedList.forEach(item => {
+                        if (!item.inputQuantity || item.inputQuantity <= 0) {
+                            this.showToast('请输入有效的领料数量', 'error');
+                            hasError = true;
+                        }
+                        if (item.inputQuantity > item.pendingQuantity) {
+                            this.showToast('领料数量不能超过待领数量', 'error');
+                            hasError = true;
+                        }
+                    });
+                    if (hasError) return;
+
+                    this.outLoading = true;
+                    try {
+                        const receivedMap = {};
+                        this.outSelectedList.forEach(item => {
+                            receivedMap[item.matCode] = item.inputQuantity;
+                        });
+
+                        const res = await axios.post('/api/submitOut', {
+                            orderNo: this.outForm.orderNo,
+                            receivedMap: receivedMap
+                        });
+
+                        if (res.data.code === 200) {
+                            this.showToast('出库成功！', 'success');
+                            this.resetOutForm();
+                        } else {
+                            this.showToast(res.data.msg || '出库失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('出库失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.outLoading = false;
+                    }
+                },
+
+                resetOutForm() {
+                    this.outForm = { orderNo: '' };
+                    this.outOrder = {};
+                    this.outOrderError = '';
+                    this.outSelectedList = [];
+                },
+
+                // ========== 调拨相关 ==========
+                async loadAllotOrder() {
+                    if (!this.allotForm.allotNo) return;
+                    this.allotOrderError = '';
+                    try {
+                        const res = await axios.get('/api/allotOrder/' + this.allotForm.allotNo);
+                        if (res.data.code === 200) {
+                            this.allotOrder = res.data.data || {};
+                            // 为每个明细添加 selected 属性
+                            if (this.allotOrder.detailList) {
+                                this.allotOrder.detailList.forEach(item => {
+                                    this.$set(item, 'selected', false);
+                                });
+                            }
+                            this.showToast('已获取调拨单信息', 'success');
+                        } else {
+                            this.allotOrderError = res.data.msg || '获取调拨单失败';
+                            this.allotOrder = {};
+                        }
+                    } catch (err) {
+                        this.allotOrderError = '获取调拨单失败：' + (err.response?.data?.msg || err.message);
+                        this.allotOrder = {};
+                    }
+                },
+
+                // 勾选/取消勾选拣货物料
+                toggleAllotItemSelection(item) {
+                    if (item.selected) {
+                        const existItem = this.allotSelectedList.find(i => i.matCode === item.matCode);
+                        if (!existItem) {
+                            this.allotSelectedList.push({
+                                matCode: item.matCode,
+                                matName: item.matName,
+                                matGroup: item.matGroup,
+                                matClass: item.matClass,
+                                batch: item.batch,
+                                supplierCode: item.supplierCode,
+                                labelId: item.labelId,
+                                quantity: item.quantity,
+                                srcLocationCode: item.srcLocationCode || '',
+                                inputQuantity: item.quantity // 默认调拨数量
+                            });
+                        }
+                    } else {
+                        this.removeAllotSelected(item.matCode);
+                    }
+                },
+
+                // 从已选列表移除拣货物料
+                removeAllotSelected(matCode) {
+                    const idx = this.allotSelectedList.findIndex(i => i.matCode === matCode);
+                    if (idx > -1) {
+                        this.allotSelectedList.splice(idx, 1);
+                    }
+                    const detail = this.allotOrder.detailList.find(i => i.matCode === matCode);
+                    if (detail) {
+                        detail.selected = false;
+                    }
+                },
+
+                async submitAllotPicking() {
+                    if (this.allotSelectedList.length === 0) {
+                        this.showToast('请选择拣货物料', 'error');
+                        return;
+                    }
+
+                    // 校验
+                    let hasError = false;
+                    this.allotSelectedList.forEach(item => {
+                        if (!item.srcLocationCode) {
+                            this.showToast('请输入源货位', 'error');
+                            hasError = true;
+                        }
+                        if (!item.inputQuantity || item.inputQuantity <= 0) {
+                            this.showToast('请输入有效的拣货数量', 'error');
+                            hasError = true;
+                        }
+                    });
+                    if (hasError) return;
+
+                    this.allotLoading = true;
+                    try {
+                        const submitData = {
+                            allotNo: this.allotForm.allotNo,
+                            allotProgress: 'created',
+                            srcWarehouseCode: this.allotOrder.srcWarehouseCode,
+                            destWarehouseCode: this.allotOrder.destWarehouseCode,
+                            detailList: this.allotSelectedList.map(item => ({
+                                labelId: item.labelId,
+                                matCode: item.matCode,
+                                matName: item.matName,
+                                matGroup: item.matGroup,
+                                matClass: item.matClass,
+                                batch: item.batch,
+                                supplierCode: item.supplierCode,
+                                quantity: item.inputQuantity,
+                                srcLocationCode: item.srcLocationCode
+                            }))
+                        };
+
+                        const res = await axios.post('/api/submitAllot', submitData);
+                        if (res.data.code === 200) {
+                            this.showToast('拣货出库成功！', 'success');
+                            this.loadAllotOrder(); // 刷新状态
+                            this.allotSelectedList = [];
+                        } else {
+                            this.showToast(res.data.msg || '拣货失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('拣货失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.allotLoading = false;
+                    }
+                },
+
+                async submitAllotReceive() {
+                    if (!this.allotForm.destLocationCode) {
+                        this.showToast('请输入目标货位', 'error');
+                        return;
+                    }
+
+                    this.allotLoading = true;
+                    try {
+                        const submitData = {
+                            allotNo: this.allotForm.allotNo,
+                            allotProgress: 'picking',
+                            destWarehouseCode: this.allotOrder.destWarehouseCode,
+                            detailList: (this.allotOrder.detailList || []).map(item => ({
+                                detailId: item.detailId,
+                                labelId: item.labelId,
+                                matCode: item.matCode,
+                                matName: item.matName,
+                                matGroup: item.matGroup,
+                                matClass: item.matClass,
+                                batch: item.batch,
+                                supplierCode: item.supplierCode,
+                                signQuantity: item.signQuantity || item.quantity,
+                                destLocationCode: this.allotForm.destLocationCode
+                            }))
+                        };
+
+                        const res = await axios.post('/api/submitAllot', submitData);
+                        if (res.data.code === 200) {
+                            this.showToast('接收入库成功！调拨已完成', 'success');
+                            this.resetAllotForm();
+                        } else {
+                            this.showToast(res.data.msg || '接收失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('接收失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.allotLoading = false;
+                    }
+                },
+
+                // 确认调拨单，生成出库单
+                async confirmAllot() {
+                    if (!this.allotForm.allotNo) {
+                        this.showToast('请输入调拨单号', 'error');
+                        return;
+                    }
+
+                    this.allotLoading = true;
+                    try {
+                        const res = await axios.post('/api/confirmAllot', { allotNo: this.allotForm.allotNo });
+                        if (res.data.code === 200) {
+                            this.showToast(res.data.msg || '确认成功！已生成出库单', 'success');
+                            this.loadAllotOrder(); // 刷新状态
+                        } else {
+                            this.showToast(res.data.msg || '确认失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('确认失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.allotLoading = false;
+                    }
+                },
+
+                // 跳转到出库模块
+                goToOutTab() {
+                    this.activeTab = 'out';
+                    this.showToast('请在出库模块扫描调拨出库单（OA开头）', 'info');
+                },
+
+                resetAllotForm() {
+                    this.allotForm = { allotNo: '', destLocationCode: '' };
+                    this.allotOrder = {};
+                    this.allotOrderError = '';
+                    this.allotSelectedList = [];
+                },
+
+                // ========== 入库退货相关 ==========
+                async loadInReturn() {
+                    if (!this.inReturnForm.returnNo) return;
+                    this.inReturnError = '';
+                    try {
+                        const res = await axios.get('/api/inReturn/' + this.inReturnForm.returnNo);
+                        if (res.data.code === 200) {
+                            this.inReturnOrder = res.data.data || {};
+                            this.showToast('已获取入库退货单信息', 'success');
+                        } else {
+                            this.inReturnError = res.data.msg || '获取入库退货单失败';
+                            this.inReturnOrder = {};
+                        }
+                    } catch (err) {
+                        this.inReturnError = '获取入库退货单失败：' + (err.response?.data?.msg || err.message);
+                        this.inReturnOrder = {};
+                    }
+                },
+
+                async submitInReturn() {
+                    if (!this.inReturnForm.returnNo) {
+                        this.showToast('请先扫描入库退货单', 'error');
+                        return;
+                    }
+                    if (this.inReturnReceivedList.length === 0) {
+                        this.showToast('请添加退货物料标签', 'error');
+                        return;
+                    }
+
+                    this.inReturnLoading = true;
+                    try {
+                        // 构建退货Map: labelId -> 数量
+                        const returnMap = {};
+                        this.inReturnReceivedList.forEach(item => {
+                            returnMap[item.labelId] = item.quantity;
+                        });
+
+                        const submitData = {
+                            returnNo: this.inReturnForm.returnNo,
+                            returnMap: returnMap
+                        };
+
+                        const res = await axios.post('/api/submitInReturn', submitData);
+                        if (res.data.code === 200) {
+                            this.showToast('入库退货成功！', 'success');
+                            this.resetInReturnForm();
+                        } else {
+                            this.showToast(res.data.msg || '入库退货失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('入库退货失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.inReturnLoading = false;
+                    }
+                },
+
+                resetInReturnForm() {
+                    this.inReturnForm = { returnNo: '', labelId: '', quantity: null };
+                    this.inReturnOrder = {};
+                    this.inReturnError = '';
+                    this.inReturnReceivedList = [];
+                },
+
+                addToInReturnReceived() {
+                    if (!this.inReturnForm.labelId) {
+                        this.showToast('请输入物料标签ID', 'error');
+                        return;
+                    }
+                    if (!this.inReturnForm.quantity) {
+                        this.showToast('请输入退货数量', 'error');
+                        return;
+                    }
+                    this.inReturnReceivedList.push({
+                        labelId: this.inReturnForm.labelId,
+                        quantity: this.inReturnForm.quantity
+                    });
+                    this.inReturnForm.labelId = '';
+                    this.inReturnForm.quantity = null;
+                    this.showToast('已添加标签', 'success');
+                },
+
+                removeInReturnReceived(index) {
+                    this.inReturnReceivedList.splice(index, 1);
+                },
+
+                // ========== 出库退货相关 ==========
+                async loadOutReturn() {
+                    if (!this.outReturnForm.returnNo) return;
+                    this.outReturnError = '';
+                    try {
+                        const res = await axios.get('/api/outReturn/' + this.outReturnForm.returnNo);
+                        if (res.data.code === 200) {
+                            this.outReturnOrder = res.data.data || {};
+                            this.showToast('已获取出库退货单信息', 'success');
+                        } else {
+                            this.outReturnError = res.data.msg || '获取出库退货单失败';
+                            this.outReturnOrder = {};
+                        }
+                    } catch (err) {
+                        this.outReturnError = '获取出库退货单失败：' + (err.response?.data?.msg || err.message);
+                        this.outReturnOrder = {};
+                    }
+                },
+
+                async submitOutReturn() {
+                    this.outReturnLoading = true;
+                    try {
+                        const submitData = {
+                            returnNo: this.outReturnForm.returnNo,
+                            warehouseCode: this.outReturnOrder.warehouseCode,
+                            workshopCode: this.outReturnOrder.workshopCode,
+                            returnType: this.outReturnOrder.returnType,
+                            detailList: (this.outReturnOrder.detailList || []).map(item => ({
+                                ...item,
+                                returnQuantity: item.quantity
+                            }))
+                        };
+
+                        const res = await axios.post('/api/submitOutReturn', submitData);
+                        if (res.data.code === 200) {
+                            this.showToast('出库退货成功！', 'success');
+                            this.resetOutReturnForm();
+                        } else {
+                            this.showToast(res.data.msg || '出库退货失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('出库退货失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.outReturnLoading = false;
+                    }
+                },
+
+                resetOutReturnForm() {
+                    this.outReturnForm = { returnNo: '' };
+                    this.outReturnOrder = {};
+                    this.outReturnError = '';
+                },
+
+                // ========== 上下架相关 ==========
+                async loadLocationMatList() {
+                    if (!this.locationForm.warehouseCode || !this.locationForm.locationCode) {
+                        return;
+                    }
+                    try {
+                        const res = await axios.get('/api/locationMatList', {
+                            params: {
+                                warehouseCode: this.locationForm.warehouseCode,
+                                locationCode: this.locationForm.locationCode
+                            }
+                        });
+                        if (res.data.code === 200) {
+                            this.locationMatList = res.data.data || [];
+                        } else {
+                            this.locationMatList = [];
+                        }
+                    } catch (err) {
+                        console.error('获取货位物料失败', err);
+                        this.locationMatList = [];
+                    }
+                },
+
+                async submitPutOn() {
+                    if (!this.locationForm.warehouseCode) {
+                        this.showToast('请选择仓库', 'error');
+                        return;
+                    }
+                    if (!this.locationForm.locationCode) {
+                        this.showToast('请输入货位编码', 'error');
+                        return;
+                    }
+                    if (!this.locationForm.labelId) {
+                        this.showToast('请扫描物料标签', 'error');
+                        return;
+                    }
+                    if (!this.locationForm.quantity) {
+                        this.showToast('请输入数量', 'error');
+                        return;
+                    }
+
+                    this.locationLoading = true;
+                    try {
+                        const submitData = {
+                            warehouseCode: this.locationForm.warehouseCode,
+                            locationCode: this.locationForm.locationCode,
+                            matLabelList: [{
+                                labelId: this.locationForm.labelId,
+                                usableQuantity: this.locationForm.quantity,
+                                receivedQuantity: 0
+                            }]
+                        };
+
+                        const res = await axios.post('/api/submitPutOn', submitData);
+                        if (res.data.code === 200) {
+                            this.showToast('上架成功！', 'success');
+                            this.loadLocationMatList();
+                            this.locationForm.labelId = '';
+                            this.locationForm.quantity = null;
+                        } else {
+                            this.showToast(res.data.msg || '上架失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('上架失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.locationLoading = false;
+                    }
+                },
+
+                async submitPutOff() {
+                    if (!this.locationForm.warehouseCode) {
+                        this.showToast('请选择仓库', 'error');
+                        return;
+                    }
+                    if (!this.locationForm.locationCode) {
+                        this.showToast('请输入货位编码', 'error');
+                        return;
+                    }
+                    if (!this.locationForm.labelId) {
+                        this.showToast('请扫描物料标签', 'error');
+                        return;
+                    }
+                    if (!this.locationForm.quantity) {
+                        this.showToast('请输入数量', 'error');
+                        return;
+                    }
+
+                    this.locationLoading = true;
+                    try {
+                        const submitData = {
+                            warehouseCode: this.locationForm.warehouseCode,
+                            locationCode: this.locationForm.locationCode,
+                            matLabelList: [{
+                                labelId: this.locationForm.labelId,
+                                usableQuantity: this.locationForm.quantity,
+                                receivedQuantity: 0
+                            }]
+                        };
+
+                        const res = await axios.post('/api/submitPutOff', submitData);
+                        if (res.data.code === 200) {
+                            this.showToast('下架成功！', 'success');
+                            this.loadLocationMatList();
+                            this.locationForm.labelId = '';
+                            this.locationForm.quantity = null;
+                        } else {
+                            this.showToast(res.data.msg || '下架失败', 'error');
+                        }
+                    } catch (err) {
+                        this.showToast('下架失败：' + (err.response?.data?.msg || err.message), 'error');
+                    } finally {
+                        this.locationLoading = false;
+                    }
+                },
+
+                resetLocationForm() {
+                    this.locationForm = { warehouseCode: '', locationCode: '', labelId: '', quantity: null };
+                    this.locationMatList = [];
+                }
+            }
+        });
+    </script>
+</body>
+</html>

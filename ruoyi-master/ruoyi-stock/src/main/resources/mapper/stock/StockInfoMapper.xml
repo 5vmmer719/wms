@@ -155,6 +155,32 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             and supplier_code = #{supplierCode}
     </update>
 
+    <update id="updateQuantityByMatCode">
+        update stock_info
+        set quantity = quantity - #{quantity}
+        where
+            warehouse_code = #{warehouseCode}
+            and mat_code = #{matCode}
+            and del_flag = 0
+            and quantity >= #{quantity}
+        limit 1
+    </update>
+
+    <update id="updateQuantityByMatCodeAndBatch">
+        update stock_info
+        set quantity = quantity - #{quantity}
+        where
+            warehouse_code = #{warehouseCode}
+            and mat_code = #{matCode}
+            and batch = #{batch}
+            <if test="supplierCode != null and supplierCode != ''">
+                and supplier_code = #{supplierCode}
+            </if>
+            and del_flag = 0
+            and quantity >= #{quantity}
+        limit 1
+    </update>
+
     <update id="deleteStockInfoByInfoId" parameterType="Long">
         update stock_info set del_flag = 1 where info_id = #{infoId}
     </update>

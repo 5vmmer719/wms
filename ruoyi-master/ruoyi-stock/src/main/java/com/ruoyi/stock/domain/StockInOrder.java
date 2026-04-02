@@ -57,6 +57,22 @@ public class StockInOrder extends BaseEntity {
     private String checkBy;
 
     /**
+     * 关联调拨单号（调拨入库时使用）
+     */
+    @Excel(name = "调拨单号")
+    private String allotNo;
+
+    /**
+     * 仓库编码
+     */
+    private String warehouseCode;
+
+    /**
+     * 仓库名称
+     */
+    private String warehouseName;
+
+    /**
      * 删除标识
      */
     private String delFlag;

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -57,8 +58,9 @@ public class BaseWarehouseController extends BaseController {
     }
 
     /**
-     * 查询仓库列表（所有） - 下拉选择框数据，登录即可访问
+     * 查询仓库列表（所有） - 扫码端使用，匿名访问
      */
+    @Anonymous
     @GetMapping("/listAll")
     public List<BaseWarehouse> listAll(BaseWarehouse baseWarehouse) {
         List<BaseWarehouse> list = baseWarehouseService.selectBaseWarehouseList(baseWarehouse);

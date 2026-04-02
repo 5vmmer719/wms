@@ -10,7 +10,7 @@
         />
       </el-form-item>
       <el-form-item label="单据状态" prop="orderStatus">
-        <el-select v-model="queryParams.orderStatus" placeholder="请选择">
+        <el-select v-model="queryParams.orderStatus" placeholder="请选择" clearable>
           <el-option
             v-for="item in orderStatusOptions"
             :key="item.value"
@@ -179,36 +179,42 @@
             </el-form-item>
           </el-col>
           <el-col :span="7">
-            <el-form-item label="仓库" prop="warehouseCode">
-              <el-select v-model="form.warehouseCode" placeholder="请选择仓库">
-                <el-option
-                  v-for="item in warehouseList"
-                  :key="item.warehouseCode"
-                  :label="item.warehouseName"
-                  :value="item.warehouseCode"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="7">
             <el-form-item label="库管员" prop="warehouseKeeper">
               <el-input readonly placeholder="请选择库管员" v-model="form.warehouseKeeper">
                 <el-button slot="append" icon="el-icon-search" @click="openSelectKeeperDialog"></el-button>
               </el-input>
             </el-form-item>
           </el-col>
-          <el-col :span="3">
+          <el-col :span="7">
             <el-button type="success" style="margin-left: 20px;" @click="confirmSelectInfo">确认选择</el-button>
           </el-col>
         </el-row>
       </el-form>
       <el-table :data="outOrderDetailList" style="width: 100%">
-        <el-table-column label="行号" align="center" type="index" />
-        <el-table-column label="物料编码" align="center" prop="matCode"/>
-        <el-table-column label="物料名称" align="center" prop="matName"/>
-        <el-table-column label="图号" align="center" prop="figNum"/>
-        <el-table-column label="数量" align="center" prop="quantity"/>
-        <el-table-column label="单位" align="center" prop="unitCode">
+        <el-table-column label="行号" align="center" type="index" width="60"/>
+        <el-table-column label="物料编码" align="center" prop="matCode" width="100"/>
+        <el-table-column label="物料名称" align="center" prop="matName" width="120"/>
+        <el-table-column label="图号" align="center" prop="figNum" width="100"/>
+        <el-table-column label="需求数量" align="center" prop="quantity" width="80"/>
+        <el-table-column label="出库仓库" align="center" width="150">
+          <template slot-scope="scope">
+            <el-select v-model="scope.row.warehouseCode" placeholder="选择仓库" size="small" @change="handleWarehouseChange(scope.row, scope.$index)">
+              <el-option
+                v-for="item in (scope.row.availableWarehouses || warehouseList)"
+                :key="item.warehouseCode"
+                :label="item.warehouseName"
+                :value="item.warehouseCode"
+              ></el-option>
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column label="库存货位" align="center" prop="locationCode" width="180">
+          <template slot-scope="scope">
+            <el-tag v-if="scope.row.locationCode === '无库存'" type="danger">{{ scope.row.locationCode }}</el-tag>
+            <el-tag v-else type="success">{{ scope.row.warehouseName }} - {{ scope.row.locationCode }}</el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column label="单位" align="center" prop="unitCode" width="80">
           <template slot-scope="scope">
             <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
           </template>
@@ -243,6 +249,18 @@
               <span>{{form.orderNo}}</span>
             </el-form-item>
           </el-col>
+          <el-col :span="8">
+            <el-form-item label="单据类型：">
+              <span>{{form.orderTypeLabel}}</span>
+            </el-form-item>
+          </el-col>
+          <el-col :span="8">
+            <el-form-item label="单据状态：">
+              <span>{{form.orderStatusLabel}}</span>
+            </el-form-item>
+          </el-col>
+        </el-row>
+        <el-row>
           <el-col :span="8">
             <el-form-item label="仓库：">
               <span>{{form.warehouseName}}</span>
@@ -301,7 +319,14 @@
             <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
           </template>
         </el-table-column>
-        <el-table-column label="推荐货位" align="center" prop="locationCode"/>
+        <el-table-column label="仓库/货位" align="center" width="180">
+          <template slot-scope="scope">
+            <span v-if="scope.row.warehouseName || scope.row.locationCode">
+              {{ scope.row.warehouseName || '-' }} - {{ scope.row.locationCode || '-' }}
+            </span>
+            <span v-else>-</span>
+          </template>
+        </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" icon="el-icon-printer" @click="confirmPrintOutOrder">打 印</el-button>
@@ -312,7 +337,7 @@
 </template>
 
 <script>
-import { listOutOrder, getOutOrder, delOutOrder, addOutOrder, listOutOrderMatBomList, printOutOrder } from "@/api/stock/outOrder";
+import { listOutOrder, getOutOrder, delOutOrder, addOutOrder, listOutOrderMatBomList, printOutOrder, getMatLocation } from "@/api/stock/outOrder";
 import { listAllWorkshop } from "@/api/base/workshop";
 import { listAllWarehouse } from "@/api/base/warehouse";
 
@@ -349,7 +374,6 @@ export default {
         pageNum: 1,
         pageSize: 10,
         orderNo: null,
-        orderType: 'production',
         prodOrderNo: null,
         warehouseCode: null,
         workshopCode: null,
@@ -367,9 +391,6 @@ export default {
         prodOrderNo: [
           { required: true, message: "请选择生产订单", trigger: "blur" },
         ],
-        warehouseCode: [
-          { required: true, message: "请选择仓库", trigger: "blur" },
-        ],
         warehouseKeeper: [
           { required: true, message: "请选择库管员", trigger: "blur" },
         ],
@@ -380,7 +401,7 @@ export default {
 
       //单据状态
       orderStatusOptions:[
-        {value: 'created', label: '已创建'}, 
+        {value: 'created', label: '已创建'},
         {value: 'printed', label: '已打印'},
         {value: 'received', label: '已领料'},
       ],
@@ -567,9 +588,44 @@ export default {
     },
     //确认选择基础信息
     confirmSelectInfo(){
+      if(!this.form.prodOrderNo){
+        this.$modal.msgWarning("请先选择生产订单");
+        return;
+      }
       listOutOrderMatBomList(this.form).then(response => {
         this.outOrderDetailList = response;
+        // 检查是否有无库存的物料
+        let noStockList = response.filter(item => item.locationCode === '无库存');
+        if(noStockList && noStockList.length > 0){
+          this.$modal.msgWarning("部分物料库存不足，请注意查看库存状态");
+        }
       });
+    },
+    // 仓库选择变更时，更新货位信息
+    handleWarehouseChange(row, index){
+      if(row.warehouseCode){
+        // 查找选中仓库的名称
+        let selectedWarehouse = (row.availableWarehouses || this.warehouseList).find(
+          item => item.warehouseCode === row.warehouseCode
+        );
+        if(selectedWarehouse){
+          row.warehouseName = selectedWarehouse.warehouseName;
+        }
+        // 获取该物料在选定仓库的库存货位
+        getMatLocation(row.matCode, row.warehouseCode).then(response => {
+          if(response.msg === '无库存' || response.data === '无库存'){
+            row.locationCode = '无库存';
+            this.$modal.msgWarning(`物料【${row.matName}】在【${row.warehouseName}】无库存`);
+          } else {
+            row.locationCode = response.data;
+          }
+          // 强制更新视图
+          this.$set(this.outOrderDetailList, index, {...row});
+        });
+      } else {
+        row.locationCode = '';
+        row.warehouseName = '';
+      }
     },
   }
 };

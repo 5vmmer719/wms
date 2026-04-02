@@ -178,4 +178,12 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{detailId}
         </foreach>
     </update>
+
+    <insert id="insertStockAllotDetailList" parameterType="java.util.List">
+        insert into stock_allot_detail (allot_no, src_warehouse_code, dest_warehouse_code, src_location_code, dest_location_code, line_no, label_id, mat_code, mat_name, fd_code, fig_num, mat_group, mat_class, batch, quantity, sign_quantity, unit_code, supplier_code, supplier_name, del_flag, create_by, create_time)
+        values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.allotNo}, #{item.srcWarehouseCode}, #{item.destWarehouseCode}, #{item.srcLocationCode}, #{item.destLocationCode}, #{item.lineNo}, #{item.labelId}, #{item.matCode}, #{item.matName}, #{item.fdCode}, #{item.figNum}, #{item.matGroup}, #{item.matClass}, #{item.batch}, #{item.quantity}, #{item.signQuantity}, #{item.unitCode}, #{item.supplierCode}, #{item.supplierName}, '0', #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
 </mapper>

@@ -11,7 +11,8 @@ public enum InOrderTypeEnum {
 
     PURCHASE("purchase", "原料入库"),
     OUTSOURCING("outsourcing","外协入库"),
-    PRODUCTION("production", "车间入库");
+    PRODUCTION("production", "车间入库"),
+    ALLOT("allot", "调拨入库");
 
     private String value;
     private String label;

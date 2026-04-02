@@ -11,7 +11,8 @@ public enum OutOrderTypeEnum {
 
     PRODUCTION("production", "生产领料"),
     REPAIR("repair", "补领出库"),
-    COMMON("common", "销售出库");
+    COMMON("common", "销售出库"),
+    ALLOT("allot", "调拨出库");
 
     private String value;
     private String label;

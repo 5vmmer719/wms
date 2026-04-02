@@ -1,24 +1,26 @@
 package com.ruoyi.stock.service.impl;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
 import com.ruoyi.common.bean.typeEnum.AllotProgressEnum;
+import com.ruoyi.common.bean.typeEnum.InOrderTypeEnum;
 import com.ruoyi.common.bean.typeEnum.OrderStatusEnum;
+import com.ruoyi.common.bean.typeEnum.OutOrderTypeEnum;
 import com.ruoyi.common.bean.typeEnum.StockRecordTypeEnum;
 import com.ruoyi.common.core.domain.AjaxResult;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.OrderNoUtil;
 import com.ruoyi.common.utils.bean.BeanUtils;
-import com.ruoyi.stock.domain.StockAllotDetail;
-import com.ruoyi.stock.domain.StockInfo;
-import com.ruoyi.stock.domain.StockRecord;
+import com.ruoyi.stock.domain.*;
 import com.ruoyi.stock.mapper.*;
+import com.ruoyi.stock.service.IStockInOrderService;
+import com.ruoyi.stock.service.IStockOutOrderService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import com.ruoyi.stock.domain.StockAllotOrder;
 import com.ruoyi.stock.service.IStockAllotOrderService;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +42,14 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
     private StockInfoMapper stockInfoMapper;
     @Autowired
     private StockRecordMapper stockRecordMapper;
+    @Autowired
+    private StockOutOrderMapper stockOutOrderMapper;
+    @Autowired
+    private StockOutDetailMapper stockOutDetailMapper;
+    @Autowired
+    private IStockOutOrderService stockOutOrderService;
+    @Autowired
+    private IStockInOrderService stockInOrderService;
 
     /**
      * 查询调拨单
@@ -78,12 +88,38 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
      * @return 结果
      */
     @Override
+    @Transactional
     public int insertStockAllotOrder(String username, StockAllotOrder stockAllotOrder) {
-        stockAllotOrder.setAllotNo(OrderNoUtil.generateUniqueKey(OrderNoUtil.ALLOT_PREFIX));
+        String allotNo = OrderNoUtil.generateUniqueKey(OrderNoUtil.ALLOT_PREFIX);
+        Date nowDate = DateUtils.getNowDate();
+        stockAllotOrder.setAllotNo(allotNo);
         stockAllotOrder.setAllotStatus(OrderStatusEnum.CREATED.getValue());
         stockAllotOrder.setAllotProgress(AllotProgressEnum.CREATED.getValue());
         stockAllotOrder.setCreateBy(username);
-        stockAllotOrder.setCreateTime(DateUtils.getNowDate());
+        stockAllotOrder.setCreateTime(nowDate);
+        //调拨单详情
+        List<StockAllotDetail> detailList = stockAllotOrder.getDetailList();
+        if(CollectionUtils.isNotEmpty(detailList)){
+            int i = 1;
+            StockMatLabel label = null;
+            for(StockAllotDetail detail : detailList){
+                detail.setAllotNo(allotNo);
+                detail.setSrcWarehouseCode(stockAllotOrder.getSrcWarehouseCode());
+                detail.setDestWarehouseCode(stockAllotOrder.getDestWarehouseCode());
+                detail.setLineNo(i);
+                detail.setCreateBy(username);
+                detail.setCreateTime(nowDate);
+                //修改物料标签-订单号
+                label = new StockMatLabel();
+                label.setLabelId(detail.getLabelId());
+                label.setOrderNo(allotNo);
+                label.setOrderType("allot");
+                stockMatLabelMapper.updateStockMatLabel(label);
+                i++;
+            }
+            //批量新增调拨单详情
+            stockAllotDetailMapper.insertStockAllotDetailList(detailList);
+        }
         return stockAllotOrderMapper.insertStockAllotOrder(stockAllotOrder);
     }
 
@@ -231,6 +267,82 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
         stockAllotOrder.setUpdateTime(nowDate);
         stockAllotOrderMapper.updateStockAllotOrder(stockAllotOrder);
         return AjaxResult.success("提交成功");
+    }
+
+    /**
+     * 确认调拨单并生成调拨出库单
+     */
+    @Override
+    @Transactional
+    public AjaxResult confirmAllotAndCreateOutOrder(String username, String allotNo) {
+        // 查询调拨单
+        StockAllotOrder allotOrder = stockAllotOrderMapper.selectStockAllotOrderByAllotNo(allotNo);
+        if (allotOrder == null) {
+            return AjaxResult.error("调拨单不存在");
+        }
+
+        // 检查状态，只有已创建状态才能确认
+        if (!AllotProgressEnum.CREATED.getValue().equals(allotOrder.getAllotProgress())) {
+            return AjaxResult.error("调拨单状态不正确，无法确认");
+        }
+
+        Date nowDate = DateUtils.getNowDate();
+
+        // 创建调拨出库单
+        StockOutOrder outOrder = new StockOutOrder();
+        outOrder.setOrderType(OutOrderTypeEnum.ALLOT.getValue());
+        outOrder.setWarehouseCode(allotOrder.getSrcWarehouseCode());
+        outOrder.setAllotNo(allotNo);
+        outOrder.setDestWarehouseCode(allotOrder.getDestWarehouseCode());
+        outOrder.setOrderStatus(OrderStatusEnum.CREATED.getValue());
+        outOrder.setCreateBy(username);
+        outOrder.setCreateTime(nowDate);
+
+        // 生成出库单号
+        String outOrderNo = OrderNoUtil.generate(OrderNoUtil.OrderPrefix.OUT_ALLOT);
+        outOrder.setOrderNo(outOrderNo);
+
+        // 查询调拨单详情
+        List<StockAllotDetail> allotDetails = stockAllotDetailMapper.selectStockAllotDetailListByAllotNo(allotNo);
+
+        // 创建出库单详情
+        List<StockOutDetail> outDetails = new ArrayList<>();
+        int lineNo = 1;
+        for (StockAllotDetail allotDetail : allotDetails) {
+            StockOutDetail outDetail = new StockOutDetail();
+            outDetail.setOrderNo(outOrderNo);
+            outDetail.setLineNo(lineNo++);
+            outDetail.setWarehouseCode(allotOrder.getSrcWarehouseCode());
+            outDetail.setMatCode(allotDetail.getMatCode());
+            outDetail.setMatName(allotDetail.getMatName());
+            outDetail.setFdCode(allotDetail.getFdCode());
+            outDetail.setFigNum(allotDetail.getFigNum());
+            outDetail.setMatGroup(allotDetail.getMatGroup());
+            outDetail.setMatClass(allotDetail.getMatClass());
+            outDetail.setUnitCode(allotDetail.getUnitCode());
+            outDetail.setBatch(allotDetail.getBatch());
+            outDetail.setSupplierCode(allotDetail.getSupplierCode());
+            outDetail.setSupplierName(allotDetail.getSupplierName());
+            outDetail.setQuantity(allotDetail.getQuantity());
+            outDetail.setReceivedQuantity(BigDecimal.ZERO);
+            outDetail.setCreateBy(username);
+            outDetail.setCreateTime(nowDate);
+            outDetails.add(outDetail);
+        }
+        outOrder.setDetailList(outDetails);
+
+        // 保存出库单
+        stockOutOrderMapper.insertStockOutOrder(outOrder);
+        stockOutDetailMapper.insertStockOutDetailList(outDetails);
+
+        // 更新调拨单状态为已确认，并记录出库单号
+        allotOrder.setAllotProgress("confirmed");
+        allotOrder.setUpdateBy(username);
+        allotOrder.setUpdateTime(nowDate);
+        allotOrder.setRemark("已生成调拨出库单：" + outOrderNo);
+        stockAllotOrderMapper.updateStockAllotOrder(allotOrder);
+
+        return AjaxResult.success("确认成功，已生成调拨出库单：" + outOrderNo, outOrder);
     }
 
 }

@@ -76,4 +76,9 @@ public interface IStockAllotOrderService
      */
     public AjaxResult submitAllotReceive(String username, StockAllotOrder stockAllotOrder);
 
+    /**
+     * 确认调拨单并生成调拨出库单
+     */
+    public AjaxResult confirmAllotAndCreateOutOrder(String username, String allotNo);
+
 }

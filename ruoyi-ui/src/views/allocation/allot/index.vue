@@ -149,6 +149,11 @@
               </el-select>
             </el-form-item>
           </el-col>
+          <el-col :span="8">
+            <el-form-item label="选择物料">
+              <el-button size="small" type="success" icon="el-icon-search" @click="openSelectMatLabelDialog">物料标签清单</el-button>
+            </el-form-item>
+          </el-col>
         </el-row>
         <el-row>
           <el-form-item label="调拨原因" prop="allotReason">
@@ -156,9 +161,44 @@
           </el-form-item>
         </el-row>
       </el-form>
+      <el-table :data="matLabelList" style="width: 100%">
+        <el-table-column label="行号" align="center" type="index" />
+        <el-table-column label="物料编码" align="center" prop="matCode" width="100" />
+        <el-table-column label="物料名称" align="center" prop="matName" width="120" />
+        <el-table-column label="财务编码" align="center" prop="fdCode" width="100" />
+        <el-table-column label="图号" align="center" prop="figNum" width="120" />
+        <el-table-column label="数量" align="center" prop="quantity" width="80" />
+        <el-table-column label="单位" align="center" prop="unitCode" width="80">
+          <template slot-scope="scope">
+            <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
+          </template>
+        </el-table-column>
+        <el-table-column label="批次" align="center" prop="batch" width="160" />
+        <el-table-column label="供应商" align="center" prop="supplierName" width="180" />
+        <el-table-column label="操作" align="center" width="80" class-name="small-padding fixed-width">
+          <template slot-scope="scope">
+            <el-button
+              size="mini"
+              type="text"
+              icon="el-icon-scissors"
+              @click="handleRemove(scope.$index, scope.row)"
+            >去除</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
+      </div>
+    </el-dialog>
+
+    <!-- 选择物料标签弹窗 -->
+    <el-dialog :title="'选择物料标签'" :visible.sync="selectMatLabelOpen" width="1200px" append-to-body :close-on-click-modal="false">
+      <selectMatLabel ref="matLabelPage" :labelIdArr="labelIdArr" :warehouseCode="form.srcWarehouseCode" :filterOrderNo="false"
+        @confirmSelectArr="confirmSelectMatLabelArr" @confirmSelect="confirmSelectMatLabel">
+      </selectMatLabel>
+      <div slot="footer" class="dialog-footer">
+        <el-button @click="cancelSelectMatLabel">取 消</el-button>
       </div>
     </el-dialog>
 
@@ -234,12 +274,14 @@
 <script>
 import { listAllotOrder, getAllotOrder, delAllotOrder, addAllotOrder, printAllotOrder } from "@/api/stock/allotOrder";
 import { listAllWarehouse } from "@/api/base/warehouse";
+import selectMatLabel from "../../components/select-mat-label/index";
 
 import QRCode from 'qrcodejs2'
 
 export default {
   name: "AllotOrder",
   dicts: ['base_mat_unit'],
+  components: { selectMatLabel },
   data() {
     return {
       // 遮罩层
@@ -294,6 +336,12 @@ export default {
       allotOrderDetailOpen: false,
       allotDetailList: [],
 
+      //选择物料标签
+      selectMatLabelOpen: false,
+      matLabelList: [],
+      //防重复标签
+      labelIdArr: [],
+
     };
   },
   created() {
@@ -314,6 +362,8 @@ export default {
     cancel() {
       this.open = false;
       this.reset();
+      this.labelIdArr = [];
+      this.matLabelList = [];
     },
     // 表单重置
     reset() {
@@ -382,11 +432,19 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           let that = this;
+          if(!that.matLabelList || that.matLabelList.length === 0){
+            that.$modal.msgError("请选择物料标签");
+            return;
+          }
           that.$modal.confirm('是否确认创建调拨单？').then(function() {
+            that.form.detailList = that.matLabelList;
             addAllotOrder(that.form).then(response => {
               that.$modal.msgSuccess("新增成功");
               that.open = false;
               that.getList();
+              that.reset();
+              that.labelIdArr = [];
+              that.matLabelList = [];
             });
           });
         }
@@ -426,6 +484,38 @@ export default {
               correctLevel: QRCode.CorrectLevel.H
           })
         })
+    },
+    //选择物料标签
+    openSelectMatLabelDialog(){
+      if(!this.form.srcWarehouseCode){
+        this.$modal.msgWarning("请先选择发起仓库");
+        return;
+      }
+      this.selectMatLabelOpen = true;
+      this.$nextTick(function(){
+        this.$refs.matLabelPage.getList();
+      })
+    },
+    cancelSelectMatLabel(){
+      this.selectMatLabelOpen = false;
+    },
+    confirmSelectMatLabel(item){
+      this.matLabelList.unshift(item);
+      this.labelIdArr.push(item.labelId);
+      this.selectMatLabelOpen = false;
+    },
+    confirmSelectMatLabelArr(arr){
+      let that = this;
+      arr && arr.length > 0 && arr.forEach(item => {
+        that.labelIdArr.push(item.labelId);
+        that.matLabelList.unshift(item);
+      });
+      that.selectMatLabelOpen = false;
+    },
+    //去除物料标签
+    handleRemove(index, row){
+      this.labelIdArr.splice(this.labelIdArr.indexOf(row.labelId), 1);
+      this.matLabelList.splice(index, 1);
     },
   }
 };

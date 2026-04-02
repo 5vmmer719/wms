@@ -17,6 +17,16 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="仓库类型" prop="warehouseType">
+        <el-select v-model="queryParams.warehouseType" placeholder="请选择仓库类型" clearable>
+          <el-option
+            v-for="dict in dict.type.warehouse_type"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          />
+        </el-select>
+      </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
         <el-button icon="el-icon-refresh" size="mini" @click="resetQuery">重置</el-button>
@@ -74,6 +84,11 @@
       <el-table-column label="编号" align="center" prop="warehouseId" />
       <el-table-column label="仓库编码" align="center" prop="warehouseCode" />
       <el-table-column label="仓库名称" align="center" prop="warehouseName" />
+      <el-table-column label="仓库类型" align="center" prop="warehouseType">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.warehouse_type" :value="scope.row.warehouseType"/>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -117,6 +132,16 @@
         <el-form-item label="仓库名称" prop="warehouseName">
           <el-input v-model="form.warehouseName" placeholder="请输入仓库名称" />
         </el-form-item>
+        <el-form-item label="仓库类型" prop="warehouseType">
+          <el-select v-model="form.warehouseType" placeholder="请选择仓库类型">
+            <el-option
+              v-for="dict in dict.type.warehouse_type"
+              :key="dict.value"
+              :label="dict.label"
+              :value="dict.value"
+            />
+          </el-select>
+        </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
         <el-button type="primary" @click="submitForm">确 定</el-button>
@@ -131,6 +156,7 @@ import { listWarehouse, getWarehouse, delWarehouse, addWarehouse, updateWarehous
 
 export default {
   name: "Warehouse",
+  dicts: ['warehouse_type'],
   data() {
     return {
       // 遮罩层
@@ -157,6 +183,7 @@ export default {
         pageSize: 10,
         warehouseCode: null,
         warehouseName: null,
+        warehouseType: null,
       },
       // 表单参数
       form: {},
@@ -167,6 +194,9 @@ export default {
         ],
         warehouseName: [
           { required: true, message: "仓库名称不能为空", trigger: "blur" },
+        ],
+        warehouseType: [
+          { required: true, message: "请选择仓库类型", trigger: "change" },
         ],
       }
     };
@@ -195,6 +225,7 @@ export default {
         warehouseId: null,
         warehouseCode: null,
         warehouseName: null,
+        warehouseType: null,
         delFlag: null,
         createBy: null,
         createTime: null,

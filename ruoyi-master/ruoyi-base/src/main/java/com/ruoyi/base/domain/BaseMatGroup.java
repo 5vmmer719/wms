@@ -33,6 +33,16 @@ public class BaseMatGroup extends BaseEntity {
     private String groupName;
 
     /**
+     * 默认仓库类型
+     */
+    private String defaultWarehouseType;
+
+    /**
+     * 默认仓库类型名称（用于显示）
+     */
+    private String defaultWarehouseTypeName;
+
+    /**
      * 删除标识
      */
     private String delFlag;

@@ -162,4 +162,9 @@ public class StockMatLabel extends BaseEntity {
      */
     private String delFlag;
 
+    /**
+     * 仓库类型（查询参数，用于根据物料组的默认仓库类型过滤）
+     */
+    private String warehouseType;
+
 }

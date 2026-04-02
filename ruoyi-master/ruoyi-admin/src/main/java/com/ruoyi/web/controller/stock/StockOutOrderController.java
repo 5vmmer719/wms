@@ -5,12 +5,12 @@ import java.io.FileInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 import java.util.stream.Collectors;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.base.domain.BaseMatBom;
+import com.ruoyi.base.domain.BaseWarehouse;
 import com.ruoyi.base.service.IBaseMatBomService;
 import com.ruoyi.base.service.IBaseMatService;
 import com.ruoyi.base.service.IBaseWarehouseService;
@@ -22,14 +22,10 @@ import com.ruoyi.common.bean.typeEnum.OutOrderTypeEnum;
 import com.ruoyi.common.service.PDFService;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
-import com.ruoyi.stock.domain.StockInfo;
 import com.ruoyi.stock.domain.StockOutDetail;
-import com.ruoyi.stock.domain.StockOutReturnDetail;
 import com.ruoyi.stock.service.IStockInfoService;
 import com.ruoyi.stock.service.IStockOutDetailService;
-import com.ruoyi.system.domain.SysUserClass;
 import com.ruoyi.system.service.ISysDictDataService;
-import com.ruoyi.system.service.ISysUserClassService;
 import com.ruoyi.web.utils.MatBomTreeUtil;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -43,6 +39,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -77,8 +74,6 @@ public class StockOutOrderController extends BaseController {
     private IBaseWarehouseService baseWarehouseService;
     @Autowired
     private IStockInfoService stockInfoService;
-    @Autowired
-    private ISysUserClassService sysUserClassService;
     @Autowired
     private PDFService pdfService;
 
@@ -144,9 +139,9 @@ public class StockOutOrderController extends BaseController {
     }
 
     /**
-     * 获取出库单详细信息
+     * 获取出库单详细信息（扫码端使用）
      */
-    @PreAuthorize("@ss.hasPermi('stock:outOrder:query')")
+    @Anonymous
     @GetMapping(value = "/m/{orderNo}")
     public AjaxResult getInfo(@PathVariable("orderNo") String orderNo) {
         StockOutOrder order = stockOutOrderService.selectStockOutOrderByOrderNo(orderNo);
@@ -204,31 +199,58 @@ public class StockOutOrderController extends BaseController {
 
     /**
      * 查询出库单所需物料列表
+     * 每个物料根据物料组匹配推荐仓库类型
      */
     @GetMapping("/matBomList")
     public List<StockOutDetail> matBomList(StockOutOrder stockOutOrder) {
         List<BaseMatBom> baseMatBomList = baseMatBomService.selectBaseMatBomByFatherMatCode(stockOutOrder.getMatCode());
         List<StockOutDetail> stockOutDetailList = MatBomTreeUtil.getStockOutDetailList(
                 baseMatBomList, baseMatBomService, baseMatService, sysDictDataService);
+
+        // 为每个物料设置推荐仓库和货位
         if(CollectionUtils.isNotEmpty(stockOutDetailList)){
-            //获取库管员管理的分类
-            List<SysUserClass> userClassList = sysUserClassService.selectSysUserClassListByUserName(stockOutOrder.getWarehouseKeeper());
-            List<String> classList = new ArrayList<>();
-            if(CollectionUtils.isNotEmpty(userClassList)){
-                classList = userClassList.stream().map(SysUserClass::getClassCode).distinct().collect(Collectors.toList());
-            }
-            //去除非库管员管理物料
-            Iterator<StockOutDetail> iterator = stockOutDetailList.iterator();
-            StockOutDetail detail = null;
-            while (iterator.hasNext()) {
-                detail = iterator.next();
-                if(!classList.contains(detail.getMatClass())){
-                    iterator.remove();
-                    continue;
+            for(StockOutDetail detail : stockOutDetailList){
+                // 根据物料组获取推荐仓库列表
+                List<BaseWarehouse> recommendWarehouses = baseWarehouseService.getRecommendWarehouseList(detail.getMatGroup());
+                detail.setAvailableWarehouses(recommendWarehouses);
+
+                // 设置默认仓库（取第一个有库存的仓库）
+                if(CollectionUtils.isNotEmpty(recommendWarehouses)){
+                    for(BaseWarehouse wh : recommendWarehouses){
+                        String locationCode = stockInfoService.selectRecommendLocation(detail.getMatCode(), wh.getWarehouseCode());
+                        if(StringUtils.isNotEmpty(locationCode)){
+                            detail.setWarehouseCode(wh.getWarehouseCode());
+                            detail.setWarehouseName(wh.getWarehouseName());
+                            detail.setLocationCode(locationCode);
+                            break;
+                        }
+                    }
+                }
+
+                // 无库存标记
+                if(StringUtils.isEmpty(detail.getLocationCode())){
+                    detail.setLocationCode("无库存");
+                    // 如果没有库存，默认选择第一个推荐仓库
+                    if(CollectionUtils.isNotEmpty(recommendWarehouses)){
+                        detail.setWarehouseCode(recommendWarehouses.get(0).getWarehouseCode());
+                        detail.setWarehouseName(recommendWarehouses.get(0).getWarehouseName());
+                    }
                 }
             }
         }
         return stockOutDetailList;
+    }
+
+    /**
+     * 查询指定物料在指定仓库的库存货位
+     */
+    @GetMapping("/matLocation")
+    public AjaxResult getMatLocation(String matCode, String warehouseCode) {
+        String locationCode = stockInfoService.selectRecommendLocation(matCode, warehouseCode);
+        if(StringUtils.isEmpty(locationCode)){
+            return AjaxResult.success("无库存");
+        }
+        return AjaxResult.success(locationCode);
     }
 
     /**
@@ -275,12 +297,15 @@ public class StockOutOrderController extends BaseController {
     /**
      * 扫码提交出库单-出库
      */
+    @Anonymous
     @PostMapping("submitStockOut")
     public AjaxResult submitStockOut(@RequestBody StockOutRequestBody stockOutRequestBody){
         if(stockOutRequestBody == null){
             return error("系统繁忙，请稍后再试！");
         }
-        return stockOutOrderService.submitStockOut(getUsername(), stockOutRequestBody);
+        // 匿名访问时使用默认用户名
+        String username = "admin";
+        return stockOutOrderService.submitStockOut(username, stockOutRequestBody);
     }
 
 }

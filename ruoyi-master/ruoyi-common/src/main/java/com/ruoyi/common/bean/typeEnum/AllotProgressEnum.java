@@ -10,6 +10,7 @@ import java.util.Map;
 public enum AllotProgressEnum {
 
     CREATED("created", "发起仓库创建"),
+    CONFIRMED("confirmed", "已确认(生成出库单)"),
     PICKING( "picking","发起仓库拣货"),
     RECEIVE( "receive","目标仓库接收");
 

@@ -72,4 +72,12 @@ public interface StockAllotDetailMapper {
      * @return 结果
      */
     public int deleteStockAllotDetailByDetailIds(Long[] detailIds);
+
+    /**
+     * 批量新增调拨单详情
+     *
+     * @param list 调拨单详情列表
+     * @return 结果
+     */
+    public int insertStockAllotDetailList(List<StockAllotDetail> list);
 }

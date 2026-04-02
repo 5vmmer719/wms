@@ -45,9 +45,11 @@ public class SysUserClassServiceImpl implements ISysUserClassService {
     public int changeActive(SysUserClass sysUserClass){
         String userName = sysUserClass.getUserName();
         String classCode = sysUserClass.getClassCode();
-        SysUserClass userClass = sysUserClassMapper.selectSysUserClassByUserName(userName, classCode);
-        if(userClass != null){
-            return sysUserClassMapper.deleteSysUserClassByUserName(userName, classCode);
+        List<SysUserClass> userClassList = sysUserClassMapper.selectSysUserClassListByUserAndClass(userName, classCode);
+        if(userClassList != null && !userClassList.isEmpty()){
+            // 存在记录则删除（可能有重复，先删除所有）
+            sysUserClassMapper.deleteSysUserClassByUserName(userName, classCode);
+            return 1;
         }else{
             return sysUserClassMapper.insertSysUserClass(sysUserClass);
         }

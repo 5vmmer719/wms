@@ -7,6 +7,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     <resultMap type="StockOutDetail" id="StockOutDetailResult">
         <result property="detailId"    column="detail_id"    />
         <result property="warehouseCode"    column="warehouse_code"    />
+        <result property="warehouseName"    column="warehouse_name"    />
         <result property="workshopCode"    column="workshop_code"    />
         <result property="locationCode"    column="location_code"    />
         <result property="prodOrderNo"    column="prod_order_no"    />
@@ -22,6 +23,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="quantity"    column="quantity"    />
         <result property="receivedQuantity"    column="received_quantity"    />
         <result property="unitCode"    column="unit_code"    />
+        <result property="supplierCode"    column="supplier_code"    />
+        <result property="supplierName"    column="supplier_name"    />
         <result property="delFlag"    column="del_flag"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
@@ -30,39 +33,44 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStockOutDetailVo">
-        select detail_id, warehouse_code, workshop_code, location_code, prod_order_no, order_no, line_no, mat_code, mat_name, fd_code, fig_num, mat_group, mat_class, batch, quantity, received_quantity, unit_code, del_flag, create_by, create_time, update_by, update_time from stock_out_detail
+        select d.detail_id, d.warehouse_code, d.workshop_code, d.location_code, d.prod_order_no, d.order_no, d.line_no,
+               d.mat_code, d.mat_name, d.fd_code, d.fig_num, d.mat_group, d.mat_class, d.batch, d.quantity,
+               d.received_quantity, d.unit_code, d.supplier_code, d.supplier_name, d.del_flag, d.create_by, d.create_time, d.update_by, d.update_time,
+               w.warehouse_name
+        from stock_out_detail d
+        left join base_warehouse w on d.warehouse_code = w.warehouse_code and w.del_flag = '0'
     </sql>
 
     <select id="selectStockOutDetailList" parameterType="StockOutDetail" resultMap="StockOutDetailResult">
         <include refid="selectStockOutDetailVo"/>
-        WHERE del_flag = 0
-        <if test="warehouseCode != null  and warehouseCode != ''"> and warehouse_code = #{warehouseCode}</if>
-        <if test="workshopCode != null  and workshopCode != ''"> and workshop_code = #{workshopCode}</if>
-        <if test="locationCode != null  and locationCode != ''"> and location_code = #{locationCode}</if>
-        <if test="prodOrderNo != null  and prodOrderNo != ''"> and prod_order_no = #{prodOrderNo}</if>
-        <if test="orderNo != null  and orderNo != ''"> and order_no = #{orderNo}</if>
-        <if test="lineNo != null "> and line_no = #{lineNo}</if>
-        <if test="matCode != null  and matCode != ''"> and mat_code = #{matCode}</if>
-        <if test="matName != null  and matName != ''"> and mat_name like concat('%', #{matName}, '%')</if>
-        <if test="fdCode != null  and fdCode != ''"> and fd_code = #{fdCode}</if>
-        <if test="figNum != null  and figNum != ''"> and fig_num = #{figNum}</if>
-        <if test="matGroup != null  and matGroup != ''"> and mat_group = #{matGroup}</if>
-        <if test="matClass != null  and matClass != ''"> and mat_class = #{matClass}</if>
-        <if test="batch != null  and batch != ''"> and batch = #{batch}</if>
-        <if test="quantity != null "> and quantity = #{quantity}</if>
-        <if test="receivedQuantity != null "> and received_quantity = #{receivedQuantity}</if>
-        <if test="unitCode != null  and unitCode != ''"> and unit_code = #{unitCode}</if>
+        WHERE d.del_flag = 0
+        <if test="warehouseCode != null  and warehouseCode != ''"> and d.warehouse_code = #{warehouseCode}</if>
+        <if test="workshopCode != null  and workshopCode != ''"> and d.workshop_code = #{workshopCode}</if>
+        <if test="locationCode != null  and locationCode != ''"> and d.location_code = #{locationCode}</if>
+        <if test="prodOrderNo != null  and prodOrderNo != ''"> and d.prod_order_no = #{prodOrderNo}</if>
+        <if test="orderNo != null  and orderNo != ''"> and d.order_no = #{orderNo}</if>
+        <if test="lineNo != null "> and d.line_no = #{lineNo}</if>
+        <if test="matCode != null  and matCode != ''"> and d.mat_code = #{matCode}</if>
+        <if test="matName != null  and matName != ''"> and d.mat_name like concat('%', #{matName}, '%')</if>
+        <if test="fdCode != null  and fdCode != ''"> and d.fd_code = #{fdCode}</if>
+        <if test="figNum != null  and figNum != ''"> and d.fig_num = #{figNum}</if>
+        <if test="matGroup != null  and matGroup != ''"> and d.mat_group = #{matGroup}</if>
+        <if test="matClass != null  and matClass != ''"> and d.mat_class = #{matClass}</if>
+        <if test="batch != null  and batch != ''"> and d.batch = #{batch}</if>
+        <if test="quantity != null "> and d.quantity = #{quantity}</if>
+        <if test="receivedQuantity != null "> and d.received_quantity = #{receivedQuantity}</if>
+        <if test="unitCode != null  and unitCode != ''"> and d.unit_code = #{unitCode}</if>
     </select>
 
     <select id="selectStockOutDetailListByOrderNo" resultMap="StockOutDetailResult">
         <include refid="selectStockOutDetailVo"/>
-        WHERE del_flag = 0 AND order_no = #{orderNo}
-        ORDER BY line_no ASC
+        WHERE d.del_flag = 0 AND d.order_no = #{orderNo}
+        ORDER BY d.line_no ASC
     </select>
     
     <select id="selectStockOutDetailByDetailId" parameterType="Long" resultMap="StockOutDetailResult">
         <include refid="selectStockOutDetailVo"/>
-        where del_flag = 0 AND detail_id = #{detailId}
+        WHERE d.del_flag = 0 AND d.detail_id = #{detailId}
     </select>
         
     <insert id="insertStockOutDetail" parameterType="StockOutDetail" useGeneratedKeys="true" keyProperty="detailId">
@@ -84,6 +92,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="quantity != null">quantity,</if>
             <if test="receivedQuantity != null">received_quantity,</if>
             <if test="unitCode != null">unit_code,</if>
+            <if test="supplierCode != null">supplier_code,</if>
+            <if test="supplierName != null">supplier_name,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
@@ -101,12 +111,14 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="matName != null">#{matName},</if>
             <if test="fdCode != null">#{fdCode},</if>
             <if test="figNum != null">#{figNum},</if>
-            <if test="matCode != null">#{matCode},</if>
-            <if test="matName != null">#{matName},</if>
+            <if test="matGroup != null">#{matGroup},</if>
+            <if test="matClass != null">#{matClass},</if>
             <if test="batch != null">#{batch},</if>
             <if test="quantity != null">#{quantity},</if>
             <if test="receivedQuantity != null">#{receivedQuantity},</if>
             <if test="unitCode != null">#{unitCode},</if>
+            <if test="supplierCode != null">#{supplierCode},</if>
+            <if test="supplierName != null">#{supplierName},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
@@ -133,6 +145,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             quantity,
             received_quantity,
             unit_code,
+            supplier_code,
+            supplier_name,
             del_flag,
             create_by,
             create_time
@@ -155,6 +169,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{item.quantity},
             0,
             #{item.unitCode},
+            #{item.supplierCode},
+            #{item.supplierName},
             0,
             #{item.createBy},
             #{item.createTime}
@@ -181,6 +197,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="quantity != null">quantity = #{quantity},</if>
             <if test="receivedQuantity != null">received_quantity = #{receivedQuantity},</if>
             <if test="unitCode != null">unit_code = #{unitCode},</if>
+            <if test="supplierCode != null">supplier_code = #{supplierCode},</if>
+            <if test="supplierName != null">supplier_name = #{supplierName},</if>
             <if test="delFlag != null">del_flag = #{delFlag},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>

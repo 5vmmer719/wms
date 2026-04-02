@@ -124,7 +124,7 @@
           </el-col>
           <el-col :span="8">
             <el-form-item label="仓库" prop="warehouseCode">
-              <el-select v-model="form.warehouseCode" placeholder="请选择仓库">
+              <el-select v-model="form.warehouseCode" disabled placeholder="请选择仓库">
                 <el-option
                   v-for="item in warehouseList"
                   :key="item.warehouseCode"
@@ -168,7 +168,7 @@
     </el-dialog>
 
     <el-dialog :title="'选择入库单'" :visible.sync="selectInOrderOpen" width="1200px" append-to-body :close-on-click-modal="false">
-      <selectInOrder @confirmSelect="confirmSelectInOrder"></selectInOrder>
+      <selectInOrder :onlyEntered="true" @confirmSelect="confirmSelectInOrder"></selectInOrder>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancelSelectInOrder">取 消</el-button>
       </div>
@@ -460,27 +460,31 @@ export default {
       //查询入库单详情
       returnListRecord(item.orderNo).then(response => {
         let recordList = response.data;
-        recordList && recordList.length > 0 && recordList.forEach(detail => {
-          let inReturnDetail = {
-            warehouseCode: detail.warehouseCode,
-            labelId: detail.labelId,
-            matCode: detail.matCode,
-            matName: detail.matName,
-            fdCode: detail.fdCode,
-            figNum: detail.figNum,
-            matGroup: detail.matGroup,
-            matClass: detail.matClass,
-            unitCode: detail.unitCode,
-            batch: detail.batch,
-            stockInQuantity: detail.quantity,
-            quantity: 0,
-            locationCode: detail.locationCode,
-            supplierCode: detail.supplierCode,
-            supplierName: detail.supplierName,
-            prodTime: detail.prodTime,
-          };
-          this.inReturnDetailList.push(inReturnDetail);
-        });
+        if(recordList && recordList.length > 0){
+          // 从第一条记录获取仓库信息
+          this.form.warehouseCode = recordList[0].warehouseCode;
+          recordList.forEach(detail => {
+            let inReturnDetail = {
+              warehouseCode: detail.warehouseCode,
+              labelId: detail.labelId,
+              matCode: detail.matCode,
+              matName: detail.matName,
+              fdCode: detail.fdCode,
+              figNum: detail.figNum,
+              matGroup: detail.matGroup,
+              matClass: detail.matClass,
+              unitCode: detail.unitCode,
+              batch: detail.batch,
+              stockInQuantity: detail.quantity,
+              quantity: 0,
+              locationCode: detail.locationCode,
+              supplierCode: detail.supplierCode,
+              supplierName: detail.supplierName,
+              prodTime: detail.prodTime,
+            };
+            this.inReturnDetailList.push(inReturnDetail);
+          });
+        }
         this.selectInOrderOpen = false;
       });
     },

@@ -1,70 +1,92 @@
 <template>
-  <el-row :gutter="40" class="panel-group">
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel">
-        <div class="card-panel-icon-wrapper icon-people">
-          <svg-icon icon-class="documentation" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div @click="jumpPage('/base/mat')">
-            <div class="card-panel-text">玻璃物料种类</div>
-            <count-to :start-val="0" :end-val="panelGroupData.matTotal" :duration="2800" class="card-panel-num" />
+  <div class="panel-group">
+    <el-row :gutter="20">
+      <!-- 物料种类 -->
+      <el-col :xs="12" :sm="12" :lg="6">
+        <div class="stat-card card-material" @click="jumpPage('/base/mat')">
+          <div class="stat-icon">
+            <i class="el-icon-goods"></i>
           </div>
-        </div>
-      </div>
-    </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel">
-        <div class="card-panel-icon-wrapper icon-message">
-          <svg-icon icon-class="tab" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div @click="jumpPage('/purchase/inOrder')">
-            <div class="card-panel-text">原料入库单</div>
-            <count-to :start-val="0" :end-val="panelGroupData.purchase" :duration="3000" class="card-panel-num" />
+          <div class="stat-content">
+            <div class="stat-value">
+              <count-to :start-val="0" :end-val="panelGroupData.matTotal" :duration="2800" />
+            </div>
+            <div class="stat-label">物料种类</div>
+            <div class="stat-footer stat-footer-placeholder">
+              <span class="footer-label">-</span>
+            </div>
           </div>
-          <div class="return-div" @click="jumpPage('/purchase/inReturn')">
-            <div class="card-panel-text panel-return">退货单</div>
-            <count-to :start-val="0" :end-val="panelGroupData.purchaseReturn" :duration="3200" class="card-panel-num" />
-          </div>
+          <div class="stat-decoration"></div>
         </div>
-      </div>
-    </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel">
-        <div class="card-panel-icon-wrapper icon-money">
-          <svg-icon icon-class="tab" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div @click="jumpPage('/prod/outOrder')">
-            <div class="card-panel-text">生产领料单</div>
-            <count-to :start-val="0" :end-val="panelGroupData.production" :duration="3200" class="card-panel-num" />
+      </el-col>
+
+      <!-- 原料入库单 -->
+      <el-col :xs="12" :sm="12" :lg="6">
+        <div class="stat-card card-inbound" @click="jumpPage('/purchase/inOrder')">
+          <div class="stat-icon">
+            <i class="el-icon-takeaway-box"></i>
           </div>
-          <div class="return-div" @click="jumpPage('/prod/outReturn')">
-            <div class="card-panel-text panel-return">退货单</div>
-            <count-to :start-val="0" :end-val="panelGroupData.productionReturn" :duration="3200" class="card-panel-num" />
+          <div class="stat-content">
+            <div class="stat-value">
+              <count-to :start-val="0" :end-val="panelGroupData.purchase" :duration="3000" />
+            </div>
+            <div class="stat-label">原料入库单</div>
+            <div class="stat-footer" @click.stop="jumpPage('/purchase/inReturn')">
+              <span class="footer-label">退货单</span>
+              <span class="footer-value">
+                <count-to :start-val="0" :end-val="panelGroupData.purchaseReturn" :duration="3200" />
+              </span>
+            </div>
           </div>
+          <div class="stat-decoration"></div>
         </div>
-      </div>
-    </el-col>
-    <el-col :xs="12" :sm="12" :lg="6" class="card-panel-col">
-      <div class="card-panel">
-        <div class="card-panel-icon-wrapper icon-shopping">
-          <svg-icon icon-class="tab" class-name="card-panel-icon" />
-        </div>
-        <div class="card-panel-description">
-          <div @click="jumpPage('/common/commonOutOrder')">
-            <div class="card-panel-text">销售出库单</div>
-            <count-to :start-val="0" :end-val="panelGroupData.common" :duration="3400" class="card-panel-num" />
+      </el-col>
+
+      <!-- 生产领料单 -->
+      <el-col :xs="12" :sm="12" :lg="6">
+        <div class="stat-card card-production" @click="jumpPage('/prod/outOrder')">
+          <div class="stat-icon">
+            <i class="el-icon-box"></i>
           </div>
-          <div class="return-div" @click="jumpPage('/common/commonOutReturn')">
-            <div class="card-panel-text panel-return">退货单</div>
-            <count-to :start-val="0" :end-val="panelGroupData.commonReturn" :duration="3200" class="card-panel-num" />
+          <div class="stat-content">
+            <div class="stat-value">
+              <count-to :start-val="0" :end-val="panelGroupData.production" :duration="3200" />
+            </div>
+            <div class="stat-label">生产领料单</div>
+            <div class="stat-footer" @click.stop="jumpPage('/prod/outReturn')">
+              <span class="footer-label">退货单</span>
+              <span class="footer-value">
+                <count-to :start-val="0" :end-val="panelGroupData.productionReturn" :duration="3200" />
+              </span>
+            </div>
           </div>
+          <div class="stat-decoration"></div>
         </div>
-      </div>
-    </el-col>
-  </el-row>
+      </el-col>
+
+      <!-- 销售出库单 -->
+      <el-col :xs="12" :sm="12" :lg="6">
+        <div class="stat-card card-sales" @click="jumpPage('/common/commonOutOrder')">
+          <div class="stat-icon">
+            <i class="el-icon-sell"></i>
+          </div>
+          <div class="stat-content">
+            <div class="stat-value">
+              <count-to :start-val="0" :end-val="panelGroupData.common" :duration="3400" />
+            </div>
+            <div class="stat-label">销售出库单</div>
+            <div class="stat-footer" @click.stop="jumpPage('/common/commonOutReturn')">
+              <span class="footer-label">退货单</span>
+              <span class="footer-value">
+                <count-to :start-val="0" :end-val="panelGroupData.commonReturn" :duration="3200" />
+              </span>
+            </div>
+          </div>
+          <div class="stat-decoration"></div>
+        </div>
+      </el-col>
+    </el-row>
+  </div>
 </template>
 
 <script>
@@ -72,9 +94,18 @@ import CountTo from 'vue-count-to'
 import { statsIndexUpper } from "@/api/stats/index";
 
 export default {
+  name: 'PanelGroup',
   data() {
     return {
-      panelGroupData: {},
+      panelGroupData: {
+        matTotal: 0,
+        purchase: 0,
+        purchaseReturn: 0,
+        production: 0,
+        productionReturn: 0,
+        common: 0,
+        commonReturn: 0
+      },
     }
   },
   components: { CountTo },
@@ -82,13 +113,13 @@ export default {
     this.getData();
   },
   methods: {
-    getData(){
+    getData() {
       statsIndexUpper().then(response => {
         this.panelGroupData = response.data;
       });
     },
-    jumpPage(pageUrl){
-      this.$router.push({path: pageUrl});
+    jumpPage(pageUrl) {
+      this.$router.push({ path: pageUrl });
     },
   }
 }
@@ -96,120 +127,226 @@ export default {
 
 <style lang="scss" scoped>
 .panel-group {
-  // margin-top: 18px;
-
-  .card-panel-col {
-    margin-bottom: 10px;
-  }
-
-  .card-panel {
-    height: 108px;
-    cursor: pointer;
-    font-size: 12px;
+  .stat-card {
     position: relative;
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
     overflow: hidden;
-    color: #666;
-    background: #fff;
-    box-shadow: 4px 4px 40px rgba(0, 0, 0, .05);
-    border-color: rgba(0, 0, 0, .05);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    min-height: 130px;
+    height: 130px;
+    display: flex;
+    flex-direction: column;
 
     &:hover {
-      .card-panel-icon-wrapper {
-        color: #fff;
+      transform: translateY(-4px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
+
+      .stat-icon {
+        transform: scale(1.1);
       }
 
-      .icon-people {
-        background: #40c9c6;
-      }
-
-      .icon-message {
-        background: #36a3f7;
-      }
-
-      .icon-money {
-        background: #ffc000;
-      }
-
-      .icon-shopping {
-        background: #34bfa3
+      .stat-decoration {
+        opacity: 1;
+        transform: translateX(0);
       }
     }
 
-    .icon-people {
-      color: #40c9c6;
-    }
-
-    .icon-message {
-      color: #36a3f7;
-    }
-
-    .icon-money {
-      color: #ffc000;
-    }
-
-    .icon-shopping {
-      color: #34bfa3
-    }
-
-    .card-panel-icon-wrapper {
-      float: left;
-      margin: 14px 0 0 14px;
-      padding: 16px;
-      transition: all 0.38s ease-out;
-      border-radius: 6px;
-    }
-
-    .card-panel-icon {
-      float: left;
-      font-size: 48px;
-    }
-
-    .card-panel-description {
-      font-weight: bold;
-      margin: 26px;
-      margin-left: 0px;
+    .stat-icon {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
       display: flex;
-      justify-content: flex-end;
-      .card-panel-text {
-        line-height: 18px;
-        color: rgba(0, 0, 0, 0.45);
-        font-size: 16px;
-        margin-bottom: 12px;
-      }
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
 
-      .card-panel-num {
-        font-size: 20px;
-        display: flex;
-        justify-content: center;
-        text-decoration: underline;
-      }
-      .return-div{
-        margin-left: 40px;
-        color: red;
-      }
-      .panel-return{
-        color: red;
+      i {
+        font-size: 24px;
+        color: #ffffff;
       }
     }
 
+    .stat-content {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+
+      .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        line-height: 1.2;
+        color: #1f2937;
+        font-family: 'DIN Alternate', 'Helvetica Neue', sans-serif;
+      }
+
+      .stat-label {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 4px;
+      }
+
+      .stat-footer {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 12px;
+        background: rgba(239, 68, 68, 0.1);
+        border-radius: 16px;
+        margin-top: 12px;
+        transition: all 0.2s ease;
+        width: fit-content;
+
+        &:hover {
+          background: rgba(239, 68, 68, 0.15);
+        }
+
+        .footer-label {
+          font-size: 12px;
+          color: #ef4444;
+        }
+
+        .footer-value {
+          font-size: 14px;
+          font-weight: 600;
+          color: #ef4444;
+        }
+      }
+
+      .stat-footer-placeholder {
+        visibility: hidden;
+      }
+    }
+
+    .stat-decoration {
+      position: absolute;
+      bottom: -20px;
+      right: -20px;
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      opacity: 0.5;
+      transform: translateX(20px);
+      transition: all 0.3s ease;
+    }
+  }
+
+  // 物料卡片样式
+  .card-material {
+    border-left: 4px solid #3b82f6;
+
+    .stat-icon {
+      background: linear-gradient(135deg, #3b82f6, #60a5fa);
+    }
+
+    .stat-decoration {
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(96, 165, 250, 0.1));
+    }
+
+    &:hover {
+      border-left-color: #2563eb;
+    }
+  }
+
+  // 入库卡片样式
+  .card-inbound {
+    border-left: 4px solid #10b981;
+
+    .stat-icon {
+      background: linear-gradient(135deg, #10b981, #34d399);
+    }
+
+    .stat-decoration {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(52, 211, 153, 0.1));
+    }
+
+    &:hover {
+      border-left-color: #059669;
+    }
+  }
+
+  // 生产卡片样式
+  .card-production {
+    border-left: 4px solid #f59e0b;
+
+    .stat-icon {
+      background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    }
+
+    .stat-decoration {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(251, 191, 36, 0.1));
+    }
+
+    &:hover {
+      border-left-color: #d97706;
+    }
+  }
+
+  // 销售卡片样式
+  .card-sales {
+    border-left: 4px solid #8b5cf6;
+
+    .stat-icon {
+      background: linear-gradient(135deg, #8b5cf6, #a78bfa);
+    }
+
+    .stat-decoration {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(167, 139, 250, 0.1));
+    }
+
+    &:hover {
+      border-left-color: #7c3aed;
+    }
   }
 }
 
-@media (max-width:550px) {
-  .card-panel-description {
-    display: none;
-  }
+// 响应式布局
+@media (max-width: 768px) {
+  .panel-group {
+    .stat-card {
+      padding: 16px;
+      min-height: 110px;
+      height: 110px;
 
-  .card-panel-icon-wrapper {
-    float: none !important;
-    width: 100%;
-    height: 100%;
-    margin: 0 !important;
+      .stat-icon {
+        width: 40px;
+        height: 40px;
 
-    .svg-icon {
-      display: block;
-      margin: 14px auto !important;
-      float: none !important;
+        i {
+          font-size: 20px;
+        }
+      }
+
+      .stat-content {
+        .stat-value {
+          font-size: 26px;
+        }
+
+        .stat-label {
+          font-size: 13px;
+        }
+
+        .stat-footer {
+          padding: 4px 10px;
+          margin-top: 8px;
+
+          .footer-label {
+            font-size: 11px;
+          }
+
+          .footer-value {
+            font-size: 12px;
+          }
+        }
+      }
     }
   }
 }

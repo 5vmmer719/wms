@@ -43,7 +43,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <include refid="selectSysUserClassVo"/>
         where user_name = #{userName} AND class_code = #{classCode}
     </select>
-        
+
+    <select id="selectSysUserClassListByUserAndClass" resultMap="SysUserClassResult">
+        select user_name, class_code from sys_user_class where user_name = #{userName} AND class_code = #{classCode}
+    </select>
+
     <insert id="insertSysUserClass" parameterType="SysUserClass">
         insert into sys_user_class
         <trim prefix="(" suffix=")" suffixOverrides=",">

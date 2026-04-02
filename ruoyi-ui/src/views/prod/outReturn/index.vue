@@ -215,7 +215,7 @@
     </el-dialog>
 
     <el-dialog :title="'选择出库单'" :visible.sync="selectOutOrderOpen" width="1200px" append-to-body :close-on-click-modal="false">
-      <selectOutOrder :orderType="outOrderType" @confirmSelect="confirmSelectOutOrder"></selectOutOrder>
+      <selectOutOrder :orderType="outOrderType" :onlyReceived="true" @confirmSelect="confirmSelectOutOrder"></selectOutOrder>
       <div slot="footer" class="dialog-footer">
         <el-button @click="cancelSelectOutOrder">取 消</el-button>
       </div>

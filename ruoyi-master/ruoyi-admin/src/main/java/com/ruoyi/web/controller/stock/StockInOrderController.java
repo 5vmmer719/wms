@@ -33,6 +33,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.ruoyi.common.annotation.Anonymous;
 import com.ruoyi.common.annotation.Log;
 import com.ruoyi.common.core.controller.BaseController;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -107,9 +108,9 @@ public class StockInOrderController extends BaseController {
     }
 
     /**
-     * 获取入库单详细信息
+     * 获取入库单详细信息（扫码端使用）
      */
-    @PreAuthorize("@ss.hasPermi('stock:inOrder:query')")
+    @Anonymous
     @GetMapping(value = "/m/{orderNo}")
     public AjaxResult getInfo(@PathVariable("orderNo") String orderNo) {
         StockInOrder order = stockInOrderService.selectStockInOrderByOrderNo(orderNo);
@@ -224,12 +225,15 @@ public class StockInOrderController extends BaseController {
     /**
      * 扫码提交入库单-入库
      */
+    @Anonymous
     @PostMapping("submitStockIn")
     public AjaxResult submitStockIn(@RequestBody StockInOrder stockInOrder){
         if(stockInOrder == null){
             return error("系统繁忙，请稍后再试！");
         }
-        return stockInOrderService.submitStockIn(getUsername(), stockInOrder);
+        // 匿名访问时使用默认用户名
+        String username = "admin";
+        return stockInOrderService.submitStockIn(username, stockInOrder);
     }
 
 }

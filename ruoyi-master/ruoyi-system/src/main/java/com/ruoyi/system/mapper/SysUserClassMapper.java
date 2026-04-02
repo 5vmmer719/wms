@@ -34,6 +34,11 @@ public interface SysUserClassMapper {
     public List<SysUserClass> selectSysUserClassListByUserName(@Param("userName") String userName);
 
     /**
+     * 根据用户名和分类编码查询列表
+     */
+    public List<SysUserClass> selectSysUserClassListByUserAndClass(@Param("userName") String userName, @Param("classCode") String classCode);
+
+    /**
      * 新增用户管理的物料分类
      *
      * @param sysUserClass 用户管理的物料分类

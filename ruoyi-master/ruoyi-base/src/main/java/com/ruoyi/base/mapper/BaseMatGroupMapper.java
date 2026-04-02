@@ -61,9 +61,17 @@ public interface BaseMatGroupMapper
 
     /**
      * 批量删除物料组
-     * 
+     *
      * @param groupIds 需要删除的数据主键集合
      * @return 结果
      */
     public int deleteBaseMatGroupByGroupIds(Long[] groupIds);
+
+    /**
+     * 根据物料组编码查询物料组信息
+     *
+     * @param groupCode 物料组编码
+     * @return 物料组
+     */
+    public BaseMatGroup selectBaseMatGroupByGroupCode(String groupCode);
 }

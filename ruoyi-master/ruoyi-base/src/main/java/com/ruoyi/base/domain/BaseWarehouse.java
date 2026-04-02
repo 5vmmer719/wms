@@ -33,6 +33,17 @@ public class BaseWarehouse extends BaseEntity {
     private String warehouseName;
 
     /**
+     * 仓库类型
+     */
+    @Excel(name = "仓库类型")
+    private String warehouseType;
+
+    /**
+     * 仓库类型名称（用于显示）
+     */
+    private String warehouseTypeName;
+
+    /**
      * 删除标识
      */
     private String delFlag;

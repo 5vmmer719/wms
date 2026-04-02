@@ -1,5 +1,6 @@
 package com.ruoyi.common.bean.typeEnum;
 
+import com.ruoyi.common.constant.ScheduleConstants;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -13,7 +14,8 @@ public enum OrderStatusEnum {
     PRINTED( "printed","已打印"),
     ENTERED( "entered","已入库"),
     RECEIVED( "received","已领料"),
-    RETURNED("returned", "已退料");
+    RETURNED("returned", "已退料"),
+    PICKING("picking","部分领料");
 
     private String value;
     private String label;
