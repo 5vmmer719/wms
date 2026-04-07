@@ -211,14 +211,14 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
             BigDecimal alreadyReceived = outDetail.getReceivedQuantity() != null ? outDetail.getReceivedQuantity() : BigDecimal.ZERO;
             BigDecimal remaining = planQuantity.subtract(alreadyReceived);
             if (receivedQuantity.compareTo(remaining) > 0) {
-                return AjaxResult.error("物料[" + matCode + "]出库数量超出剩余应出库数量！剩余：" + remaining + "，申请：" + receivedQuantity);
+                return AjaxResult.error("物料[" + matCode + "]出库数量超出剩余应出库数量！剩余：" + remaining.stripTrailingZeros().toPlainString() + "，申请：" + receivedQuantity.stripTrailingZeros().toPlainString());
             }
 
             // Bug修复3: 检查库存是否充足
             StockInfo stockInfo = stockInfoMapper.selectStockInfoByMatCode(warehouseCode, matCode);
             if (stockInfo == null || stockInfo.getQuantity() == null || stockInfo.getQuantity().compareTo(receivedQuantity) < 0) {
                 BigDecimal currentStock = (stockInfo != null && stockInfo.getQuantity() != null) ? stockInfo.getQuantity() : BigDecimal.ZERO;
-                return AjaxResult.error("物料[" + matCode + "]库存不足！当前库存：" + currentStock + "，申请出库：" + receivedQuantity);
+                return AjaxResult.error("物料[" + matCode + "]库存不足！当前库存：" + currentStock.stripTrailingZeros().toPlainString() + "，申请出库：" + receivedQuantity.stripTrailingZeros().toPlainString());
             }
 
             // 更新出库单详情的已领数量

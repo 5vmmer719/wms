@@ -1,7 +1,7 @@
 @startuml 入库管理模块类图
 skinparam linetype ortho
 skinparam classAttributeIconSize 0
-
+hide members
 ' Controller层
 class InOrderController {
   - inOrderService: InOrderService

@@ -1,6 +1,7 @@
 @startuml 基础数据管理模块类图
 skinparam linetype ortho
 skinparam classAttributeIconSize 0
+hide members
 
 ' Controller层
 class MatController {
@@ -85,15 +86,6 @@ class BaseLocation {
   - delFlag: String
 }
 
-class BaseSupplier {
-  - supplierId: Long
-  - supplierCode: String
-  - supplierName: String
-  - contact: String
-  - phone: String
-  - address: String
-  - delFlag: String
-}
 
 ' 关联关系
 MatController --|> MatService : 依赖
