@@ -196,7 +196,6 @@
         <module>ruoyi-common</module>
         <module>ruoyi-base</module>
         <module>ruoyi-stock</module>
-        <module>test</module>
     </modules>
     <packaging>pom</packaging>
 
