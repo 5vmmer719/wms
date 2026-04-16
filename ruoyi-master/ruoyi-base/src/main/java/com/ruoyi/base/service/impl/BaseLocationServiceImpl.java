@@ -11,7 +11,7 @@ import com.ruoyi.base.service.IBaseLocationService;
 /**
  * 货位Service业务层处理
  * 
- * @author ruoyi
+ * @author summer
  * @date 2022-07-24
  */
 @Service

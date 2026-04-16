@@ -12,6 +12,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="checkStatus"    column="check_status"    />
         <result property="checkBy"    column="check_by"    />
         <result property="allotNo"    column="allot_no"    />
+        <result property="prodOrderNo"    column="prod_order_no"    />
         <result property="warehouseCode"    column="warehouse_code"    />
         <result property="warehouseName"    column="warehouse_name"    />
         <result property="delFlag"    column="del_flag"    />
@@ -22,7 +23,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStockInOrderVo">
-        select o.order_id, o.order_no, o.order_type, o.order_status, o.check_status, o.check_by, o.allot_no,
+        select o.order_id, o.order_no, o.order_type, o.order_status, o.check_status, o.check_by, o.allot_no, o.prod_order_no,
                o.warehouse_code, w.warehouse_name as warehouse_name,
                o.del_flag, o.create_by, o.create_time, o.update_by, o.update_time
         from stock_in_order o
@@ -48,6 +49,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="checkStatus != null  and checkStatus != ''"> and o.check_status = #{checkStatus}</if>
         <if test="checkBy != null  and checkBy != ''"> and o.check_by = #{checkBy}</if>
         <if test="allotNo != null  and allotNo != ''"> and o.allot_no = #{allotNo}</if>
+        <if test="prodOrderNo != null  and prodOrderNo != ''"> and o.prod_order_no = #{prodOrderNo}</if>
         <if test="warehouseCode != null  and warehouseCode != ''"> and o.warehouse_code = #{warehouseCode}</if>
         <if test="params.beginTime != null and params.beginTime != ''"><!-- 开始时间检索 -->
             AND date_format(o.create_time,'%y%m%d') &gt;= date_format(#{params.beginTime},'%y%m%d')
@@ -77,6 +79,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="checkStatus != null">check_status,</if>
             <if test="checkBy != null">check_by,</if>
             <if test="allotNo != null">allot_no,</if>
+            <if test="prodOrderNo != null">prod_order_no,</if>
             <if test="warehouseCode != null">warehouse_code,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
@@ -91,6 +94,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="checkStatus != null">#{checkStatus},</if>
             <if test="checkBy != null">#{checkBy},</if>
             <if test="allotNo != null">#{allotNo},</if>
+            <if test="prodOrderNo != null">#{prodOrderNo},</if>
             <if test="warehouseCode != null">#{warehouseCode},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>

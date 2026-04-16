@@ -6,7 +6,7 @@ import com.ruoyi.base.domain.BaseMatGroup;
 /**
  * 物料组Mapper接口
  * 
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 public interface BaseMatGroupMapper 

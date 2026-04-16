@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.QualityTaskMapper">
+
+    <resultMap type="QualityTask" id="QualityTaskResult">
+        <result property="taskId"          column="task_id"          />
+        <result property="taskNo"          column="task_no"          />
+        <result property="checkType"       column="check_type"       />
+        <result property="sourceType"      column="source_type"      />
+        <result property="sourceNo"        column="source_no"        />
+        <result property="matCode"         column="mat_code"         />
+        <result property="matName"         column="mat_name"         />
+        <result property="batch"           column="batch"            />
+        <result property="quantity"        column="quantity"         />
+        <result property="standardCode"    column="standard_code"    />
+        <result property="standardName"    column="standard_name"    />
+        <result property="inspectorId"     column="inspector_id"     />
+        <result property="inspectorName"   column="inspector_name"   />
+        <result property="taskStatus"      column="task_status"      />
+        <result property="qualifiedQty"    column="qualified_qty"    />
+        <result property="unqualifiedQty"  column="unqualified_qty"  />
+        <result property="checkTime"       column="check_time"       />
+        <result property="delFlag"         column="del_flag"         />
+        <result property="createBy"        column="create_by"        />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateBy"        column="update_by"        />
+        <result property="updateTime"      column="update_time"      />
+        <result property="remark"          column="remark"           />
+    </resultMap>
+
+    <sql id="selectQualityTaskVo">
+        select task_id, task_no, check_type, source_type, source_no, mat_code, mat_name, batch, quantity, standard_code, standard_name, inspector_id, inspector_name, task_status, qualified_qty, unqualified_qty, check_time, del_flag, create_by, create_time, update_by, update_time, remark from quality_task
+    </sql>
+
+    <select id="selectQualityTaskByTaskId" parameterType="Long" resultMap="QualityTaskResult">
+        <include refid="selectQualityTaskVo"/>
+        where del_flag = '0' AND task_id = #{taskId}
+    </select>
+
+    <select id="selectQualityTaskByTaskNo" parameterType="String" resultMap="QualityTaskResult">
+        <include refid="selectQualityTaskVo"/>
+        where del_flag = '0' AND task_no = #{taskNo}
+    </select>
+
+    <select id="selectQualityTaskList" parameterType="QualityTask" resultMap="QualityTaskResult">
+        <include refid="selectQualityTaskVo"/>
+        <where>
+            del_flag = '0'
+            <if test="taskNo != null and taskNo != ''"> and task_no like concat('%', #{taskNo}, '%')</if>
+            <if test="checkType != null and checkType != ''"> and check_type = #{checkType}</if>
+            <if test="sourceType != null and sourceType != ''"> and source_type = #{sourceType}</if>
+            <if test="sourceNo != null and sourceNo != ''"> and source_no like concat('%', #{sourceNo}, '%')</if>
+            <if test="matCode != null and matCode != ''"> and mat_code like concat('%', #{matCode}, '%')</if>
+            <if test="matName != null and matName != ''"> and mat_name like concat('%', #{matName}, '%')</if>
+            <if test="taskStatus != null and taskStatus != ''"> and task_status = #{taskStatus}</if>
+            <if test="inspectorName != null and inspectorName != ''"> and inspector_name like concat('%', #{inspectorName}, '%')</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectMaxTaskNoByPrefix" resultType="String">
+        select max(task_no) from quality_task
+        where del_flag = '0' and task_no like concat(#{prefix}, '%')
+    </select>
+
+    <insert id="insertQualityTask" parameterType="QualityTask" useGeneratedKeys="true" keyProperty="taskId">
+        insert into quality_task
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">task_no,</if>
+            <if test="checkType != null and checkType != ''">check_type,</if>
+            <if test="sourceType != null">source_type,</if>
+            <if test="sourceNo != null">source_no,</if>
+            <if test="matCode != null">mat_code,</if>
+            <if test="matName != null">mat_name,</if>
+            <if test="batch != null">batch,</if>
+            <if test="quantity != null">quantity,</if>
+            <if test="standardCode != null">standard_code,</if>
+            <if test="standardName != null">standard_name,</if>
+            <if test="inspectorId != null">inspector_id,</if>
+            <if test="inspectorName != null">inspector_name,</if>
+            <if test="taskStatus != null">task_status,</if>
+            <if test="qualifiedQty != null">qualified_qty,</if>
+            <if test="unqualifiedQty != null">unqualified_qty,</if>
+            <if test="checkTime != null">check_time,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">#{taskNo},</if>
+            <if test="checkType != null and checkType != ''">#{checkType},</if>
+            <if test="sourceType != null">#{sourceType},</if>
+            <if test="sourceNo != null">#{sourceNo},</if>
+            <if test="matCode != null">#{matCode},</if>
+            <if test="matName != null">#{matName},</if>
+            <if test="batch != null">#{batch},</if>
+            <if test="quantity != null">#{quantity},</if>
+            <if test="standardCode != null">#{standardCode},</if>
+            <if test="standardName != null">#{standardName},</if>
+            <if test="inspectorId != null">#{inspectorId},</if>
+            <if test="inspectorName != null">#{inspectorName},</if>
+            <if test="taskStatus != null">#{taskStatus},</if>
+            <if test="qualifiedQty != null">#{qualifiedQty},</if>
+            <if test="unqualifiedQty != null">#{unqualifiedQty},</if>
+            <if test="checkTime != null">#{checkTime},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateQualityTask" parameterType="QualityTask">
+        update quality_task
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="checkType != null and checkType != ''">check_type = #{checkType},</if>
+            <if test="sourceType != null">source_type = #{sourceType},</if>
+            <if test="sourceNo != null">source_no = #{sourceNo},</if>
+            <if test="matCode != null">mat_code = #{matCode},</if>
+            <if test="matName != null">mat_name = #{matName},</if>
+            <if test="batch != null">batch = #{batch},</if>
+            <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="standardCode != null">standard_code = #{standardCode},</if>
+            <if test="standardName != null">standard_name = #{standardName},</if>
+            <if test="inspectorId != null">inspector_id = #{inspectorId},</if>
+            <if test="inspectorName != null">inspector_name = #{inspectorName},</if>
+            <if test="taskStatus != null">task_status = #{taskStatus},</if>
+            <if test="qualifiedQty != null">qualified_qty = #{qualifiedQty},</if>
+            <if test="unqualifiedQty != null">unqualified_qty = #{unqualifiedQty},</if>
+            <if test="checkTime != null">check_time = #{checkTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where task_id = #{taskId}
+    </update>
+
+    <update id="updateQualityTaskByTaskNo" parameterType="QualityTask">
+        update quality_task
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="taskStatus != null">task_status = #{taskStatus},</if>
+            <if test="qualifiedQty != null">qualified_qty = #{qualifiedQty},</if>
+            <if test="unqualifiedQty != null">unqualified_qty = #{unqualifiedQty},</if>
+            <if test="checkTime != null">check_time = #{checkTime},</if>
+            <if test="inspectorId != null">inspector_id = #{inspectorId},</if>
+            <if test="inspectorName != null">inspector_name = #{inspectorName},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where task_no = #{taskNo}
+    </update>
+
+    <update id="deleteQualityTaskByTaskId" parameterType="Long">
+        update quality_task set del_flag = '1' where task_id = #{taskId}
+    </update>
+
+    <update id="deleteQualityTaskByTaskIds" parameterType="String">
+        update quality_task set del_flag = '1' where task_id in
+        <foreach item="taskId" collection="array" open="(" separator="," close=")">
+            #{taskId}
+        </foreach>
+    </update>
+
+</mapper>
+

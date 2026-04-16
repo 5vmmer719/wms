@@ -1,6 +1,16 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="仓库" prop="warehouseCode">
+        <el-select v-model="queryParams.warehouseCode" placeholder="请选择仓库" clearable>
+          <el-option
+            v-for="item in warehouseList"
+            :key="item.warehouseCode"
+            :label="item.warehouseName"
+            :value="item.warehouseCode"
+          ></el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="物料编码" prop="matCode">
         <el-input
           v-model="queryParams.matCode"
@@ -73,17 +83,24 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="recordList">
+    <el-table v-loading="loading" :data="recordList" :row-class-name="tableRowClassName">
       <el-table-column label="物料编码" align="center" prop="matCode" />
       <el-table-column label="物料名称" align="center" prop="matName" />
       <el-table-column label="财务编码" align="center" prop="fdCode" />
       <el-table-column label="图号" align="center" prop="figNum" />
       <el-table-column label="物料组" align="center" prop="matGroupName" />
       <el-table-column label="物料分类" align="center" prop="matClassName" />
-      <el-table-column label="数量" align="center" prop="statsQuantity" />
+      <el-table-column label="库存数量" align="center" prop="statsQuantity" />
+      <el-table-column label="安全库存" align="center" prop="safetyStock" />
       <el-table-column label="单位" align="center" prop="unitCode">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="库存状态" align="center" width="100">
+        <template slot-scope="scope">
+          <el-tag v-if="scope.row.safetyStock && scope.row.statsQuantity < scope.row.safetyStock" type="danger" size="small">库存不足</el-tag>
+          <el-tag v-else type="success" size="small">正常</el-tag>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
@@ -98,7 +115,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -115,6 +132,7 @@ import { statsList } from "@/api/stock/info";
 import { listRecord } from "@/api/stock/record";
 import { listAllGroup } from "@/api/base/group";
 import { listAllClass } from "@/api/base/class";
+import { listAllWarehouse } from "@/api/base/warehouse";
 
 export default {
   name: "Record",
@@ -161,17 +179,26 @@ export default {
         supplierCode: null,
         supplierName: null,
       },
-      //组、分类
+      //组、分类、仓库
       groupList: [],
       classList: [],
+      warehouseList: [],
     };
   },
   created() {
     this.getList();
     this.getGroupList();
     this.getClassList();
+    this.getWarehouseList();
   },
   methods: {
+    /** 行样式：库存低于安全库存时标红 */
+    tableRowClassName({row}) {
+      if (row.safetyStock && row.statsQuantity < row.safetyStock) {
+        return 'warning-row';
+      }
+      return '';
+    },
     /** 查询库存汇总列表 */
     getList() {
       this.loading = true;
@@ -242,6 +269,12 @@ export default {
         this.classList = response;
       });
     },
+    //查询仓库
+    getWarehouseList(){
+      listAllWarehouse().then(response => {
+        this.warehouseList = response;
+      });
+    },
     //库存物料流水
     handleRecord(row){
       this.$router.push({path: '/stock/record/record-list/index/' + row.matCode});
@@ -249,3 +282,12 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+::v-deep .el-table .warning-row {
+  background-color: #fef0f0 !important;
+}
+::v-deep .el-table .warning-row td {
+  color: #f56c6c;
+}
+</style>

@@ -11,7 +11,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 物料主数据对象 base_mat
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @Data
@@ -79,6 +79,12 @@ public class BaseMat extends BaseEntity {
      */
     @Excel(name = "安全库存")
     private BigDecimal safetyStock;
+
+    /**
+     * 库存上限
+     */
+    @Excel(name = "库存上限")
+    private BigDecimal maxStock;
 
     /**
      * 标准价

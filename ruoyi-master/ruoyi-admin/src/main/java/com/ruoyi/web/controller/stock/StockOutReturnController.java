@@ -47,7 +47,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 出库单退货Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @RestController
@@ -82,6 +82,18 @@ public class StockOutReturnController extends BaseController {
                 outReturn.setReturnStatusLabel(OrderStatusEnum.getLabel(outReturn.getReturnStatus()));
                 outReturn.setWarehouseName(baseWarehouseService.selectBaseWarehouseNameByWarehouseCode(outReturn.getWarehouseCode()));
                 outReturn.setWorkshopName(baseWorkshopService.selectBaseWorkshopByWorkshopCode(outReturn.getWorkshopCode()));
+                // 主表仓库为空时，从明细行取第一个有值的仓库
+                if(outReturn.getWarehouseName() == null || outReturn.getWarehouseName().isEmpty()){
+                    List<StockOutReturnDetail> detailList = stockOutReturnDetailService.selectStockOutReturnDetailListByReturnNo(outReturn.getReturnNo());
+                    if(CollectionUtils.isNotEmpty(detailList)){
+                        for(StockOutReturnDetail d : detailList){
+                            if(d.getWarehouseCode() != null && !d.getWarehouseCode().isEmpty()){
+                                outReturn.setWarehouseName(baseWarehouseService.selectBaseWarehouseNameByWarehouseCode(d.getWarehouseCode()));
+                                break;
+                            }
+                        }
+                    }
+                }
             }
         }
         return getDataTable(list);
@@ -111,6 +123,23 @@ public class StockOutReturnController extends BaseController {
             outReturn.setWorkshopName(baseWorkshopService.selectBaseWorkshopByWorkshopCode(outReturn.getWorkshopCode()));
             outReturn.setReturnTypeLabel(OutOrderReturnTypeEnum.getLabel(outReturn.getReturnType()));
             List<StockOutReturnDetail> detailList = stockOutReturnDetailService.selectStockOutReturnDetailListByReturnNo(outReturn.getReturnNo());
+            // 为每条明细行填充仓库名称（生产出库退货单每行可能属于不同仓库）
+            if(CollectionUtils.isNotEmpty(detailList)){
+                for(StockOutReturnDetail detail : detailList){
+                    detail.setWarehouseName(baseWarehouseService.selectBaseWarehouseNameByWarehouseCode(detail.getWarehouseCode()));
+                }
+            }
+            // 主表仓库为空时，从明细行取第一个有值的仓库
+            if(outReturn.getWarehouseName() == null || outReturn.getWarehouseName().isEmpty()){
+                if(CollectionUtils.isNotEmpty(detailList)){
+                    for(StockOutReturnDetail d : detailList){
+                        if(d.getWarehouseName() != null && !d.getWarehouseName().isEmpty()){
+                            outReturn.setWarehouseName(d.getWarehouseName());
+                            break;
+                        }
+                    }
+                }
+            }
             outReturn.setDetailList(detailList);
         }
         return AjaxResult.success(outReturn);
@@ -136,6 +165,17 @@ public class StockOutReturnController extends BaseController {
             return AjaxResult.error("出库退货单已完成");
         }
         outReturn.setReturnTypeLabel(OutOrderReturnTypeEnum.getLabel(outReturn.getReturnType()));
+        // 填充仓库名称（主表可能为空，从明细行取第一个有值的仓库）
+        if(outReturn.getWarehouseCode() != null && !outReturn.getWarehouseCode().isEmpty()){
+            outReturn.setWarehouseName(baseWarehouseService.selectBaseWarehouseNameByWarehouseCode(outReturn.getWarehouseCode()));
+        } else if(CollectionUtils.isNotEmpty(detailList)){
+            for(StockOutReturnDetail d : detailList){
+                if(d.getWarehouseCode() != null && !d.getWarehouseCode().isEmpty()){
+                    outReturn.setWarehouseName(baseWarehouseService.selectBaseWarehouseNameByWarehouseCode(d.getWarehouseCode()));
+                    break;
+                }
+            }
+        }
         outReturn.setDetailList(detailList);
         return AjaxResult.success(outReturn);
     }
@@ -181,11 +221,13 @@ public class StockOutReturnController extends BaseController {
         OutputStream out = response.getOutputStream();
         StockOutReturn outReturn = stockOutReturnService.selectStockOutReturnByReturnId(returnId);
         if(outReturn != null){
-            //更新出库退货单状态
-            outReturn.setReturnStatus(OrderStatusEnum.PRINTED.getValue());
-            outReturn.setUpdateBy(getUsername());
-            outReturn.setUpdateTime(DateUtils.getNowDate());
-            stockOutReturnService.updateStockOutReturn(outReturn);
+            //更新出库退货单状态（仅在已创建状态时更新为已打印，避免覆盖退货后的状态）
+            if(OrderStatusEnum.CREATED.getValue().equals(outReturn.getReturnStatus())){
+                outReturn.setReturnStatus(OrderStatusEnum.PRINTED.getValue());
+                outReturn.setUpdateBy(getUsername());
+                outReturn.setUpdateTime(DateUtils.getNowDate());
+                stockOutReturnService.updateStockOutReturn(outReturn);
+            }
             //出库退货单
             OutReturnPdfData returnPdfData = new OutReturnPdfData();
             BeanUtils.copyBeanProp(returnPdfData, outReturn);

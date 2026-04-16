@@ -48,8 +48,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="figNum != null  and figNum != ''"> and fig_num = #{figNum}</if>
         <if test="matGroup != null  and matGroup != ''"> and mat_group = #{matGroup}</if>
         <if test="matClass != null  and matClass != ''"> and mat_class = #{matClass}</if>
-        <if test="labelId != null  and labelId != ''"> and unit_code = #{labelId}</if>
-        <if test="unitCode != null  and unitCode != ''"> and label_id = #{unitCode}</if>
+        <if test="labelId != null  and labelId != ''"> and label_id = #{labelId}</if>
+        <if test="unitCode != null  and unitCode != ''"> and unit_code = #{unitCode}</if>
         <if test="batch != null  and batch != ''"> and batch = #{batch}</if>
         <if test="quantity != null "> and quantity = #{quantity}</if>
         <if test="qualifiedQuantity != null "> and qualified_quantity = #{qualifiedQuantity}</if>
@@ -167,8 +167,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{item.labelId},
             #{item.batch},
             #{item.quantity},
-            0,
-            0,
+            #{item.qualifiedQuantity},
+            #{item.stockInQuantity},
             #{item.unitPrice},
             #{item.supplierCode},
             #{item.supplierName},

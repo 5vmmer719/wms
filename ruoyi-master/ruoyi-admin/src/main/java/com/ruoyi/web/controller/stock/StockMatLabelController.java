@@ -1,22 +1,14 @@
 package com.ruoyi.web.controller.stock;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
-import com.ruoyi.base.domain.BaseMat;
-import com.ruoyi.base.service.IBaseMatClassService;
-import com.ruoyi.base.service.IBaseMatGroupService;
 import com.ruoyi.common.bean.MatLabelPdfData;
-import com.ruoyi.common.bean.typeEnum.InOrderTypeEnum;
 import com.ruoyi.common.service.PDFService;
-import com.ruoyi.common.utils.Arith;
 import com.ruoyi.common.utils.bean.BeanUtils;
-import com.ruoyi.system.service.ISysDictDataService;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -39,7 +31,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 物料标签Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @RestController
@@ -48,15 +40,7 @@ public class StockMatLabelController extends BaseController {
     @Autowired
     private IStockMatLabelService stockMatLabelService;
     @Autowired
-    private IBaseMatGroupService baseMatGroupService;
-    @Autowired
-    private IBaseMatClassService baseMatClassService;
-    @Autowired
-    private ISysDictDataService sysDictDataService;
-    @Autowired
     private PDFService pdfService;
-
-    private static final String dictType = "base_mat_unit";
 
     /**
      * 查询物料标签列表
@@ -66,12 +50,6 @@ public class StockMatLabelController extends BaseController {
     public TableDataInfo list(StockMatLabel stockMatLabel) {
         startPage();
         List<StockMatLabel> list = stockMatLabelService.selectStockMatLabelList(stockMatLabel);
-        if(CollectionUtils.isNotEmpty(list)){
-            for(StockMatLabel label : list){
-                label.setMatGroupName(baseMatGroupService.selectBaseMatGroupNameByGroupCode(label.getMatGroup()));
-                label.setMatClassName(baseMatClassService.selectBaseMatClassNameByClassCode(label.getMatClass()));
-            }
-        }
         return getDataTable(list);
     }
 
@@ -83,12 +61,6 @@ public class StockMatLabelController extends BaseController {
     public TableDataInfo listDialog(StockMatLabel stockMatLabel) {
         startPage();
         List<StockMatLabel> list = stockMatLabelService.selectStockMatLabelListDialog(stockMatLabel);
-        if(CollectionUtils.isNotEmpty(list)){
-            for(StockMatLabel label : list){
-                label.setMatGroupName(baseMatGroupService.selectBaseMatGroupNameByGroupCode(label.getMatGroup()));
-                label.setMatClassName(baseMatClassService.selectBaseMatClassNameByClassCode(label.getMatClass()));
-            }
-        }
         return getDataTable(list);
     }
 
@@ -111,8 +83,6 @@ public class StockMatLabelController extends BaseController {
     @GetMapping(value = "/{labelId}")
     public AjaxResult getInfo(@PathVariable("labelId") Long labelId) {
         StockMatLabel matLabel = stockMatLabelService.selectStockMatLabelByLabelId(labelId);
-        matLabel.setRemainingQuantity(matLabel.getUsableQuantity().subtract(matLabel.getReceivedQuantity()));
-        matLabel.setUnitName(sysDictDataService.selectDictLabel(dictType, matLabel.getUnitCode()));
         return AjaxResult.success(matLabel);
     }
 
@@ -149,16 +119,24 @@ public class StockMatLabelController extends BaseController {
     }
 
     /**
+     * 修改物料标签状态（启用/停用）
+     */
+    @PreAuthorize("@ss.hasPermi('stock:matLabel:edit')")
+    @Log(title = "物料标签", businessType = BusinessType.UPDATE)
+    @PutMapping("/changeStatus")
+    public AjaxResult changeStatus(@RequestBody StockMatLabel stockMatLabel) {
+        return toAjax(stockMatLabelService.updateStatus(stockMatLabel.getLabelId(), stockMatLabel.getStatus()));
+    }
+
+    /**
      * 打印物料标签
      */
     @GetMapping("printLabel/{labelId}")
     public void printLabel(HttpServletResponse response, @PathVariable Long labelId) throws Exception{
         OutputStream out = response.getOutputStream();
         StockMatLabel matLabel = stockMatLabelService.selectStockMatLabelByLabelId(labelId);
-        matLabel.setOrderTypeLabel(InOrderTypeEnum.getLabel(matLabel.getOrderType()));
         MatLabelPdfData pdfData = new MatLabelPdfData();
         BeanUtils.copyBeanProp(pdfData, matLabel);
-        pdfData.setUnitName(sysDictDataService.selectDictLabel(dictType, pdfData.getUnitCode()));
         InputStream in = new FileInputStream(new File(pdfService.printLabel(pdfData, 1)));
         int len = 0;
         byte[] buffer = new byte[1024];
@@ -181,10 +159,8 @@ public class StockMatLabelController extends BaseController {
             out = response.getOutputStream();
             for(Long labelId : labelIds){
                 StockMatLabel matLabel = stockMatLabelService.selectStockMatLabelByLabelId(labelId);
-                matLabel.setOrderTypeLabel(InOrderTypeEnum.getLabel(matLabel.getOrderType()));
                 MatLabelPdfData pdfData = new MatLabelPdfData();
                 BeanUtils.copyBeanProp(pdfData, matLabel);
-                pdfData.setUnitName(sysDictDataService.selectDictLabel(dictType, pdfData.getUnitCode()));
                 pdfDataList.add(pdfData);
             }
             in = new FileInputStream(new File(pdfService.printLabelBatch(pdfDataList)));

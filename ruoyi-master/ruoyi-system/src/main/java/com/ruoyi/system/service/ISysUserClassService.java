@@ -7,7 +7,7 @@ import com.ruoyi.system.domain.SysUserClass;
 /**
  * 用户管理的物料分类Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-11
  */
 public interface ISysUserClassService {

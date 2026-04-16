@@ -13,7 +13,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 库存信息对象 stock_info
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-01
  */
 @Data
@@ -100,6 +100,12 @@ public class StockInfo extends BaseEntity {
 
     //总计数量
     private BigDecimal statsQuantity;
+
+    //安全库存（关联物料表）
+    private BigDecimal safetyStock;
+
+    //库存上限（关联物料表）
+    private BigDecimal maxStock;
 
     /**
      * 供应商编码

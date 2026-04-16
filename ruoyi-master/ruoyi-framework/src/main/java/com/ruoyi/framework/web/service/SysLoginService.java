@@ -30,7 +30,7 @@ import com.ruoyi.system.service.ISysUserService;
 /**
  * 登录校验方法
  *
- * @author ruoyi
+ * @author summer
  */
 @Component
 public class SysLoginService {

@@ -1,100 +1,98 @@
-@startuml 基础数据管理模块类图
+@startuml
+scale 1200 width
 skinparam linetype ortho
 skinparam classAttributeIconSize 0
-hide members
+skinparam classFontSize 18
+skinparam classAttributeFontSize 16
+skinparam nodesep 40
+skinparam ranksep 80
+skinparam arrowFontSize 18
 
-' Controller层
-class MatController {
-  - matService: MatService
-  + list(): AjaxResult
-  + add(): AjaxResult
-  + edit(): AjaxResult
-  + remove(): AjaxResult
-}
+' ========== Controller 层 ==========
+together {
+  class BaseMatController <<Controller>> {
+    + importData(MultipartFile, boolean): AjaxResult
+  }
 
-' Service层
-interface MatService {
-  + selectMatList(): List<BaseMat>
-  + insertMat(): int
-  + updateMat(): int
-  + deleteMat(): int
-}
+  class BaseWarehouseController <<Controller>> {
+  }
 
-class MatServiceImpl {
-  - matMapper: MatMapper
-  + selectMatList(): List<BaseMat>
-  + insertMat(): int
-  + updateMat(): int
-  + deleteMat(): int
-}
-
-' 实体类
-class BaseMat {
-  - matId: Long
-  - matCode: String
-  - matName: String
-  - figNum: String
-  - specModel: String
-  - matGroup: String
-  - matClass: String
-  - unit: String
-  - safetyStock: BigDecimal
-  - delFlag: String
-  - createBy: String
-  - createTime: Date
-}
-
-class BaseMatClass {
-  - classId: Long
-  - classCode: String
-  - className: String
-  - parentCode: String
-  - orderNum: Integer
-  - delFlag: String
-}
-
-class BaseMatGroup {
-  - groupId: Long
-  - groupCode: String
-  - groupName: String
-  - remark: String
-  - delFlag: String
-}
-
-class BaseMatBom {
-  - bomId: Long
-  - parentMatCode: String
-  - matCode: String
-  - quantity: BigDecimal
-  - delFlag: String
-}
-
-class BaseWarehouse {
-  - warehouseId: Long
-  - warehouseCode: String
-  - warehouseName: String
-  - warehouseType: String
-  - warehouseKeeper: String
-  - delFlag: String
-}
-
-class BaseLocation {
-  - locationId: Long
-  - locationCode: String
-  - locationName: String
-  - warehouseCode: String
-  - delFlag: String
+  class QualityStandardController <<Controller>> {
+  }
 }
 
 
-' 关联关系
-MatController --|> MatService : 依赖
-MatService <|.. MatServiceImpl : 实现
-MatServiceImpl --|> BaseMat : 操作
-BaseMat --|> BaseMatClass : 关联
-BaseMat --|> BaseMatGroup : 关联
-BaseMat --|> BaseMatBom : 关联
-BaseLocation --|> BaseWarehouse : 关联
+' ========== Service 层 ==========
+together {
+  interface IBaseMatService <<Service>> {
+    + selectBaseMatByMatCode(String): BaseMat
+    + importMat(List, Boolean, String): String
+  }
+
+  interface IBaseWarehouseService <<Service>> {
+    + getRecommendWarehouseList(String): List
+  }
+
+  interface IQualityStandardService <<Service>> {
+  }
+}
+
+' ========== 实体层 ==========
+together {
+  class BaseMat <<Entity>> {
+    - matCode: String
+    - matName: String
+    - safetyStock: BigDecimal
+  }
+
+  class BaseMatBom <<Entity>> {
+    - fatherMatCode: String
+    - childMatCode: String
+    - childMatNum: BigDecimal
+  }
+
+  class BaseWarehouse <<Entity>> {
+    - warehouseCode: String
+    - warehouseName: String
+  }
+
+  class BaseLocation <<Entity>> {
+    - warehouseCode: String
+    - locationCode: String
+  }
+
+  class QualityStandard <<Entity>> {
+    - standardCode: String
+    - checkType: String
+    - matCode: String
+  }
+
+  class QualityStandardItem <<Entity>> {
+    - itemName: String
+    - standardValue: String
+  }
+}
+
+' === Controller → Service ===
+BaseMatController -down-> IBaseMatService
+BaseWarehouseController -down-> IBaseWarehouseService
+QualityStandardController -down-> IQualityStandardService
+
+' === Service → Entity ===
+IBaseMatService -down..> BaseMat
+IBaseWarehouseService -down..> BaseWarehouse
+IQualityStandardService -down..> QualityStandard
+
+' === Entity 间关联 ===
+BaseMat "1" -- "*" BaseMatBom : BOM
+BaseLocation "*" --> "1" BaseWarehouse
+QualityStandard "1" *-- "*" QualityStandardItem
+QualityStandard ..> BaseMat
+
+' === 隐藏空壳类的成员分隔线 ===
+hide BaseWarehouseController members
+hide QualityStandardController members
+hide IQualityStandardService members
 
 @enduml
 

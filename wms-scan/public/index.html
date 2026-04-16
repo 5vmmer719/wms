@@ -689,50 +689,57 @@
                                         </div>
                                     </div>
                                     <div v-if="inReturnOrder.detailList && inReturnOrder.detailList.length > 0">
-                                        <label style="font-size:13px;color:#606266;margin-bottom:8px;display:block;">物料明细</label>
+                                        <label style="font-size:13px;color:#606266;margin-bottom:8px;display:block;">物料明细（勾选需要退货的物料）</label>
                                         <table class="detail-table">
                                             <thead>
                                                 <tr>
+                                                    <th style="width:40px;">选择</th>
                                                     <th>物料编码</th>
                                                     <th>物料名称</th>
                                                     <th>应退数量</th>
                                                     <th>已退数量</th>
+                                                    <th>待退数量</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr v-for="(item, idx) in inReturnOrder.detailList" :key="idx">
+                                                <tr v-for="(item, idx) in inReturnOrder.detailList" :key="idx"
+                                                    :style="{ background: item.selected ? '#ecf5ff' : '' }">
+                                                    <td style="text-align:center;">
+                                                        <input type="checkbox" v-model="item.selected" @change="toggleInReturnItemSelection(item)">
+                                                    </td>
                                                     <td>{{ item.matCode }}</td>
                                                     <td>{{ item.matName }}</td>
                                                     <td>{{ item.quantity }}</td>
                                                     <td>{{ item.returnQuantity || 0 }}</td>
+                                                    <td style="color:#409eff;font-weight:500;">{{ (item.quantity || 0) - (item.returnQuantity || 0) }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                     <div v-if="inReturnError" class="error-msg" style="color:#f56c6c;font-size:12px;margin-top:8px;">{{ inReturnError }}</div>
-                                    <div class="form-group" style="margin-top:16px;">
-                                        <label>物料标签ID</label>
-                                        <input v-model="inReturnForm.labelId" placeholder="扫描物料标签二维码">
-                                    </div>
-                                    <div class="form-group">
-                                        <label>退货数量</label>
-                                        <input v-model.number="inReturnForm.quantity" type="number" placeholder="输入退货数量" min="0">
-                                    </div>
-                                    <div v-if="inReturnReceivedList.length > 0" style="margin:12px 0;">
-                                        <label style="font-size:13px;color:#606266;margin-bottom:8px;display:block;">已扫描物料</label>
-                                        <div v-for="(item, idx) in inReturnReceivedList" :key="idx" class="mat-label-item">
-                                            <div class="info">
-                                                <div class="mat-name">{{ item.labelId }}</div>
-                                                <div class="mat-code">数量: {{ item.quantity }}</div>
+
+                                    <!-- 已选物料列表 -->
+                                    <div v-if="inReturnSelectedList.length > 0" style="margin-top:16px;">
+                                        <label style="font-size:14px;color:#303133;margin-bottom:10px;display:block;font-weight:500;">
+                                            已选物料 <span style="color:#909399;font-weight:normal;font-size:12px;">（请输入退货数量）</span>
+                                        </label>
+                                        <div v-for="(item, idx) in inReturnSelectedList" :key="item.labelId" class="mat-label-item selected">
+                                            <div class="checkbox" @click="removeInReturnSelected(item.labelId)" style="cursor:pointer;">
+                                                <input type="checkbox" checked @click.stop>
                                             </div>
-                                            <button class="btn btn-small btn-danger" @click="removeInReturnReceived(idx)">删除</button>
+                                            <div class="info" style="flex:1;">
+                                                <div class="mat-name">{{ item.matName }}</div>
+                                                <div class="mat-code">编码: {{ item.matCode }} | 待退: {{ item.pendingQuantity }}</div>
+                                            </div>
+                                            <input class="quantity-input" type="number" v-model.number="item.inputQuantity"
+                                                   placeholder="数量" :min="1" :max="item.pendingQuantity"
+                                                   style="width:80px;margin-left:10px;">
+                                            <button class="btn btn-small btn-danger" style="margin-left:10px;" @click="removeInReturnSelected(item.labelId)">移除</button>
                                         </div>
                                     </div>
-                                    <div class="btn-group">
-                                        <button class="btn btn-default" @click="addToInReturnReceived" :disabled="!inReturnForm.labelId || !inReturnForm.quantity">
-                                            添加标签
-                                        </button>
-                                        <button class="btn btn-primary" @click="submitInReturn" :disabled="inReturnLoading || inReturnReceivedList.length === 0">
+
+                                    <div class="btn-group" style="margin-top:20px;">
+                                        <button class="btn btn-primary" @click="submitInReturn" :disabled="inReturnLoading || inReturnSelectedList.length === 0">
                                             {{ inReturnLoading ? '处理中...' : '确认退货' }}
                                         </button>
                                         <button class="btn btn-default" @click="resetInReturnForm">重置</button>
@@ -764,29 +771,57 @@
                                         </div>
                                     </div>
                                     <div v-if="outReturnOrder.detailList && outReturnOrder.detailList.length > 0">
-                                        <label style="font-size:13px;color:#666;margin-bottom:8px;display:block;">物料明细</label>
+                                        <label style="font-size:13px;color:#606266;margin-bottom:8px;display:block;">物料明细（勾选需要退货的物料）</label>
                                         <table class="detail-table">
                                             <thead>
                                                 <tr>
+                                                    <th style="width:40px;">选择</th>
                                                     <th>物料编码</th>
                                                     <th>物料名称</th>
                                                     <th>应退数量</th>
                                                     <th>已退数量</th>
+                                                    <th>待退数量</th>
                                                 </tr>
                                             </thead>
                                             <tbody>
-                                                <tr v-for="(item, idx) in outReturnOrder.detailList" :key="idx">
+                                                <tr v-for="(item, idx) in outReturnOrder.detailList" :key="idx"
+                                                    :style="{ background: item.selected ? '#ecf5ff' : '' }">
+                                                    <td style="text-align:center;">
+                                                        <input type="checkbox" v-model="item.selected" @change="toggleOutReturnItemSelection(item)">
+                                                    </td>
                                                     <td>{{ item.matCode }}</td>
                                                     <td>{{ item.matName }}</td>
                                                     <td>{{ item.quantity }}</td>
                                                     <td>{{ item.returnQuantity || 0 }}</td>
+                                                    <td style="color:#409eff;font-weight:500;">{{ (item.quantity || 0) - (item.returnQuantity || 0) }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
                                     </div>
                                     <div v-if="outReturnError" class="error-msg" style="color:#f56c6c;font-size:12px;margin-top:8px;">{{ outReturnError }}</div>
-                                    <div class="btn-group">
-                                        <button class="btn btn-primary" @click="submitOutReturn" :disabled="outReturnLoading">
+
+                                    <!-- 已选物料列表 -->
+                                    <div v-if="outReturnSelectedList.length > 0" style="margin-top:16px;">
+                                        <label style="font-size:14px;color:#303133;margin-bottom:10px;display:block;font-weight:500;">
+                                            已选物料 <span style="color:#909399;font-weight:normal;font-size:12px;">（请输入退货数量）</span>
+                                        </label>
+                                        <div v-for="(item, idx) in outReturnSelectedList" :key="item.detailId" class="mat-label-item selected">
+                                            <div class="checkbox" @click="removeOutReturnSelected(item.detailId)" style="cursor:pointer;">
+                                                <input type="checkbox" checked @click.stop>
+                                            </div>
+                                            <div class="info" style="flex:1;">
+                                                <div class="mat-name">{{ item.matName }}</div>
+                                                <div class="mat-code">编码: {{ item.matCode }} | 待退: {{ item.pendingQuantity }}</div>
+                                            </div>
+                                            <input class="quantity-input" type="number" v-model.number="item.inputQuantity"
+                                                   placeholder="数量" :min="1" :max="item.pendingQuantity"
+                                                   style="width:80px;margin-left:10px;">
+                                            <button class="btn btn-small btn-danger" style="margin-left:10px;" @click="removeOutReturnSelected(item.detailId)">移除</button>
+                                        </div>
+                                    </div>
+
+                                    <div class="btn-group" style="margin-top:20px;">
+                                        <button class="btn btn-primary" @click="submitOutReturn" :disabled="outReturnLoading || outReturnSelectedList.length === 0">
                                             {{ outReturnLoading ? '处理中...' : '确认退货' }}
                                         </button>
                                         <button class="btn btn-default" @click="resetOutReturnForm">重置</button>
@@ -974,17 +1009,18 @@
                 allotSelectedList: [], // 已选拣货物料
 
                 // 入库退货
-                inReturnForm: { returnNo: '', labelId: '', quantity: null },
+                inReturnForm: { returnNo: '' },
                 inReturnOrder: {},
                 inReturnError: '',
                 inReturnLoading: false,
-                inReturnReceivedList: [],
+                inReturnSelectedList: [], // 已选中的退货物料列表
 
                 // 出库退货
                 outReturnForm: { returnNo: '' },
                 outReturnOrder: {},
                 outReturnError: '',
                 outReturnLoading: false,
+                outReturnSelectedList: [], // 已选中的退货物料列表
 
                 // 上下架
                 locationForm: { warehouseCode: '', locationCode: '', labelId: '', quantity: null },
@@ -1336,6 +1372,11 @@
                         const res = await axios.get('/api/inOrder/' + this.inForm.orderNo);
                         if (res.data.code === 200) {
                             this.inOrder = res.data.data || {};
+                            console.log('入库单数据:', JSON.stringify({
+                                warehouseCode: this.inOrder.warehouseCode,
+                                warehouseName: this.inOrder.warehouseName,
+                                detailWarehouseCode: this.inOrder.detailList && this.inOrder.detailList[0] && this.inOrder.detailList[0].warehouseCode
+                            }));
                             this.showToast('已获取入库单信息', 'success');
                         } else {
                             this.inOrderError = res.data.msg || '获取入库单失败';
@@ -1363,8 +1404,9 @@
 
                     this.inLoading = true;
                     try {
-                        // 从第一个明细中获取仓库编码
-                        const warehouseCode = this.inOrder.detailList[0].warehouseCode;
+                        // 优先从入库单主表获取仓库编码，其次从明细中获取
+                        const warehouseCode = this.inOrder.warehouseCode
+                            || (this.inOrder.detailList[0] && this.inOrder.detailList[0].warehouseCode);
                         if (!warehouseCode) {
                             this.showToast('入库单缺少仓库信息', 'error');
                             this.inLoading = false;
@@ -1711,6 +1753,14 @@
                         const res = await axios.get('/api/inReturn/' + this.inReturnForm.returnNo);
                         if (res.data.code === 200) {
                             this.inReturnOrder = res.data.data || {};
+                            // 为每个明细添加 selected 属性和待退数量计算
+                            if (this.inReturnOrder.detailList) {
+                                this.inReturnOrder.detailList.forEach(item => {
+                                    this.$set(item, 'selected', false);
+                                    item.pendingQuantity = (item.quantity || 0) - (item.returnQuantity || 0);
+                                });
+                            }
+                            this.inReturnSelectedList = [];
                             this.showToast('已获取入库退货单信息', 'success');
                         } else {
                             this.inReturnError = res.data.msg || '获取入库退货单失败';
@@ -1727,17 +1777,31 @@
                         this.showToast('请先扫描入库退货单', 'error');
                         return;
                     }
-                    if (this.inReturnReceivedList.length === 0) {
-                        this.showToast('请添加退货物料标签', 'error');
+                    if (this.inReturnSelectedList.length === 0) {
+                        this.showToast('请选择需要退货的物料', 'error');
                         return;
                     }
 
+                    // 校验数量
+                    let hasError = false;
+                    this.inReturnSelectedList.forEach(item => {
+                        if (!item.inputQuantity || item.inputQuantity <= 0) {
+                            this.showToast('请输入有效的退货数量', 'error');
+                            hasError = true;
+                        }
+                        if (item.inputQuantity > item.pendingQuantity) {
+                            this.showToast('退货数量不能超过待退数量', 'error');
+                            hasError = true;
+                        }
+                    });
+                    if (hasError) return;
+
                     this.inReturnLoading = true;
                     try {
-                        // 构建退货Map: labelId -> 数量
+                        // 构建退货Map: labelId(Long) -> 数量
                         const returnMap = {};
-                        this.inReturnReceivedList.forEach(item => {
-                            returnMap[item.labelId] = item.quantity;
+                        this.inReturnSelectedList.forEach(item => {
+                            returnMap[item.labelId] = item.inputQuantity;
                         });
 
                         const submitData = {
@@ -1760,32 +1824,45 @@
                 },
 
                 resetInReturnForm() {
-                    this.inReturnForm = { returnNo: '', labelId: '', quantity: null };
+                    this.inReturnForm = { returnNo: '' };
                     this.inReturnOrder = {};
                     this.inReturnError = '';
-                    this.inReturnReceivedList = [];
+                    this.inReturnSelectedList = [];
                 },
 
-                addToInReturnReceived() {
-                    if (!this.inReturnForm.labelId) {
-                        this.showToast('请输入物料标签ID', 'error');
-                        return;
+                // 勾选/取消勾选退货物料
+                toggleInReturnItemSelection(item) {
+                    if (item.selected) {
+                        // 添加到已选列表
+                        const existItem = this.inReturnSelectedList.find(i => i.labelId === item.labelId);
+                        if (!existItem) {
+                            this.inReturnSelectedList.push({
+                                labelId: item.labelId,
+                                matCode: item.matCode,
+                                matName: item.matName,
+                                pendingQuantity: item.pendingQuantity,
+                                inputQuantity: item.pendingQuantity // 默认退全部待退数量
+                            });
+                        }
+                    } else {
+                        // 从已选列表移除
+                        this.removeInReturnSelected(item.labelId);
                     }
-                    if (!this.inReturnForm.quantity) {
-                        this.showToast('请输入退货数量', 'error');
-                        return;
-                    }
-                    this.inReturnReceivedList.push({
-                        labelId: this.inReturnForm.labelId,
-                        quantity: this.inReturnForm.quantity
-                    });
-                    this.inReturnForm.labelId = '';
-                    this.inReturnForm.quantity = null;
-                    this.showToast('已添加标签', 'success');
                 },
 
-                removeInReturnReceived(index) {
-                    this.inReturnReceivedList.splice(index, 1);
+                // 从已选列表移除退货物料
+                removeInReturnSelected(labelId) {
+                    const idx = this.inReturnSelectedList.findIndex(i => i.labelId === labelId);
+                    if (idx > -1) {
+                        this.inReturnSelectedList.splice(idx, 1);
+                    }
+                    // 同时取消明细中的勾选状态
+                    if (this.inReturnOrder.detailList) {
+                        const detail = this.inReturnOrder.detailList.find(i => i.labelId === labelId);
+                        if (detail) {
+                            detail.selected = false;
+                        }
+                    }
                 },
 
                 // ========== 出库退货相关 ==========
@@ -1796,6 +1873,14 @@
                         const res = await axios.get('/api/outReturn/' + this.outReturnForm.returnNo);
                         if (res.data.code === 200) {
                             this.outReturnOrder = res.data.data || {};
+                            // 为每个明细添加 selected 属性和待退数量计算
+                            if (this.outReturnOrder.detailList) {
+                                this.outReturnOrder.detailList.forEach(item => {
+                                    this.$set(item, 'selected', false);
+                                    item.pendingQuantity = (item.quantity || 0) - (item.returnQuantity || 0);
+                                });
+                            }
+                            this.outReturnSelectedList = [];
                             this.showToast('已获取出库退货单信息', 'success');
                         } else {
                             this.outReturnError = res.data.msg || '获取出库退货单失败';
@@ -1808,16 +1893,56 @@
                 },
 
                 async submitOutReturn() {
+                    if (!this.outReturnForm.returnNo) {
+                        this.showToast('请先扫描出库退货单', 'error');
+                        return;
+                    }
+                    if (this.outReturnSelectedList.length === 0) {
+                        this.showToast('请选择需要退货的物料', 'error');
+                        return;
+                    }
+
+                    // 校验数量
+                    let hasError = false;
+                    this.outReturnSelectedList.forEach(item => {
+                        if (!item.inputQuantity || item.inputQuantity <= 0) {
+                            this.showToast('请输入有效的退货数量', 'error');
+                            hasError = true;
+                        }
+                        if (item.inputQuantity > item.pendingQuantity) {
+                            this.showToast('退货数量不能超过待退数量', 'error');
+                            hasError = true;
+                        }
+                    });
+                    if (hasError) return;
+
                     this.outReturnLoading = true;
                     try {
+                        // 构建提交数据：只提交勾选的明细，并使用用户输入的退货数量
                         const submitData = {
                             returnNo: this.outReturnForm.returnNo,
                             warehouseCode: this.outReturnOrder.warehouseCode,
                             workshopCode: this.outReturnOrder.workshopCode,
                             returnType: this.outReturnOrder.returnType,
-                            detailList: (this.outReturnOrder.detailList || []).map(item => ({
-                                ...item,
-                                returnQuantity: item.quantity
+                            orderNo: this.outReturnOrder.orderNo,
+                            detailList: this.outReturnSelectedList.map(item => ({
+                                detailId: item.detailId,
+                                labelId: item.labelId,
+                                matCode: item.matCode,
+                                matName: item.matName,
+                                fdCode: item.fdCode,
+                                figNum: item.figNum,
+                                matGroup: item.matGroup,
+                                matClass: item.matClass,
+                                batch: item.batch,
+                                quantity: item.quantity,
+                                returnQuantity: item.inputQuantity,
+                                unitCode: item.unitCode,
+                                supplierCode: item.supplierCode,
+                                supplierName: item.supplierName,
+                                warehouseCode: item.warehouseCode,
+                                locationCode: item.locationCode,
+                                workshopCode: item.workshopCode
                             }))
                         };
 
@@ -1839,6 +1964,55 @@
                     this.outReturnForm = { returnNo: '' };
                     this.outReturnOrder = {};
                     this.outReturnError = '';
+                    this.outReturnSelectedList = [];
+                },
+
+                // 勾选/取消勾选出库退货物料
+                toggleOutReturnItemSelection(item) {
+                    if (item.selected) {
+                        // 添加到已选列表
+                        const existItem = this.outReturnSelectedList.find(i => i.detailId === item.detailId);
+                        if (!existItem) {
+                            this.outReturnSelectedList.push({
+                                detailId: item.detailId,
+                                labelId: item.labelId,
+                                matCode: item.matCode,
+                                matName: item.matName,
+                                fdCode: item.fdCode,
+                                figNum: item.figNum,
+                                matGroup: item.matGroup,
+                                matClass: item.matClass,
+                                batch: item.batch,
+                                quantity: item.quantity,
+                                unitCode: item.unitCode,
+                                supplierCode: item.supplierCode,
+                                supplierName: item.supplierName,
+                                warehouseCode: item.warehouseCode,
+                                locationCode: item.locationCode,
+                                workshopCode: item.workshopCode,
+                                pendingQuantity: item.pendingQuantity,
+                                inputQuantity: item.pendingQuantity // 默认退全部待退数量
+                            });
+                        }
+                    } else {
+                        // 从已选列表移除
+                        this.removeOutReturnSelected(item.detailId);
+                    }
+                },
+
+                // 从已选列表移除出库退货物料
+                removeOutReturnSelected(detailId) {
+                    const idx = this.outReturnSelectedList.findIndex(i => i.detailId === detailId);
+                    if (idx > -1) {
+                        this.outReturnSelectedList.splice(idx, 1);
+                    }
+                    // 同时取消明细中的勾选状态
+                    if (this.outReturnOrder.detailList) {
+                        const detail = this.outReturnOrder.detailList.find(i => i.detailId === detailId);
+                        if (detail) {
+                            detail.selected = false;
+                        }
+                    }
                 },
 
                 // ========== 上下架相关 ==========

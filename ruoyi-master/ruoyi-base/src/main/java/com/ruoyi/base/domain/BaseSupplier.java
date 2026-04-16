@@ -9,7 +9,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 供应商对象 base_supplier
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @Data

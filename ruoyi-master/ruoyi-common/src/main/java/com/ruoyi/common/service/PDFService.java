@@ -33,18 +33,12 @@ public class PDFService {
         Map<String,String> map = new HashMap<>();
         map.put("supplierName", pdfData.getSupplierName());
         map.put("matCode", pdfData.getMatCode());
-        map.put("matName", pdfData.getMatName());
-        map.put("figNum", pdfData.getFigNum());
-        map.put("quantity", String.valueOf(Arith.round(pdfData.getQuantity().doubleValue(), 2)));
-        map.put("unitName", pdfData.getUnitName());
-        map.put("batch", pdfData.getBatch());
-        map.put("orderNo", pdfData.getOrderNo());
-        map.put("orderTypeLabel", pdfData.getOrderTypeLabel());
+        map.put("labelCode", pdfData.getLabelCode() != null ? pdfData.getLabelCode() : "");
         map.put("prodTime", DateUtils.parseDateToStr(DateUtils.YYYY_MM_DD, pdfData.getProdTime()));
         List<PdfPrintData> printDataList = new ArrayList<>();
         for (int i = 0; i < num; i ++){
             Map<String, String> map2 = new HashMap();
-            map2.put("qr_af_image", QRUtils.qrout("LABEL:" + pdfData.getLabelId()));
+            map2.put("qr_af_image", QRUtils.qrout("LABEL:" + pdfData.getLabelCode()));
             PdfPrintData pdfPrintData = new PdfPrintData();
             pdfPrintData.setField(map);
             pdfPrintData.setImage(map2);
@@ -64,17 +58,11 @@ public class PDFService {
             map = new HashMap<>();
             map.put("supplierName", pdfData.getSupplierName());
             map.put("matCode", pdfData.getMatCode());
-            map.put("matName", pdfData.getMatName());
-            map.put("figNum", pdfData.getFigNum());
-            map.put("quantity", String.valueOf(Arith.round(pdfData.getQuantity().doubleValue(), 2)));
-            map.put("unitName", pdfData.getUnitName());
-            map.put("batch", pdfData.getBatch());
-            map.put("orderNo", pdfData.getOrderNo());
-            map.put("orderTypeLabel", pdfData.getOrderTypeLabel());
+            map.put("labelCode", pdfData.getLabelCode() != null ? pdfData.getLabelCode() : "");
             map.put("prodTime", DateUtils.parseDateToStr(DateUtils.YYYY_MM_DD, pdfData.getProdTime()));
 
             Map<String, String> map2 = new HashMap();
-            map2.put("qr_af_image", QRUtils.qrout("LABEL:" + pdfData.getLabelId()));
+            map2.put("qr_af_image", QRUtils.qrout("LABEL:" + pdfData.getLabelCode()));
             PdfPrintData pdfPrintData = new PdfPrintData();
             pdfPrintData.setField(map);
             pdfPrintData.setImage(map2);

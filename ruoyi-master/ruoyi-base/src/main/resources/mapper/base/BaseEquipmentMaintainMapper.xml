@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.BaseEquipmentMaintainMapper">
+
+    <resultMap type="BaseEquipmentMaintain" id="BaseEquipmentMaintainResult">
+        <result property="maintainId"       column="maintain_id"        />
+        <result property="maintainNo"       column="maintain_no"        />
+        <result property="equipmentCode"    column="equipment_code"     />
+        <result property="equipmentName"    column="equipment_name"     />
+        <result property="maintainType"     column="maintain_type"      />
+        <result property="maintainDate"     column="maintain_date"      />
+        <result property="maintainEndDate"  column="maintain_end_date"  />
+        <result property="maintainDesc"     column="maintain_desc"      />
+        <result property="maintainBy"       column="maintain_by"        />
+        <result property="maintainHours"    column="maintain_hours"     />
+        <result property="maintainCost"     column="maintain_cost"      />
+        <result property="maintainStatus"   column="maintain_status"    />
+        <result property="source"            column="source"             />
+        <result property="delFlag"          column="del_flag"           />
+        <result property="createBy"         column="create_by"          />
+        <result property="createTime"       column="create_time"        />
+        <result property="updateBy"         column="update_by"          />
+        <result property="updateTime"       column="update_time"        />
+        <result property="remark"           column="remark"             />
+    </resultMap>
+
+    <sql id="selectBaseEquipmentMaintainVo">
+        select m.maintain_id, m.maintain_no, m.equipment_code, m.equipment_name, m.maintain_type,
+               m.maintain_date, m.maintain_end_date, m.maintain_desc, m.maintain_by,
+               m.maintain_hours, m.maintain_cost, m.maintain_status, m.source,
+               m.del_flag, m.create_by, m.create_time, m.update_by, m.update_time, m.remark
+        from base_equipment_maintain m
+    </sql>
+
+    <select id="selectBaseEquipmentMaintainByMaintainId" parameterType="Long" resultMap="BaseEquipmentMaintainResult">
+        <include refid="selectBaseEquipmentMaintainVo"/>
+        where m.maintain_id = #{maintainId} and m.del_flag = '0'
+    </select>
+
+    <select id="selectBaseEquipmentMaintainList" parameterType="BaseEquipmentMaintain" resultMap="BaseEquipmentMaintainResult">
+        <include refid="selectBaseEquipmentMaintainVo"/>
+        <where>
+            m.del_flag = '0'
+            <if test="maintainNo != null and maintainNo != ''"> and m.maintain_no like concat('%', #{maintainNo}, '%')</if>
+            <if test="equipmentCode != null and equipmentCode != ''"> and m.equipment_code = #{equipmentCode}</if>
+            <if test="equipmentName != null and equipmentName != ''"> and m.equipment_name like concat('%', #{equipmentName}, '%')</if>
+            <if test="maintainType != null and maintainType != ''"> and m.maintain_type = #{maintainType}</if>
+            <if test="maintainStatus != null and maintainStatus != ''"> and m.maintain_status = #{maintainStatus}</if>
+            <if test="params.beginMaintainDate != null and params.beginMaintainDate != ''"> and m.maintain_date &gt;= #{params.beginMaintainDate}</if>
+            <if test="params.endMaintainDate != null and params.endMaintainDate != ''"> and m.maintain_date &lt;= #{params.endMaintainDate}</if>
+        </where>
+        order by m.maintain_id desc
+    </select>
+
+    <select id="selectMaxMaintainNoByPrefix" resultType="String">
+        select max(maintain_no) from base_equipment_maintain
+        where del_flag = '0' and maintain_no like concat(#{prefix}, '%')
+    </select>
+
+    <insert id="insertBaseEquipmentMaintain" parameterType="BaseEquipmentMaintain" useGeneratedKeys="true" keyProperty="maintainId">
+        insert into base_equipment_maintain
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="maintainNo != null and maintainNo != ''">maintain_no,</if>
+            <if test="equipmentCode != null and equipmentCode != ''">equipment_code,</if>
+            <if test="equipmentName != null">equipment_name,</if>
+            <if test="maintainType != null">maintain_type,</if>
+            <if test="maintainDate != null">maintain_date,</if>
+            <if test="maintainEndDate != null">maintain_end_date,</if>
+            <if test="maintainDesc != null">maintain_desc,</if>
+            <if test="maintainBy != null">maintain_by,</if>
+            <if test="maintainHours != null">maintain_hours,</if>
+            <if test="maintainCost != null">maintain_cost,</if>
+            <if test="maintainStatus != null">maintain_status,</if>
+            <if test="source != null">source,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="maintainNo != null and maintainNo != ''">#{maintainNo},</if>
+            <if test="equipmentCode != null and equipmentCode != ''">#{equipmentCode},</if>
+            <if test="equipmentName != null">#{equipmentName},</if>
+            <if test="maintainType != null">#{maintainType},</if>
+            <if test="maintainDate != null">#{maintainDate},</if>
+            <if test="maintainEndDate != null">#{maintainEndDate},</if>
+            <if test="maintainDesc != null">#{maintainDesc},</if>
+            <if test="maintainBy != null">#{maintainBy},</if>
+            <if test="maintainHours != null">#{maintainHours},</if>
+            <if test="maintainCost != null">#{maintainCost},</if>
+            <if test="maintainStatus != null">#{maintainStatus},</if>
+            <if test="source != null">#{source},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBaseEquipmentMaintain" parameterType="BaseEquipmentMaintain">
+        update base_equipment_maintain
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="equipmentCode != null and equipmentCode != ''">equipment_code = #{equipmentCode},</if>
+            <if test="equipmentName != null">equipment_name = #{equipmentName},</if>
+            <if test="maintainType != null">maintain_type = #{maintainType},</if>
+            <if test="maintainDate != null">maintain_date = #{maintainDate},</if>
+            <if test="maintainEndDate != null">maintain_end_date = #{maintainEndDate},</if>
+            <if test="maintainDesc != null">maintain_desc = #{maintainDesc},</if>
+            <if test="maintainBy != null">maintain_by = #{maintainBy},</if>
+            <if test="maintainHours != null">maintain_hours = #{maintainHours},</if>
+            <if test="maintainCost != null">maintain_cost = #{maintainCost},</if>
+            <if test="maintainStatus != null">maintain_status = #{maintainStatus},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where maintain_id = #{maintainId}
+    </update>
+
+    <update id="deleteBaseEquipmentMaintainByMaintainId" parameterType="Long">
+        update base_equipment_maintain set del_flag = '1' where maintain_id = #{maintainId}
+    </update>
+
+    <update id="deleteBaseEquipmentMaintainByMaintainIds" parameterType="String">
+        update base_equipment_maintain set del_flag = '1' where maintain_id in
+        <foreach item="maintainId" collection="array" open="(" separator="," close=")">
+            #{maintainId}
+        </foreach>
+    </update>
+
+</mapper>
+

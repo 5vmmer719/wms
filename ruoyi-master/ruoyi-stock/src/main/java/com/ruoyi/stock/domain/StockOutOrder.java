@@ -12,7 +12,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 出库单对象 stock_out_order
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data
@@ -42,6 +42,12 @@ public class StockOutOrder extends BaseEntity {
      */
     @Excel(name = "生产订单号")
     private String prodOrderNo;
+
+    /**
+     * 关联客户订单号
+     */
+    @Excel(name = "客户订单号")
+    private String customerOrderNo;
 
     /**
      * 仓库

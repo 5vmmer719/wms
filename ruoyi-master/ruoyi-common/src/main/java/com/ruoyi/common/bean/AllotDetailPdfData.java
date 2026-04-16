@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 /**
  * 调拨单详情对象 stock_allot_detail
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 @Data

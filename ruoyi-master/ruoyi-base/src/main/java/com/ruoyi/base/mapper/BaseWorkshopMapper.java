@@ -7,7 +7,7 @@ import com.ruoyi.base.domain.BaseWorkshop;
 /**
  * 车间Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-28
  */
 public interface BaseWorkshopMapper {

@@ -6,7 +6,7 @@ import com.ruoyi.stock.domain.StockAllotOrder;
 /**
  * 调拨单Mapper接口
  * 
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 public interface StockAllotOrderMapper 

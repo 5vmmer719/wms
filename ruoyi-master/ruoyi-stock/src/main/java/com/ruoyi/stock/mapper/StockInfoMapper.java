@@ -10,7 +10,7 @@ import org.springframework.security.core.parameters.P;
 /**
  * 库存信息Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface StockInfoMapper {
@@ -71,6 +71,16 @@ public interface StockInfoMapper {
      * 按仓库和物料编码查询库存信息
      */
     public StockInfo selectStockInfoByMatCode(@Param("warehouseCode") String warehouseCode, @Param("matCode") String matCode);
+
+    /**
+     * 按仓库和物料编码查询库存总和（所有货位的库存合计）
+     */
+    public BigDecimal selectStockTotalByMatCode(@Param("warehouseCode") String warehouseCode, @Param("matCode") String matCode);
+
+    /**
+     * 按仓库和物料编码查询所有库存记录（用于跨货位循环扣减）
+     */
+    public List<StockInfo> selectStockInfoListByMatCode(@Param("warehouseCode") String warehouseCode, @Param("matCode") String matCode);
 
     /**
      * 按物料编码+批次+供应商扣减库存（精确扣减）

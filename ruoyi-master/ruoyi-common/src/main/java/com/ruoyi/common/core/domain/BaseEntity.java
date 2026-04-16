@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 /**
  * Entity基类
  *
- * @author ruoyi
+ * @author summer
  */
 public class BaseEntity implements Serializable {
     private static final long serialVersionUID = 1L;

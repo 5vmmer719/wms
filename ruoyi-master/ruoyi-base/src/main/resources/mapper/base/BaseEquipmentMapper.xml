@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.BaseEquipmentMapper">
+
+    <resultMap type="BaseEquipment" id="BaseEquipmentResult">
+        <result property="equipmentId"      column="equipment_id"       />
+        <result property="equipmentCode"    column="equipment_code"     />
+        <result property="equipmentName"    column="equipment_name"     />
+        <result property="equipmentType"    column="equipment_type"     />
+        <result property="workshopCode"     column="workshop_code"      />
+        <result property="capacity"         column="capacity"           />
+        <result property="capacityUnit"     column="capacity_unit"      />
+        <result property="equipmentStatus"  column="equipment_status"   />
+        <result property="purchaseDate"     column="purchase_date"      />
+        <result property="lastMaintainDate" column="last_maintain_date" />
+        <result property="nextMaintainDate" column="next_maintain_date" />
+        <result property="maintainCycle"    column="maintain_cycle"     />
+        <result property="delFlag"          column="del_flag"           />
+        <result property="createBy"         column="create_by"          />
+        <result property="createTime"       column="create_time"        />
+        <result property="updateBy"         column="update_by"          />
+        <result property="updateTime"       column="update_time"        />
+        <result property="remark"           column="remark"             />
+    </resultMap>
+
+    <sql id="selectBaseEquipmentVo">
+        select equipment_id, equipment_code, equipment_name, equipment_type, workshop_code,
+               capacity, capacity_unit, equipment_status, purchase_date, last_maintain_date,
+               next_maintain_date, maintain_cycle, del_flag, create_by, create_time, update_by, update_time, remark
+        from base_equipment
+    </sql>
+
+    <select id="selectBaseEquipmentByEquipmentId" parameterType="Long" resultMap="BaseEquipmentResult">
+        <include refid="selectBaseEquipmentVo"/>
+        where equipment_id = #{equipmentId} and del_flag = '0'
+    </select>
+
+    <select id="selectBaseEquipmentByEquipmentCode" parameterType="String" resultMap="BaseEquipmentResult">
+        <include refid="selectBaseEquipmentVo"/>
+        where equipment_code = #{equipmentCode} and del_flag = '0'
+    </select>
+
+    <select id="selectBaseEquipmentList" parameterType="BaseEquipment" resultMap="BaseEquipmentResult">
+        <include refid="selectBaseEquipmentVo"/>
+        <where>
+            del_flag = '0'
+            <if test="equipmentCode != null and equipmentCode != ''"> and equipment_code like concat('%', #{equipmentCode}, '%')</if>
+            <if test="equipmentName != null and equipmentName != ''"> and equipment_name like concat('%', #{equipmentName}, '%')</if>
+            <if test="equipmentType != null and equipmentType != ''"> and equipment_type = #{equipmentType}</if>
+            <if test="workshopCode != null and workshopCode != ''"> and workshop_code = #{workshopCode}</if>
+            <if test="equipmentStatus != null and equipmentStatus != ''"> and equipment_status = #{equipmentStatus}</if>
+        </where>
+        order by equipment_id desc
+    </select>
+
+    <select id="selectMaxEquipmentCodeByPrefix" resultType="String">
+        select max(equipment_code) from base_equipment
+        where del_flag = '0' and equipment_code like concat(#{prefix}, '%')
+    </select>
+
+    <insert id="insertBaseEquipment" parameterType="BaseEquipment" useGeneratedKeys="true" keyProperty="equipmentId">
+        insert into base_equipment
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="equipmentCode != null and equipmentCode != ''">equipment_code,</if>
+            <if test="equipmentName != null and equipmentName != ''">equipment_name,</if>
+            <if test="equipmentType != null">equipment_type,</if>
+            <if test="workshopCode != null">workshop_code,</if>
+            <if test="capacity != null">capacity,</if>
+            <if test="capacityUnit != null">capacity_unit,</if>
+            <if test="equipmentStatus != null">equipment_status,</if>
+            <if test="purchaseDate != null">purchase_date,</if>
+            <if test="lastMaintainDate != null">last_maintain_date,</if>
+            <if test="nextMaintainDate != null">next_maintain_date,</if>
+            <if test="maintainCycle != null">maintain_cycle,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="equipmentCode != null and equipmentCode != ''">#{equipmentCode},</if>
+            <if test="equipmentName != null and equipmentName != ''">#{equipmentName},</if>
+            <if test="equipmentType != null">#{equipmentType},</if>
+            <if test="workshopCode != null">#{workshopCode},</if>
+            <if test="capacity != null">#{capacity},</if>
+            <if test="capacityUnit != null">#{capacityUnit},</if>
+            <if test="equipmentStatus != null">#{equipmentStatus},</if>
+            <if test="purchaseDate != null">#{purchaseDate},</if>
+            <if test="lastMaintainDate != null">#{lastMaintainDate},</if>
+            <if test="nextMaintainDate != null">#{nextMaintainDate},</if>
+            <if test="maintainCycle != null">#{maintainCycle},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBaseEquipment" parameterType="BaseEquipment">
+        update base_equipment
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="equipmentName != null and equipmentName != ''">equipment_name = #{equipmentName},</if>
+            <if test="equipmentType != null">equipment_type = #{equipmentType},</if>
+            <if test="workshopCode != null">workshop_code = #{workshopCode},</if>
+            <if test="capacity != null">capacity = #{capacity},</if>
+            <if test="capacityUnit != null">capacity_unit = #{capacityUnit},</if>
+            <if test="equipmentStatus != null">equipment_status = #{equipmentStatus},</if>
+            <if test="purchaseDate != null">purchase_date = #{purchaseDate},</if>
+            <if test="lastMaintainDate != null">last_maintain_date = #{lastMaintainDate},</if>
+            <if test="nextMaintainDate != null">next_maintain_date = #{nextMaintainDate},</if>
+            <if test="maintainCycle != null">maintain_cycle = #{maintainCycle},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where equipment_id = #{equipmentId}
+    </update>
+
+    <update id="deleteBaseEquipmentByEquipmentId" parameterType="Long">
+        update base_equipment set del_flag = '1' where equipment_id = #{equipmentId}
+    </update>
+
+    <update id="deleteBaseEquipmentByEquipmentIds" parameterType="String">
+        update base_equipment set del_flag = '1' where equipment_id in
+        <foreach item="equipmentId" collection="array" open="(" separator="," close=")">
+            #{equipmentId}
+        </foreach>
+    </update>
+
+    <!-- 查询需要维护的设备：下次维护日期 <= 今天，状态为正常(0)，设置了维护周期 -->
+    <select id="selectEquipmentNeedMaintain" resultMap="BaseEquipmentResult">
+        <include refid="selectBaseEquipmentVo"/>
+        where del_flag = '0'
+          and equipment_status = '0'
+          and maintain_cycle is not null
+          and maintain_cycle > 0
+          and next_maintain_date is not null
+          and next_maintain_date &lt;= CURDATE()
+    </select>
+
+</mapper>
+

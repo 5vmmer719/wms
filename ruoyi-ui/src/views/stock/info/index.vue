@@ -78,9 +78,20 @@
       <el-table-column label="物料名称" align="center" prop="matName" />
       <el-table-column label="批次" align="center" prop="batch" />
       <el-table-column label="数量" align="center" prop="quantity" />
+      <el-table-column label="单位" align="center" prop="unitCode">
+        <template slot-scope="scope">
+          <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
+        </template>
+      </el-table-column>
       <el-table-column label="供应商" align="center" prop="supplierName" />
+      <el-table-column label="最后更新时间" align="center" prop="updateTime" width="160">
+        <template slot-scope="scope">
+          <span v-if="scope.row.updateTime">{{$moment(scope.row.updateTime).format('YYYY-MM-DD HH:mm')}}</span>
+          <span v-else>{{$moment(scope.row.createTime).format('YYYY-MM-DD HH:mm')}}</span>
+        </template>
+      </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -98,6 +109,7 @@ import { listAllWarehouse } from "@/api/base/warehouse";
 
 export default {
   name: "Info",
+  dicts: ['base_mat_unit'],
   data() {
     return {
       // 遮罩层

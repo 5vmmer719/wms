@@ -1,0 +1,93 @@
+@startuml
+hide members
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 80
+skinparam arrowFontSize 16
+
+' ========== 第1行：基础数据 ==========
+entity "BASE_MAT" as BM
+entity "BASE_MAT_BOM" as BMB
+entity "BASE_WAREHOUSE" as BW
+entity "BASE_LOCATION" as BL
+
+' ========== 第2行：生产计划与调度 ==========
+entity "STOCK_CUSTOMER_ORDER" as SCO
+entity "STOCK_PROD_PLAN" as SPP
+entity "STOCK_PROD_ORDER" as SPO
+
+' ========== 第3行：生产执行与质量 ==========
+entity "STOCK_OUT_ORDER" as SOO
+entity "STOCK_IN_ORDER" as SIO
+entity "QUALITY_TASK" as QT
+entity "QUALITY_DEFECT_HANDLE" as QDH
+
+' ========== 第3.5行：交付与标签 ==========
+entity "STOCK_DELIVERY_RECORD" as SDR
+entity "STOCK_MAT_LABEL" as SML
+
+' ========== 第4行：仓储与库存 ==========
+entity "STOCK_INFO" as SI
+entity "STOCK_RECORD" as SR
+entity "STOCK_CHECK_ORDER" as SCK
+entity "STOCK_ALLOT_ORDER" as SAO
+
+' === 布局控制 ===
+BM -[hidden]right- BMB
+BMB -[hidden]right- BW
+BW -[hidden]right- BL
+
+SCO -[hidden]right- SPP
+SPP -[hidden]right- SPO
+
+SOO -[hidden]right- SIO
+SIO -[hidden]right- QT
+QT -[hidden]right- QDH
+
+SI -[hidden]right- SR
+SR -[hidden]right- SCK
+SCK -[hidden]right- SAO
+
+SDR -[hidden]right- SML
+QDH -[hidden]down- SDR
+SDR -[hidden]down- SI
+
+BM -[hidden]down- SCO
+SCO -[hidden]down- SOO
+SOO -[hidden]down- SI
+
+' --- 基础数据关联 ---
+BMB }o--|| BM : 父子物料
+BW ||--o{ BL : 包含货位
+
+' --- 生产计划与调度 ---
+SCO ||--o{ SPP : 生成计划
+SPP ||--o{ SPO : 生成工单
+SPO }o--|| BM : 关联产品
+SPO }o--|| BMB : BOM展开
+
+' --- 生产执行与质量 ---
+SPO ||--o{ SOO : 领料出库
+SPO ||--o{ SIO : 完工入库
+SIO ||--o{ QT : 触发质检
+QT ||--o{ QDH : 不合格处理
+SOO }o--|| BW : 出库仓库
+
+' --- 仓储与库存 ---
+SIO }o--|| BW : 入库仓库
+SI }o--|| BM : 库存物料
+SI }o--|| BW : 所在仓库
+SI ||--o{ SR : 产生流水
+SCK }o--|| BW : 盘点仓库
+SCK --> SI : 快照与调整
+SAO --> SOO : 调拨出库
+SAO --> SIO : 调拨入库
+
+' --- 交付与标签 ---
+SCO ||--o{ SDR : 交付记录
+SDR }o--|| SOO : 关联出库
+SIO ||--o{ SML : 生成标签
+SML }o--|| BL : 所在货位
+
+@enduml
+

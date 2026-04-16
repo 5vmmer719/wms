@@ -10,6 +10,9 @@ import java.util.Map;
 public enum InOrderCheckStatusEnum {
 
     UN_CHECKOUT("un_checkout", "未检验"),
+    CHECKING("checking", "检验中"),
+    PASSED("passed", "检验合格"),
+    FAILED("failed", "检验不合格"),
     CHECKOUT("checkout","已检验");
 
     private String value;

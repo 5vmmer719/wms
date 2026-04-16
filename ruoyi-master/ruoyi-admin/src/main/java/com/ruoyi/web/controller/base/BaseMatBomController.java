@@ -31,7 +31,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * 物料BOMController
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @RestController
@@ -123,6 +123,16 @@ public class BaseMatBomController extends BaseController {
     @DeleteMapping("/{matCodes}")
     public AjaxResult remove(@PathVariable String[] matCodes) {
         return toAjax(baseMatBomService.deleteBaseMatBomByMatCodes(matCodes));
+    }
+
+    /**
+     * 通过bomId删除物料BOM
+     */
+    @PreAuthorize("@ss.hasPermi('base:bom:remove')")
+    @Log(title = "物料BOM", businessType = BusinessType.DELETE)
+    @DeleteMapping("/ids/{bomIds}")
+    public AjaxResult removeByIds(@PathVariable Long[] bomIds) {
+        return toAjax(baseMatBomService.deleteBaseMatBomByBomIds(bomIds));
     }
 
     //模板下载

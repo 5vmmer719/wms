@@ -186,7 +186,13 @@ export default {
       dateRange: [],
 
       //检验状态
-      checkStatusOptions:[{value: 'un_checkout', label: '未检验'}, {value: 'checkout', label: '已检验'}],
+      checkStatusOptions:[
+        {value: 'un_checkout', label: '未检验'},
+        {value: 'checking', label: '检验中'},
+        {value: 'passed', label: '检验合格'},
+        {value: 'failed', label: '检验不合格'},
+        {value: 'checkout', label: '已检验'}
+      ],
 
       //入库单详情
       inOrderDetailOpen: false,

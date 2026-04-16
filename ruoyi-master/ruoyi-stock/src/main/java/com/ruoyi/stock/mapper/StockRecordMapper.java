@@ -9,7 +9,7 @@ import com.ruoyi.stock.domain.stats.StockRecordStats;
 /**
  * 库存流水Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface StockRecordMapper {

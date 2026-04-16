@@ -11,7 +11,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 物料BOM对象 base_mat_bom
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @Data

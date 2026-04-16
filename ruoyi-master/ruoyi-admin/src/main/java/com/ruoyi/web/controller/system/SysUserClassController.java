@@ -23,7 +23,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 用户管理的物料分类Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-11
  */
 @RestController

@@ -8,7 +8,7 @@ import com.ruoyi.base.domain.BaseMatBom;
 /**
  * 物料BOMService接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 public interface IBaseMatBomService {

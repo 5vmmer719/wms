@@ -49,7 +49,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 调拨单Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 @RestController
@@ -126,7 +126,7 @@ public class StockAllotOrderController extends BaseController {
         if(order == null){
             return AjaxResult.error("调拨单信息不正确");
         }
-        if(AllotProgressEnum.RECEIVE.getValue().equals(order.getAllotProgress())){
+        if(AllotProgressEnum.COMPLETED.getValue().equals(order.getAllotProgress())){
             return AjaxResult.error("调拨单已完成");
         }
         order.setSrcWarehouseName(baseWarehouseService.selectBaseWarehouseNameByWarehouseCode(order.getSrcWarehouseCode()));
@@ -149,6 +149,11 @@ public class StockAllotOrderController extends BaseController {
     @Log(title = "调拨单", businessType = BusinessType.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody StockAllotOrder stockAllotOrder) {
+        // 校验源仓库和目标仓库不能相同
+        if (stockAllotOrder.getSrcWarehouseCode() != null
+            && stockAllotOrder.getSrcWarehouseCode().equals(stockAllotOrder.getDestWarehouseCode())) {
+            return AjaxResult.error("发起仓库和目标仓库不能相同");
+        }
         return toAjax(stockAllotOrderService.insertStockAllotOrder(getUsername(), stockAllotOrder));
     }
 
@@ -226,7 +231,7 @@ public class StockAllotOrderController extends BaseController {
         if(AllotProgressEnum.CREATED.getValue().equals(allotProgress)){
             String username = "admin";
             return stockAllotOrderService.submitAllotPicking(username, stockAllotOrder);
-        }else if(AllotProgressEnum.PICKING.getValue().equals(allotProgress)){
+        }else if(AllotProgressEnum.CONFIRMED.getValue().equals(allotProgress)){
             String username = "admin";
             return stockAllotOrderService.submitAllotReceive(username, stockAllotOrder);
         }

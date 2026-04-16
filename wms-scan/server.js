@@ -13,7 +13,16 @@ const API_BASE_URL = 'http://localhost:9991/wms-api';
 
 // 配置中间件
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
+// 禁用静态文件缓存，确保每次加载最新代码
+app.use(express.static(path.join(__dirname, 'public'), {
+    etag: false,
+    lastModified: false,
+    setHeaders: (res) => {
+        res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+        res.setHeader('Pragma', 'no-cache');
+        res.setHeader('Expires', '0');
+    }
+}));
 
 // 配置文件上传（只用于临时存储，前端解析后删除）
 const upload = multer({ dest: 'uploads/' });

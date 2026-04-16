@@ -75,3 +75,12 @@ export function printLabelBatch(labelIds) {
     },
   })
 }
+
+// 修改标签状态（启用/停用）
+export function changeMatLabelStatus(labelId, status) {
+  return request({
+    url: '/stock/matLabel/changeStatus',
+    method: 'put',
+    data: { labelId, status }
+  })
+}

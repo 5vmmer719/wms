@@ -9,6 +9,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="orderNo"    column="order_no"    />
         <result property="orderType"    column="order_type"    />
         <result property="prodOrderNo"    column="prod_order_no"    />
+        <result property="customerOrderNo"    column="customer_order_no"    />
         <result property="warehouseCode"    column="warehouse_code"    />
         <result property="warehouseName"    column="warehouse_name"    />
         <result property="workshopCode"    column="workshop_code"    />
@@ -29,7 +30,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStockOutOrderVo">
-        select o.order_id, o.order_no, o.order_type, o.prod_order_no, o.warehouse_code, w1.warehouse_name as warehouse_name,
+        select o.order_id, o.order_no, o.order_type, o.prod_order_no, o.customer_order_no, o.warehouse_code, w1.warehouse_name as warehouse_name,
                o.workshop_code, o.order_reason, o.mat_code, o.mat_name, o.quantity, o.order_status, o.warehouse_keeper,
                o.allot_no, o.dest_warehouse_code, w2.warehouse_name as dest_warehouse_name,
                o.del_flag, o.create_by, o.create_time, o.update_by, o.update_time
@@ -55,6 +56,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="orderNo != null  and orderNo != ''"> and o.order_no = #{orderNo}</if>
         <if test="orderType != null  and orderType != ''"> and o.order_type = #{orderType}</if>
         <if test="prodOrderNo != null  and prodOrderNo != ''"> and o.prod_order_no = #{prodOrderNo}</if>
+        <if test="customerOrderNo != null and customerOrderNo != ''"> and o.customer_order_no = #{customerOrderNo}</if>
         <if test="warehouseCode != null  and warehouseCode != ''"> and o.warehouse_code = #{warehouseCode}</if>
         <if test="workshopCode != null  and workshopCode != ''"> and o.workshop_code = #{workshopCode}</if>
         <if test="orderReason != null  and orderReason != ''"> and o.order_reason = #{orderReason}</if>
@@ -90,6 +92,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="orderNo != null">order_no,</if>
             <if test="orderType != null">order_type,</if>
             <if test="prodOrderNo != null">prod_order_no,</if>
+            <if test="customerOrderNo != null">customer_order_no,</if>
             <if test="warehouseCode != null">warehouse_code,</if>
             <if test="workshopCode != null">workshop_code,</if>
             <if test="orderReason != null">order_reason,</if>
@@ -110,6 +113,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="orderNo != null">#{orderNo},</if>
             <if test="orderType != null">#{orderType},</if>
             <if test="prodOrderNo != null">#{prodOrderNo},</if>
+            <if test="customerOrderNo != null">#{customerOrderNo},</if>
             <if test="warehouseCode != null">#{warehouseCode},</if>
             <if test="workshopCode != null">#{workshopCode},</if>
             <if test="orderReason != null">#{orderReason},</if>
@@ -134,6 +138,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="orderNo != null">order_no = #{orderNo},</if>
             <if test="orderType != null">order_type = #{orderType},</if>
             <if test="prodOrderNo != null">prod_order_no = #{prodOrderNo},</if>
+            <if test="customerOrderNo != null">customer_order_no = #{customerOrderNo},</if>
             <if test="warehouseCode != null">warehouse_code = #{warehouseCode},</if>
             <if test="workshopCode != null">workshop_code = #{workshopCode},</if>
             <if test="orderReason != null">order_reason = #{orderReason},</if>

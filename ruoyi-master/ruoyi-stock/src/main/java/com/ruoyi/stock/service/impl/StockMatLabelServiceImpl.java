@@ -12,7 +12,7 @@ import com.ruoyi.stock.service.IStockMatLabelService;
 /**
  * 物料标签Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Service
@@ -29,6 +29,17 @@ public class StockMatLabelServiceImpl implements IStockMatLabelService {
     @Override
     public StockMatLabel selectStockMatLabelByLabelId(Long labelId) {
         return stockMatLabelMapper.selectStockMatLabelByLabelId(labelId);
+    }
+
+    /**
+     * 根据标签编码查询物料标签
+     *
+     * @param labelCode 标签编码
+     * @return 物料标签
+     */
+    @Override
+    public StockMatLabel selectStockMatLabelByLabelCode(String labelCode) {
+        return stockMatLabelMapper.selectStockMatLabelByLabelCode(labelCode);
     }
 
     /**
@@ -75,6 +86,18 @@ public class StockMatLabelServiceImpl implements IStockMatLabelService {
     public int updateStockMatLabel(StockMatLabel stockMatLabel) {
         stockMatLabel.setUpdateTime(DateUtils.getNowDate());
         return stockMatLabelMapper.updateStockMatLabel(stockMatLabel);
+    }
+
+    /**
+     * 修改物料标签状态
+     *
+     * @param labelId 标签ID
+     * @param status 状态
+     * @return 结果
+     */
+    @Override
+    public int updateStatus(Long labelId, String status) {
+        return stockMatLabelMapper.updateStatus(labelId, status, null, DateUtils.getNowDate());
     }
 
     /**

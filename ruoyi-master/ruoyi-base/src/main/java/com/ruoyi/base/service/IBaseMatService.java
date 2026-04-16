@@ -9,7 +9,7 @@ import com.ruoyi.common.core.domain.entity.SysUser;
 /**
  * 物料主数据Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 public interface IBaseMatService {

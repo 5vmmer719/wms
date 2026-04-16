@@ -10,7 +10,7 @@ import com.ruoyi.stock.domain.StockOutReturn;
 /**
  * 出库单退货Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface IStockOutReturnService {

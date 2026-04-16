@@ -761,42 +761,32 @@ INSERT INTO `stock_info` VALUES (27, '1002', 'A01', '11000001', '纯碱', '11000
 DROP TABLE IF EXISTS `stock_mat_label`;
 CREATE TABLE `stock_mat_label`  (
   `label_id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键',
-  `warehouse_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '仓库',
-  `location_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '货位',
+  `label_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL COMMENT '标签编码',
   `label_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '标签类型',
   `mat_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '物料编码',
-  `mat_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '物料描述',
-  `fd_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '财务编码',
-  `fig_num` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '图号',
-  `mat_group` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '物料组',
-  `mat_class` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '分类',
-  `unit_code` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '基本单位',
   `batch` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '批次',
   `supplier_code` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '供应商编码',
   `supplier_name` varchar(128) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '供应商名称',
   `prod_time` datetime NULL DEFAULT NULL COMMENT '生产时间',
-  `quantity` decimal(24, 6) NULL DEFAULT 0.000000 COMMENT '数量',
-  `usable_quantity` decimal(24, 6) NULL DEFAULT 0.000000 COMMENT '可用数量',
-  `received_quantity` decimal(24, 6) NULL DEFAULT 0.000000 COMMENT '已领取数量',
-  `unit_price` decimal(24, 6) NULL DEFAULT 0.000000 COMMENT '单价',
-  `order_no` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '入库单号',
-  `order_type` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '入库单类型',
+  `status` varchar(32) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT 'created' COMMENT '状态(created/in_stored/in_transit)',
+  `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
   `del_flag` char(1) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '0' COMMENT '删除标识',
   `create_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '创建人',
   `create_time` datetime NULL DEFAULT NULL COMMENT '创建时间',
   `update_by` varchar(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '修改人',
   `update_time` datetime NULL DEFAULT NULL COMMENT '修改时间',
-  PRIMARY KEY (`label_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '物料标签' ROW_FORMAT = DYNAMIC;
+  PRIMARY KEY (`label_id`) USING BTREE,
+  UNIQUE INDEX `uk_label_code`(`label_code`) USING BTREE,
+  INDEX `idx_mat_code`(`mat_code`) USING BTREE,
+  INDEX `idx_batch`(`batch`) USING BTREE,
+  INDEX `idx_status`(`status`) USING BTREE,
+  INDEX `idx_supplier_code`(`supplier_code`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '物料标签' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of stock_mat_label
 -- ----------------------------
-INSERT INTO `stock_mat_label` VALUES (1, '1002', 'A01', 'purchase', '11000001', '纯碱', '11000001', '鄂energy-LS', 'ZZ', 'LS', 'PCS', 'CG20220726121220', 'WHCJGYS', '武汉超级供应商', '2022-07-26 00:00:00', 1.000000, 1.000000, 0.000000, 20.000000, 'IP20220727192324', 'purchase', '0', 'admin', '2022-07-26 12:13:31', 'admin', '2022-08-07 11:44:10');
-INSERT INTO `stock_mat_label` VALUES (2, '1001', 'A02', 'purchase', '11000002', '石英砂', '11000002', '鄂energy-TH', 'WG', 'TH', 'PCS', 'CG20220726122639', 'WHCJGYS2', '武汉超级供应商2', '2022-07-26 00:00:00', 1.000000, 1.000000, 0.000000, 88.000000, 'IP20220727192324', 'purchase', '0', 'admin', '2022-07-26 12:26:53', 'admin', '2022-08-04 18:42:31');
-INSERT INTO `stock_mat_label` VALUES (3, '1001', 'A01', 'purchase', '11000001', '纯碱', '11000001', '鄂energy-LS', 'ZZ', 'LS', 'PCS', 'CG20220729170041', 'WHCJGYS2', '武汉超级供应商2', '2022-07-29 00:00:00', 1.000000, 1.000000, 1.000000, 127.200000, 'IP20220729170164', 'purchase', '0', 'admin', '2022-07-29 17:01:09', 'admin', '2022-08-04 21:23:47');
-INSERT INTO `stock_mat_label` VALUES (4, NULL, NULL, 'purchase', '11000002', '石英砂', '11000002', '鄂energy-TH', 'WG', 'TH', 'PCS', 'CG20220803171636', 'WHCJGYS', '武汉超级供应商', '2022-08-03 00:00:00', 20.000000, 0.000000, 0.000000, 123.000000, 'IP20220809115240', 'purchase', '0', 'admin', '2022-08-03 17:16:55', NULL, NULL);
-INSERT INTO `stock_mat_label` VALUES (5, NULL, NULL, 'purchase', '11000002', '石英砂', '11000002', '鄂energy-TH', 'WG', 'TH', 'PCS', 'CG20220822202912', 'WHCJGYS', '武汉超级供应商', '2022-08-22 00:00:00', 1.000000, 0.000000, 0.000000, 0.000000, NULL, NULL, '0', 'admin', '2022-08-22 20:29:20', NULL, NULL);
+-- 测试数据已清空，表结构已重构
 
 -- ----------------------------
 -- Table structure for stock_out_detail
@@ -1126,6 +1116,13 @@ INSERT INTO `sys_dict_data` VALUES (28, 2, '失败', '1', 'sys_common_status', '
 INSERT INTO `sys_dict_data` VALUES (110, 1, '箱', 'PCS', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:02:32', 'admin', '2022-07-24 06:05:19', NULL);
 INSERT INTO `sys_dict_data` VALUES (111, 2, '吨', 'T', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:02:50', '', NULL, NULL);
 INSERT INTO `sys_dict_data` VALUES (112, 3, '件', 'UNIT', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:12:53', '', NULL, NULL);
+INSERT INTO `sys_dict_data` VALUES (113, 4, '平方米', 'SQUARE_METER', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:12:53', '', NULL, NULL);
+INSERT INTO `sys_dict_data` VALUES (114, 5, '片', 'PIECE', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:12:53', '', NULL, NULL);
+INSERT INTO `sys_dict_data` VALUES (115, 6, '千克', 'KG', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:12:53', '', NULL, NULL);
+INSERT INTO `sys_dict_data` VALUES (116, 7, '升', 'LITER', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:12:53', '', NULL, NULL);
+INSERT INTO `sys_dict_data` VALUES (117, 8, '米', 'METER', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:12:53', '', NULL, NULL);
+INSERT INTO `sys_dict_data` VALUES (118, 9, '张', 'SHEET', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:12:53', '', NULL, NULL);
+INSERT INTO `sys_dict_data` VALUES (119, 10, '卷', 'ROLL', 'base_mat_unit', NULL, 'default', 'N', '0', 'admin', '2022-07-24 06:12:53', '', NULL, NULL);
 
 -- ----------------------------
 -- Table structure for sys_dict_type
@@ -1187,6 +1184,7 @@ CREATE TABLE `sys_job`  (
 INSERT INTO `sys_job` VALUES (1, '系统默认（无参）', 'DEFAULT', 'ryTask.ryNoParams', '0/10 * * * * ?', '3', '1', '1', 'admin', '2022-07-10 01:24:56', '', NULL, '');
 INSERT INTO `sys_job` VALUES (2, '系统默认（有参）', 'DEFAULT', 'ryTask.ryParams(\'ry\')', '0/15 * * * * ?', '3', '1', '1', 'admin', '2022-07-10 01:24:56', '', NULL, '');
 INSERT INTO `sys_job` VALUES (3, '系统默认（多参）', 'DEFAULT', 'ryTask.ryMultipleParams(\'ry\', true, 2000L, 316.50D, 100)', '0/20 * * * * ?', '3', '1', '1', 'admin', '2022-07-10 01:24:56', '', NULL, '');
+INSERT INTO `sys_job` VALUES (4, '库存预警检查', 'SYSTEM', 'stockWarningTask.checkStockWarning', '0 0/30 * * * ?', '3', '1', '0', 'admin', '2022-07-10 01:24:56', '', NULL, '每30分钟检查库存预警，库存低于安全库存时自动发送通知公告');
 
 -- ----------------------------
 -- Table structure for sys_job_log

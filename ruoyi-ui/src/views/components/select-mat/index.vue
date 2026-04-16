@@ -34,7 +34,7 @@
         />
       </el-form-item>
       <el-form-item label="物料组" prop="matGroup">
-        <el-select v-model="queryParams.matGroup" placeholder="请选择物料组">
+        <el-select v-model="queryParams.matGroup" placeholder="请选择物料组" :disabled="!!matGroup" :clearable="!matGroup">
           <el-option
             v-for="item in groupList"
             :key="item.groupCode"
@@ -98,7 +98,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -121,6 +121,11 @@ export default {
     selectType: {
       type: String,
       default: 'single',
+    },
+    /** 外部预设物料组编码（如 'CP' 仅显示成品），传入后物料组下拉锁定不可修改 */
+    matGroup: {
+      type: String,
+      default: null,
     },
   },
   data() {
@@ -165,6 +170,9 @@ export default {
     };
   },
   created() {
+    if (this.matGroup) {
+      this.queryParams.matGroup = this.matGroup;
+    }
     this.getList();
     this.getGroupList();
     this.getClassList();
@@ -187,6 +195,9 @@ export default {
     /** 重置按钮操作 */
     resetQuery() {
       this.resetForm("queryForm");
+      if (this.matGroup) {
+        this.queryParams.matGroup = this.matGroup;
+      }
       this.handleQuery();
     },
     //确认选择

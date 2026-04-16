@@ -7,7 +7,7 @@ import com.ruoyi.stock.domain.StockAllotDetail;
 /**
  * 调拨单详情Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 public interface IStockAllotDetailService {

@@ -21,7 +21,7 @@ import javax.validation.Validator;
 /**
  * 物料BOMService业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @Service
@@ -71,8 +71,52 @@ public class BaseMatBomServiceImpl implements IBaseMatBomService {
      */
     @Override
     public int insertBaseMatBom(BaseMatBom baseMatBom) {
+        String fatherMatCode = baseMatBom.getFatherMatCode();
+        String childMatCode = baseMatBom.getChildMatCode();
+
+        // 重复关系检查：检查该父子物料BOM关系是否已存在
+        List<BaseMatBom> existList = baseMatBomMapper.selectBaseMatBomByFatherMatCode(fatherMatCode);
+        if (existList != null) {
+            for (BaseMatBom exist : existList) {
+                if (childMatCode.equals(exist.getChildMatCode())) {
+                    throw new ServiceException("该BOM关系已存在，请勿重复添加");
+                }
+            }
+        }
+
+        // 循环依赖检查：子物料不能直接或间接引用父物料
+        if (fatherMatCode.equals(childMatCode)) {
+            throw new ServiceException("子物料不能与父物料相同，存在循环依赖");
+        }
+        if (checkCircularDependency(childMatCode, fatherMatCode)) {
+            throw new ServiceException("存在循环依赖关系，无法添加该BOM");
+        }
+
         baseMatBom.setCreateTime(DateUtils.getNowDate());
         return baseMatBomMapper.insertBaseMatBom(baseMatBom);
+    }
+
+    /**
+     * 循环依赖检查：检查从startMatCode出发，是否能通过BOM关系链到达targetMatCode
+     *
+     * @param startMatCode  起始物料编码（子物料）
+     * @param targetMatCode 目标物料编码（父物料）
+     * @return true表示存在循环依赖
+     */
+    private boolean checkCircularDependency(String startMatCode, String targetMatCode) {
+        List<BaseMatBom> childBomList = baseMatBomMapper.selectBaseMatBomByFatherMatCode(startMatCode);
+        if (childBomList == null || childBomList.isEmpty()) {
+            return false;
+        }
+        for (BaseMatBom bom : childBomList) {
+            if (targetMatCode.equals(bom.getChildMatCode())) {
+                return true;
+            }
+            if (checkCircularDependency(bom.getChildMatCode(), targetMatCode)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

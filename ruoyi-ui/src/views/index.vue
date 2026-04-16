@@ -22,18 +22,29 @@
         <div class="chart-card">
           <div class="card-header">
             <span class="card-title">
-              <i class="el-icon-date"></i>
-              日历
+              <i class="el-icon-warning" style="color:#e6a23c"></i>
+              异常预警
             </span>
+            <el-link type="primary" @click="$router.push('/orderProgress')">
+              查看看板 <i class="el-icon-d-arrow-right"></i>
+            </el-link>
           </div>
-          <div class="card-body calendar-card-body">
-            <el-calendar v-model="today">
-              <template slot="dateCell" slot-scope="{date, data}">
-                <div class="calendar-day">
-                  {{ data.day.split('-')[2] }}
-                </div>
-              </template>
-            </el-calendar>
+          <div class="card-body warning-card-body">
+            <div v-if="warningList.length === 0" class="empty-warning">
+              <i class="el-icon-circle-check" style="font-size:36px;color:#67c23a"></i>
+              <p>暂无预警，一切正常</p>
+            </div>
+            <div v-else class="warning-scroll">
+              <div v-for="(item, index) in warningList.slice(0, 6)" :key="index"
+                   :class="['warning-item', 'warning-' + item.level]">
+                <i :class="item.level === 'danger' ? 'el-icon-warning' : 'el-icon-alarm-clock'"
+                   :style="{color: item.level === 'danger' ? '#f56c6c' : '#e6a23c'}"></i>
+                <span class="warning-text">{{ item.content }}</span>
+              </div>
+              <div v-if="warningList.length > 6" class="warning-more" @click="$router.push('/orderProgress')">
+                还有 {{ warningList.length - 6 }} 条预警...
+              </div>
+            </div>
           </div>
         </div>
       </el-col>
@@ -142,6 +153,7 @@ import BarChart from './dashboard/BarChart'
 
 import { getLogininfor } from "@/api/login";
 import { listRecord } from "@/api/stock/record";
+import { getOrderWarnings } from "@/api/stats/index";
 
 export default {
   name: 'Index',
@@ -151,6 +163,7 @@ export default {
       today: new Date(),
       logininforList: [],
       recordList: [],
+      warningList: [],
       queryParams: {
         pageNum: 1,
         pageSize: 5,
@@ -161,6 +174,7 @@ export default {
   created() {
     this.loginData();
     this.recordData();
+    this.loadWarnings();
   },
   methods: {
     loginData() {
@@ -171,6 +185,13 @@ export default {
     recordData() {
       listRecord(this.queryParams).then(response => {
         this.recordList = response.rows;
+      });
+    },
+    loadWarnings() {
+      getOrderWarnings().then(response => {
+        this.warningList = response.data || [];
+      }).catch(() => {
+        this.warningList = [];
       });
     },
     jumpToRecord() {
@@ -245,104 +266,51 @@ export default {
   }
 }
 
-// 日历样式优化
-.calendar-card-body {
+// 预警卡片样式
+.warning-card-body {
   height: 280px;
   overflow: hidden;
-  padding: 10px 16px !important;
+  padding: 12px 16px !important;
 
-  ::v-deep .el-calendar {
-    background: transparent;
+  .empty-warning {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #909399;
+    p { margin-top: 10px; font-size: 14px; }
+  }
 
-    .el-calendar__header {
-      padding: 6px 8px;
-      border-bottom: 1px solid #f0f0f0;
+  .warning-scroll {
+    height: 100%;
+    overflow-y: auto;
+  }
 
-      .el-calendar__title {
-        font-weight: 600;
-        color: #1f2937;
-        font-size: 13px;
-      }
+  .warning-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.4;
 
-      .el-calendar__button-group {
-        .el-button {
-          padding: 3px 8px;
-          font-size: 11px;
-        }
-      }
-    }
+    i { margin-top: 2px; flex-shrink: 0; }
+    .warning-text { flex: 1; color: #303133; word-break: break-all; }
+  }
 
-    .el-calendar__body {
-      padding: 6px;
+  .warning-danger { background: #fef0f0; }
+  .warning-warning { background: #fdf6ec; }
 
-      th {
-        font-weight: 500;
-        color: #6b7280;
-        font-size: 10px;
-        padding: 2px 0;
-      }
-    }
-
-    .el-calendar-table {
-      thead th {
-        padding: 2px 0;
-      }
-
-      .el-calendar-day {
-        padding: 0;
-        height: 30px;
-        line-height: 30px;
-        text-align: center;
-        font-size: 11px;
-      }
-
-      tbody tr td {
-        border: none;
-
-        .calendar-day {
-          display: inline-block;
-          text-align: center;
-          line-height: 22px;
-          width: 22px;
-          height: 22px;
-          border-radius: 50%;
-          transition: all 0.2s;
-          font-size: 11px;
-
-          &:hover {
-            background: #e0f2fe;
-          }
-        }
-      }
-
-      .is-selected {
-        background: transparent;
-
-        .el-calendar-day {
-          background: transparent;
-        }
-
-        .calendar-day {
-          background: #3b82f6;
-          color: #ffffff;
-        }
-      }
-
-      .is-today {
-        .calendar-day {
-          background: #dbeafe;
-          color: #3b82f6;
-          font-weight: 600;
-        }
-      }
-
-      .prev-month,
-      .next-month {
-        .calendar-day {
-          color: #d1d5db;
-        }
-      }
-    }
+  .warning-more {
+    text-align: center;
+    padding: 8px;
+    color: #409eff;
+    cursor: pointer;
+    font-size: 13px;
+    &:hover { text-decoration: underline; }
   }
 }
 

@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 调拨单详情Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 public interface StockAllotDetailMapper {

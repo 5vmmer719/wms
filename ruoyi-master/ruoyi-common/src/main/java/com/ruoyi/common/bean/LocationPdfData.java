@@ -6,7 +6,7 @@ import lombok.Data;
 /**
  * 货位对象 base_location
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-24
  */
 @Data

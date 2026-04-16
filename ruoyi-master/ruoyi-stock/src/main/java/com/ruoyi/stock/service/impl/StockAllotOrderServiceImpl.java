@@ -27,7 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 调拨单Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 @Service
@@ -36,8 +36,6 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
     private StockAllotOrderMapper stockAllotOrderMapper;
     @Autowired
     private StockAllotDetailMapper stockAllotDetailMapper;
-    @Autowired
-    private StockMatLabelMapper stockMatLabelMapper;
     @Autowired
     private StockInfoMapper stockInfoMapper;
     @Autowired
@@ -101,7 +99,6 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
         List<StockAllotDetail> detailList = stockAllotOrder.getDetailList();
         if(CollectionUtils.isNotEmpty(detailList)){
             int i = 1;
-            StockMatLabel label = null;
             for(StockAllotDetail detail : detailList){
                 detail.setAllotNo(allotNo);
                 detail.setSrcWarehouseCode(stockAllotOrder.getSrcWarehouseCode());
@@ -109,12 +106,6 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
                 detail.setLineNo(i);
                 detail.setCreateBy(username);
                 detail.setCreateTime(nowDate);
-                //修改物料标签-订单号
-                label = new StockMatLabel();
-                label.setLabelId(detail.getLabelId());
-                label.setOrderNo(allotNo);
-                label.setOrderType("allot");
-                stockMatLabelMapper.updateStockMatLabel(label);
                 i++;
             }
             //批量新增调拨单详情
@@ -170,6 +161,28 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
         Date nowDate = DateUtils.getNowDate();
         String allotNo = stockAllotOrder.getAllotNo();
         String srcWarehouseCode = stockAllotOrder.getSrcWarehouseCode();
+
+        // 库存不足拦截检查：在实际扣减库存前，先检查所有物料的源货位库存是否充足
+        for(StockAllotDetail detail : detailList){
+            String srcLocationCode = detail.getSrcLocationCode();
+            BigDecimal allotQuantity = detail.getQuantity();
+            StockInfo checkInfo = new StockInfo();
+            checkInfo.setWarehouseCode(srcWarehouseCode);
+            checkInfo.setLocationCode(srcLocationCode);
+            checkInfo.setMatCode(detail.getMatCode());
+            checkInfo.setBatch(detail.getBatch());
+            checkInfo.setSupplierCode(detail.getSupplierCode());
+            List<StockInfo> checkList = stockInfoMapper.selectStockInfoList(checkInfo);
+            BigDecimal currentStock = BigDecimal.ZERO;
+            if(CollectionUtils.isNotEmpty(checkList)){
+                currentStock = checkList.get(0).getQuantity() != null ? checkList.get(0).getQuantity() : BigDecimal.ZERO;
+            }
+            if(currentStock.compareTo(allotQuantity) < 0){
+                return AjaxResult.error("源货位库存不足，当前库存" + currentStock.stripTrailingZeros().toPlainString()
+                    + "，调拨数量" + allotQuantity.stripTrailingZeros().toPlainString() + "，请调整调拨数量");
+            }
+        }
+
         StockRecord record = null;
         int i = 1;
         for(StockAllotDetail detail : detailList){
@@ -195,15 +208,8 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
             record.setCreateBy(username);
             record.setCreateTime(nowDate);
             stockRecordMapper.insertStockRecord(record);
-            //修改标签信息
-            stockMatLabelMapper.updateAllotOut(detail.getLabelId(), username, nowDate);
             i++;
         }
-        //修改调拨单
-        stockAllotOrder.setAllotProgress(AllotProgressEnum.PICKING.getValue());
-        stockAllotOrder.setUpdateBy(username);
-        stockAllotOrder.setUpdateTime(nowDate);
-        stockAllotOrderMapper.updateStockAllotOrder(stockAllotOrder);
         return AjaxResult.success("提交成功");
     }
 
@@ -226,8 +232,6 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
             BigDecimal signQuantity = detail.getSignQuantity();
             //修改调拨单详情
             stockAllotDetailMapper.updateStockAllotReceive(detail.getDetailId(), destLocationCode, signQuantity, username, nowDate);
-            //修改物料标签
-            stockMatLabelMapper.updateAllotIn(detail.getLabelId(), destWarehouseCode, destLocationCode, username, nowDate);
             //修改库存信息
             info = new StockInfo();
             info.setWarehouseCode(destWarehouseCode);
@@ -261,11 +265,6 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
             record.setCreateTime(nowDate);
             stockRecordMapper.insertStockRecord(record);
         }
-        //修改调拨单
-        stockAllotOrder.setAllotProgress(AllotProgressEnum.RECEIVE.getValue());
-        stockAllotOrder.setUpdateBy(username);
-        stockAllotOrder.setUpdateTime(nowDate);
-        stockAllotOrderMapper.updateStockAllotOrder(stockAllotOrder);
         return AjaxResult.success("提交成功");
     }
 
@@ -304,6 +303,16 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
 
         // 查询调拨单详情
         List<StockAllotDetail> allotDetails = stockAllotDetailMapper.selectStockAllotDetailListByAllotNo(allotNo);
+        if (CollectionUtils.isEmpty(allotDetails)) {
+            return AjaxResult.error("调拨单没有物料明细，无法确认");
+        }
+
+        // 校验数量
+        for (StockAllotDetail allotDetail : allotDetails) {
+            if (allotDetail.getQuantity() == null || allotDetail.getQuantity().compareTo(BigDecimal.ZERO) <= 0) {
+                return AjaxResult.error("物料[" + allotDetail.getMatName() + "]的调拨数量不能为空或为0");
+            }
+        }
 
         // 创建出库单详情
         List<StockOutDetail> outDetails = new ArrayList<>();
@@ -336,7 +345,8 @@ public class StockAllotOrderServiceImpl implements IStockAllotOrderService {
         stockOutDetailMapper.insertStockOutDetailList(outDetails);
 
         // 更新调拨单状态为已确认，并记录出库单号
-        allotOrder.setAllotProgress("confirmed");
+        allotOrder.setAllotStatus(OrderStatusEnum.CONFIRMED.getValue());
+        allotOrder.setAllotProgress(AllotProgressEnum.CONFIRMED.getValue());
         allotOrder.setUpdateBy(username);
         allotOrder.setUpdateTime(nowDate);
         allotOrder.setRemark("已生成调拨出库单：" + outOrderNo);

@@ -10,7 +10,7 @@ import java.util.List;
 /**
  * 调拨单对象 stock_allot_order
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 @Data

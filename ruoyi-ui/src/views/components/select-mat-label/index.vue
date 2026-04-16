@@ -1,6 +1,14 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="标签编码" prop="labelCode">
+        <el-input
+          v-model="queryParams.labelCode"
+          placeholder="请输入标签编码"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="物料编码" prop="matCode">
         <el-input
           v-model="queryParams.matCode"
@@ -101,10 +109,9 @@
       <el-table-column label="物料描述" fixed align="center" prop="matName" width="120" />
       <el-table-column label="财务编码" align="center" prop="fdCode" width="100" />
       <el-table-column label="图号" align="center" prop="figNum" width="150" />
+      <el-table-column label="标签编码" align="center" prop="labelCode" width="180" />
       <el-table-column label="物料组" align="center" prop="matGroupName" width="80" />
       <el-table-column label="分类" align="center" prop="matClassName" width="80" />
-      <el-table-column label="数量" align="center" prop="quantity" width="80" />
-      <el-table-column label="单价" align="center" prop="unitPrice" width="80" />
       <el-table-column label="基本单位" align="center" prop="unitCode" width="80">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
@@ -117,7 +124,6 @@
           <span>{{ parseTime(scope.row.prodTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="入库单号" align="center" prop="orderNo" width="120" />
       <el-table-column label="操作" fixed="right" align="center" width="120" class-name="small-padding fixed-width">
         <template slot-scope="scope">
           <el-button
@@ -132,7 +138,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -165,11 +171,6 @@ export default {
     warehouseType:{
       type: String,
       default: '',
-    },
-    // 是否限制order_no为空，默认true（入库单场景），调拨单传false
-    filterOrderNo:{
-      type: Boolean,
-      default: true,
     }
   },
   data() {
@@ -193,6 +194,7 @@ export default {
         pageNum: 1,
         pageSize: 10,
         labelType: null,
+        labelCode: null,
         matCode: null,
         matName: null,
         fdCode: null,
@@ -204,10 +206,7 @@ export default {
         supplierCode: null,
         supplierName: null,
         prodTime: null,
-        quantity: null,
-        unitPrice: null,
-        orderNo: null,
-        orderType: null,
+        status: null,
       },
 
       //组、分类
@@ -232,12 +231,6 @@ export default {
       // 如果传入了仓库类型，设置查询参数（入库单场景，根据物料组过滤）
       if(this.warehouseType){
         this.queryParams.warehouseType = this.warehouseType;
-      }
-      // 是否限制order_no为空
-      if(this.filterOrderNo){
-        this.queryParams.remark = 'filterOrderNo';
-      } else {
-        this.queryParams.remark = null;
       }
       // 确保分页参数正确
       this.queryParams.pageNum = 1;

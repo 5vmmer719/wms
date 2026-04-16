@@ -11,8 +11,8 @@ public enum AllotProgressEnum {
 
     CREATED("created", "发起仓库创建"),
     CONFIRMED("confirmed", "已确认(生成出库单)"),
-    PICKING( "picking","发起仓库拣货"),
-    RECEIVE( "receive","目标仓库接收");
+    OUT_COMPLETED("out_completed", "已出库(生成入库单)"),
+    COMPLETED("completed", "调拨完成");
 
     private String value;
     private String label;

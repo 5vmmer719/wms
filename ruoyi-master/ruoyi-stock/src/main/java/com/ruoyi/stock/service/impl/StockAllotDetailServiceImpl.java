@@ -12,7 +12,7 @@ import com.ruoyi.stock.service.IStockAllotDetailService;
 /**
  * 调拨单详情Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 @Service

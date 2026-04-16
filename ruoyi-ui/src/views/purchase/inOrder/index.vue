@@ -120,7 +120,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -161,8 +161,16 @@
         <el-table-column label="物料名称" align="center" prop="matName" width="120" />
         <el-table-column label="财务编码" align="center" prop="fdCode" width="100" />
         <el-table-column label="图号" align="center" prop="figNum" width="120" />
-        <el-table-column label="数量" align="center" prop="quantity" width="80" />
-        <el-table-column label="单价" align="center" prop="unitPrice" width="80" />
+        <el-table-column label="数量" align="center" prop="quantity" width="130">
+          <template slot-scope="scope">
+            <el-input-number v-model="scope.row.quantity" controls-position="right" :min="1" size="small" style="width: 100%" />
+          </template>
+        </el-table-column>
+        <el-table-column label="单价" align="center" prop="unitPrice" width="130">
+          <template slot-scope="scope">
+            <el-input-number v-model="scope.row.unitPrice" controls-position="right" :min="0" size="small" style="width: 100%" />
+          </template>
+        </el-table-column>
         <el-table-column label="单位" align="center" prop="unitCode" width="80">
           <template slot-scope="scope">
             <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
@@ -182,13 +190,13 @@
         </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">创 建</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="submitForm">创 建</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
 
     <el-dialog :title="'选择物料标签'" :visible.sync="selectMatLabelOpen" width="1200px" append-to-body :close-on-click-modal="false">
-      <selectMatLabel ref="matLabelPage" :labelIdArr="labelIdArr" :warehouseType="form.warehouseType" :filterOrderNo="false"
+      <selectMatLabel ref="matLabelPage" :labelIdArr="labelIdArr" :warehouseType="form.warehouseType"
         @confirmSelectArr="confirmSelectMatLabelArr" @confirmSelect="confirmSelectMatLabel">
       </selectMatLabel>
       <div slot="footer" class="dialog-footer">
@@ -278,6 +286,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 提交loading
+      submitLoading: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -334,6 +344,8 @@ export default {
       listInOrder(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
         this.inOrderList = response.rows;
         this.total = response.total;
+        this.loading = false;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -412,22 +424,29 @@ export default {
     },
     /** 提交按钮 */
     submitForm() {
-      let that = this;
-      if(!that.matLabelList || that.matLabelList.length === 0){
-        that.$modal.msgError("请选择物料标签");
-        return;
-      }
-      that.$modal.confirm('是否确认创建入库单？').then(function() {
-        that.form.detailList = that.matLabelList;
-        that.form.orderType = 'purchase';
-        addInOrder(that.form).then(response => {
-          that.$modal.msgSuccess("新增成功");
-          that.open = false;
-          that.getList();
-          that.reset();
-          that.labelIdArr = [];
-          that.matLabelList = [];
-        });
+      this.$refs["form"].validate(valid => {
+        if (valid) {
+          let that = this;
+          if(!that.matLabelList || that.matLabelList.length === 0){
+            that.$modal.msgError("请选择物料标签");
+            return;
+          }
+          that.$modal.confirm('是否确认创建入库单？').then(function() {
+            that.form.detailList = that.matLabelList;
+            that.form.orderType = 'purchase';
+            that.submitLoading = true;
+            addInOrder(that.form).then(response => {
+              that.$modal.msgSuccess("新增成功");
+              that.open = false;
+              that.getList();
+              that.reset();
+              that.labelIdArr = [];
+              that.matLabelList = [];
+            }).finally(() => {
+              that.submitLoading = false;
+            });
+          });
+        }
       });
     },
     /** 删除按钮操作 */

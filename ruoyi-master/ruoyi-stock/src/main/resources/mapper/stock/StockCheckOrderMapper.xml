@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.stock.mapper.StockCheckOrderMapper">
+
+    <resultMap type="StockCheckOrder" id="StockCheckOrderResult">
+        <result property="checkId"        column="check_id"        />
+        <result property="checkNo"        column="check_no"        />
+        <result property="checkType"      column="check_type"      />
+        <result property="warehouseCode"  column="warehouse_code"  />
+        <result property="warehouseName"  column="warehouse_name"  />
+        <result property="checkStatus"    column="check_status"    />
+        <result property="planDate"       column="plan_date"       />
+        <result property="actualDate"     column="actual_date"     />
+        <result property="checkerId"      column="checker_id"      />
+        <result property="checkerName"    column="checker_name"    />
+        <result property="totalItems"     column="total_items"     />
+        <result property="diffItems"      column="diff_items"      />
+        <result property="delFlag"        column="del_flag"        />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateBy"       column="update_by"       />
+        <result property="updateTime"     column="update_time"     />
+        <result property="remark"         column="remark"          />
+    </resultMap>
+
+    <sql id="selectStockCheckOrderVo">
+        select check_id, check_no, check_type, warehouse_code, warehouse_name, check_status,
+               plan_date, actual_date, checker_id, checker_name, total_items, diff_items,
+               del_flag, create_by, create_time, update_by, update_time, remark
+        from stock_check_order
+    </sql>
+
+    <select id="selectStockCheckOrderByCheckId" parameterType="Long" resultMap="StockCheckOrderResult">
+        <include refid="selectStockCheckOrderVo"/>
+        where del_flag = '0' and check_id = #{checkId}
+    </select>
+
+    <select id="selectStockCheckOrderByCheckNo" parameterType="String" resultMap="StockCheckOrderResult">
+        <include refid="selectStockCheckOrderVo"/>
+        where del_flag = '0' and check_no = #{checkNo}
+    </select>
+
+    <select id="selectStockCheckOrderList" parameterType="StockCheckOrder" resultMap="StockCheckOrderResult">
+        <include refid="selectStockCheckOrderVo"/>
+        <where>
+            del_flag = '0'
+            <if test="checkNo != null and checkNo != ''"> and check_no like concat('%', #{checkNo}, '%')</if>
+            <if test="checkType != null and checkType != ''"> and check_type = #{checkType}</if>
+            <if test="warehouseCode != null and warehouseCode != ''"> and warehouse_code = #{warehouseCode}</if>
+            <if test="checkStatus != null and checkStatus != ''"> and check_status = #{checkStatus}</if>
+            <if test="checkerName != null and checkerName != ''"> and checker_name like concat('%', #{checkerName}, '%')</if>
+            <if test="params.beginTime != null and params.beginTime != ''"> and DATE(create_time) &gt;= #{params.beginTime}</if>
+            <if test="params.endTime != null and params.endTime != ''"> and DATE(create_time) &lt;= #{params.endTime}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <insert id="insertStockCheckOrder" parameterType="StockCheckOrder" useGeneratedKeys="true" keyProperty="checkId">
+        insert into stock_check_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="checkNo != null">check_no,</if>
+            <if test="checkType != null">check_type,</if>
+            <if test="warehouseCode != null">warehouse_code,</if>
+            <if test="warehouseName != null">warehouse_name,</if>
+            <if test="checkStatus != null">check_status,</if>
+            <if test="planDate != null">plan_date,</if>
+            <if test="actualDate != null">actual_date,</if>
+            <if test="checkerId != null">checker_id,</if>
+            <if test="checkerName != null">checker_name,</if>
+            <if test="totalItems != null">total_items,</if>
+            <if test="diffItems != null">diff_items,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="checkNo != null">#{checkNo},</if>
+            <if test="checkType != null">#{checkType},</if>
+            <if test="warehouseCode != null">#{warehouseCode},</if>
+            <if test="warehouseName != null">#{warehouseName},</if>
+            <if test="checkStatus != null">#{checkStatus},</if>
+            <if test="planDate != null">#{planDate},</if>
+            <if test="actualDate != null">#{actualDate},</if>
+            <if test="checkerId != null">#{checkerId},</if>
+            <if test="checkerName != null">#{checkerName},</if>
+            <if test="totalItems != null">#{totalItems},</if>
+            <if test="diffItems != null">#{diffItems},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateStockCheckOrder" parameterType="StockCheckOrder">
+        update stock_check_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="checkType != null">check_type = #{checkType},</if>
+            <if test="warehouseCode != null">warehouse_code = #{warehouseCode},</if>
+            <if test="warehouseName != null">warehouse_name = #{warehouseName},</if>
+            <if test="checkStatus != null">check_status = #{checkStatus},</if>
+            <if test="planDate != null">plan_date = #{planDate},</if>
+            <if test="actualDate != null">actual_date = #{actualDate},</if>
+            <if test="checkerId != null">checker_id = #{checkerId},</if>
+            <if test="checkerName != null">checker_name = #{checkerName},</if>
+            <if test="totalItems != null">total_items = #{totalItems},</if>
+            <if test="diffItems != null">diff_items = #{diffItems},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where check_id = #{checkId}
+    </update>
+
+    <update id="deleteStockCheckOrderByCheckId" parameterType="Long">
+        update stock_check_order set del_flag = '1' where check_id = #{checkId}
+    </update>
+
+    <update id="deleteStockCheckOrderByCheckIds" parameterType="String">
+        update stock_check_order set del_flag = '1' where check_id in
+        <foreach item="checkId" collection="array" open="(" separator="," close=")">
+            #{checkId}
+        </foreach>
+    </update>
+</mapper>
+

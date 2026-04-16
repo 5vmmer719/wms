@@ -112,7 +112,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -141,7 +141,7 @@
             <el-form-item label="目标仓库" prop="destWarehouseCode">
               <el-select v-model="form.destWarehouseCode" placeholder="请选择目标仓库">
                 <el-option
-                  v-for="item in warehouseList"
+                  v-for="item in destWarehouseList"
                   :key="item.warehouseCode"
                   :label="item.warehouseName"
                   :value="item.warehouseCode"
@@ -167,7 +167,11 @@
         <el-table-column label="物料名称" align="center" prop="matName" width="120" />
         <el-table-column label="财务编码" align="center" prop="fdCode" width="100" />
         <el-table-column label="图号" align="center" prop="figNum" width="120" />
-        <el-table-column label="数量" align="center" prop="quantity" width="80" />
+        <el-table-column label="数量" align="center" width="120">
+          <template slot-scope="scope">
+            <el-input-number v-model="scope.row.quantity" :min="0" :precision="2" :controls="false" size="small" placeholder="请输入数量" style="width: 100px" />
+          </template>
+        </el-table-column>
         <el-table-column label="单位" align="center" prop="unitCode" width="80">
           <template slot-scope="scope">
             <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
@@ -187,7 +191,7 @@
         </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -264,6 +268,7 @@
         </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
+        <el-button type="success" icon="el-icon-check" @click="handleConfirmAllot" v-if="form.allotProgress === 'created'">确认调拨</el-button>
         <el-button type="primary" icon="el-icon-printer" @click="confirmPrintAllotOrder">打 印</el-button>
         <el-button @click="cancelAllotDetail">取 消</el-button>
       </div>
@@ -272,7 +277,7 @@
 </template>
 
 <script>
-import { listAllotOrder, getAllotOrder, delAllotOrder, addAllotOrder, printAllotOrder } from "@/api/stock/allotOrder";
+import { listAllotOrder, getAllotOrder, delAllotOrder, addAllotOrder, printAllotOrder, confirmAllot } from "@/api/stock/allotOrder";
 import { listAllWarehouse } from "@/api/base/warehouse";
 import selectMatLabel from "../../components/select-mat-label/index";
 
@@ -303,6 +308,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 提交loading
+      submitLoading: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -344,6 +351,23 @@ export default {
 
     };
   },
+  computed: {
+    // 目标仓库列表：排除已选的源仓库
+    destWarehouseList() {
+      if (!this.form.srcWarehouseCode) {
+        return this.warehouseList;
+      }
+      return this.warehouseList.filter(item => item.warehouseCode !== this.form.srcWarehouseCode);
+    }
+  },
+  watch: {
+    // 源仓库变化时，如果目标仓库与源仓库相同则清空
+    'form.srcWarehouseCode'(newVal) {
+      if (newVal && this.form.destWarehouseCode === newVal) {
+        this.form.destWarehouseCode = null;
+      }
+    }
+  },
   created() {
     this.getList();
     this.getWarehouseList();
@@ -355,6 +379,8 @@ export default {
       listAllotOrder(this.queryParams).then(response => {
         this.allotOrderList = response.rows;
         this.total = response.total;
+        this.loading = false;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -427,16 +453,39 @@ export default {
     cancelAllotDetail(){
       this.allotOrderDetailOpen = false;
     },
+    /** 确认调拨按钮操作 */
+    handleConfirmAllot(){
+      let that = this;
+      that.$modal.confirm('是否确认调拨单号为"' + that.form.allotNo + '"的调拨单？确认后将生成调拨出库单并扣减源仓库库存。').then(function() {
+        return confirmAllot(that.form.allotNo);
+      }).then((response) => {
+        that.$modal.msgSuccess("调拨成功");
+        that.allotOrderDetailOpen = false;
+        that.getList();
+      }).catch(() => {});
+    },
     /** 提交按钮 */
     submitForm() {
       this.$refs["form"].validate(valid => {
         if (valid) {
           let that = this;
+          if(that.form.srcWarehouseCode === that.form.destWarehouseCode){
+            that.$modal.msgError("发起仓库和目标仓库不能相同");
+            return;
+          }
           if(!that.matLabelList || that.matLabelList.length === 0){
             that.$modal.msgError("请选择物料标签");
             return;
           }
+          //校验数量
+          for(let i = 0; i < that.matLabelList.length; i++){
+            if(!that.matLabelList[i].quantity || that.matLabelList[i].quantity <= 0){
+              that.$modal.msgError("第" + (i + 1) + "行物料数量不能为空或为0");
+              return;
+            }
+          }
           that.$modal.confirm('是否确认创建调拨单？').then(function() {
+            that.submitLoading = true;
             that.form.detailList = that.matLabelList;
             addAllotOrder(that.form).then(response => {
               that.$modal.msgSuccess("新增成功");
@@ -445,6 +494,8 @@ export default {
               that.reset();
               that.labelIdArr = [];
               that.matLabelList = [];
+            }).finally(() => {
+              that.submitLoading = false;
             });
           });
         }

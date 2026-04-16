@@ -144,7 +144,7 @@
         </el-form-item>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -177,6 +177,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 提交loading
+      submitLoading: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -211,6 +213,8 @@ export default {
       listWarehouse(this.queryParams).then(response => {
         this.warehouseList = response.rows;
         this.total = response.total;
+        this.loading = false;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -271,16 +275,22 @@ export default {
       this.$refs["form"].validate(valid => {
         if (valid) {
           if (this.form.warehouseId != null) {
+            this.submitLoading = true;
             updateWarehouse(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
+            }).finally(() => {
+              this.submitLoading = false;
             });
           } else {
+            this.submitLoading = true;
             addWarehouse(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
+            }).finally(() => {
+              this.submitLoading = false;
             });
           }
         }

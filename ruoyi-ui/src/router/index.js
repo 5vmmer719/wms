@@ -141,7 +141,7 @@ export const dynamicRoutes = [
     permissions: ['stock:record:list'],
     children: [
       {
-        path: 'index/:matCode(\\d+)',
+        path: 'index/:matCode',
         component: () => import('@/views/stock/record/record_list'),
         name: 'RecordList',
         meta: { title: '库存物料流水', activeMenu: '/stock/record' }

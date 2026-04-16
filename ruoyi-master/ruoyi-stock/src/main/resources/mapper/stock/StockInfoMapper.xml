@@ -26,6 +26,8 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="updateTime"    column="update_time"    />
 
         <result property="statsQuantity"    column="statsQuantity"    />
+        <result property="safetyStock"    column="safetyStock"    />
+        <result property="maxStock"    column="maxStock"    />
     </resultMap>
 
     <sql id="selectStockInfoVo">
@@ -33,23 +35,26 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </sql>
 
     <select id="selectStockInfoStatsList" resultMap="StockInfoResult">
-        SELECT mat_code, mat_name, fd_code, fig_num, mat_group, mat_class, unit_code, SUM(quantity) AS statsQuantity
-        FROM stock_info WHERE del_flag = 0
-        <if test="warehouseCode != null  and warehouseCode != ''"> and warehouse_code = #{warehouseCode}</if>
-        <if test="locationCode != null  and locationCode != ''"> and location_code = #{locationCode}</if>
-        <if test="matCode != null  and matCode != ''"> and mat_code = #{matCode}</if>
-        <if test="matName != null  and matName != ''"> and mat_name like concat('%', #{matName}, '%')</if>
-        <if test="fdCode != null  and fdCode != ''"> and fd_code = #{fdCode}</if>
-        <if test="figNum != null  and figNum != ''"> and fig_num = #{figNum}</if>
-        <if test="matGroup != null  and matGroup != ''"> and mat_group = #{matGroup}</if>
-        <if test="matClass != null  and matClass != ''"> and mat_class = #{matClass}</if>
-        <if test="unitCode != null  and unitCode != ''"> and unit_code = #{unitCode}</if>
-        <if test="batch != null  and batch != ''"> and batch = #{batch}</if>
-        <if test="quantity != null "> and quantity = #{quantity}</if>
-        <if test="supplierCode != null  and supplierCode != ''"> and supplier_code = #{supplierCode}</if>
-        <if test="supplierName != null  and supplierName != ''"> and supplier_name like concat('%', #{supplierName}, '%')</if>
-        GROUP BY mat_code,mat_name,fd_code,fig_num,mat_group,mat_class,unit_code
-        ORDER BY mat_code ASC
+        SELECT si.mat_code, si.mat_name, si.fd_code, si.fig_num, si.mat_group, si.mat_class, si.unit_code,
+               SUM(si.quantity) AS statsQuantity, bm.safety_stock AS safetyStock, bm.max_stock AS maxStock
+        FROM stock_info si
+        LEFT JOIN base_mat bm ON si.mat_code = bm.mat_code AND bm.del_flag = 0
+        WHERE si.del_flag = 0
+        <if test="warehouseCode != null  and warehouseCode != ''"> and si.warehouse_code = #{warehouseCode}</if>
+        <if test="locationCode != null  and locationCode != ''"> and si.location_code = #{locationCode}</if>
+        <if test="matCode != null  and matCode != ''"> and si.mat_code = #{matCode}</if>
+        <if test="matName != null  and matName != ''"> and si.mat_name like concat('%', #{matName}, '%')</if>
+        <if test="fdCode != null  and fdCode != ''"> and si.fd_code = #{fdCode}</if>
+        <if test="figNum != null  and figNum != ''"> and si.fig_num = #{figNum}</if>
+        <if test="matGroup != null  and matGroup != ''"> and si.mat_group = #{matGroup}</if>
+        <if test="matClass != null  and matClass != ''"> and si.mat_class = #{matClass}</if>
+        <if test="unitCode != null  and unitCode != ''"> and si.unit_code = #{unitCode}</if>
+        <if test="batch != null  and batch != ''"> and si.batch = #{batch}</if>
+        <if test="quantity != null "> and si.quantity = #{quantity}</if>
+        <if test="supplierCode != null  and supplierCode != ''"> and si.supplier_code = #{supplierCode}</if>
+        <if test="supplierName != null  and supplierName != ''"> and si.supplier_name like concat('%', #{supplierName}, '%')</if>
+        GROUP BY si.mat_code,si.mat_name,si.fd_code,si.fig_num,si.mat_group,si.mat_class,si.unit_code,bm.safety_stock,bm.max_stock
+        ORDER BY si.mat_code ASC
     </select>
 
     <select id="selectStockInfoList" parameterType="StockInfo" resultMap="StockInfoResult">
@@ -153,6 +158,9 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             and mat_code = #{matCode}
             and batch = #{batch}
             and supplier_code = #{supplierCode}
+            and del_flag = 0
+            and quantity >= #{quantity}
+        limit 1
     </update>
 
     <update id="updateQuantityByMatCode">
@@ -208,6 +216,24 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
           and quantity > 0
         order by create_time desc
         limit 1
+    </select>
+
+    <select id="selectStockTotalByMatCode" resultType="java.math.BigDecimal">
+        SELECT COALESCE(SUM(quantity), 0)
+        FROM stock_info
+        WHERE del_flag = 0
+          AND warehouse_code = #{warehouseCode}
+          AND mat_code = #{matCode}
+          AND quantity > 0
+    </select>
+
+    <select id="selectStockInfoListByMatCode" resultMap="StockInfoResult">
+        <include refid="selectStockInfoVo"/>
+        where del_flag = 0
+          and warehouse_code = #{warehouseCode}
+          and mat_code = #{matCode}
+          and quantity > 0
+        order by create_time asc
     </select>
 
 </mapper>

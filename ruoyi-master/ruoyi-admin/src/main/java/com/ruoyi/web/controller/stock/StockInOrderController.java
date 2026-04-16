@@ -46,7 +46,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 入库单Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @RestController
@@ -117,15 +117,22 @@ public class StockInOrderController extends BaseController {
         if(order == null){
             return AjaxResult.error("入库单信息不正确");
         }
-        if(InOrderCheckStatusEnum.UN_CHECKOUT.getValue().equals(order.getCheckStatus())){
-            return AjaxResult.error("入库单未质检");
+        //调拨入库单不需要质检，跳过质检检查
+        if(!InOrderTypeEnum.ALLOT.getValue().equals(order.getOrderType())){
+            if(InOrderCheckStatusEnum.UN_CHECKOUT.getValue().equals(order.getCheckStatus())){
+                return AjaxResult.error("入库单未质检");
+            }
         }
         List<StockInDetail> detailList = stockInDetailService.selectStockInDetailListByOrderNo(order.getOrderNo());
         if(CollectionUtils.isEmpty(detailList)){
             return AjaxResult.error("系统繁忙，请稍后再试！");
         }
-        //过滤已完成的详情
-        detailList = detailList.stream().filter(item -> item.getQualifiedQuantity().compareTo(item.getStockInQuantity()) == 1).collect(Collectors.toList());
+        //过滤已完成的详情（qualifiedQuantity和stockInQuantity可能为null，视为0）
+        detailList = detailList.stream().filter(item -> {
+            java.math.BigDecimal qualified = item.getQualifiedQuantity() != null ? item.getQualifiedQuantity() : java.math.BigDecimal.ZERO;
+            java.math.BigDecimal stockIn = item.getStockInQuantity() != null ? item.getStockInQuantity() : java.math.BigDecimal.ZERO;
+            return qualified.compareTo(java.math.BigDecimal.ZERO) > 0 && qualified.compareTo(stockIn) > 0;
+        }).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(detailList)){
             return AjaxResult.error("入库单已完成");
         }

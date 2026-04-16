@@ -10,7 +10,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 入库单Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface StockInOrderMapper {

@@ -29,7 +29,7 @@ import com.ruoyi.framework.config.ServerConfig;
 /**
  * 通用请求处理
  *
- * @author ruoyi
+ * @author summer
  */
 @RestController
 @RequestMapping("/common")

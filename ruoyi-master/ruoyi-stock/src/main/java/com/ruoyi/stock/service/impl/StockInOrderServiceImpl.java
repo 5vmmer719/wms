@@ -7,6 +7,7 @@ import java.util.Map;
 
 import com.ruoyi.common.bean.typeEnum.InOrderCheckStatusEnum;
 import com.ruoyi.common.bean.typeEnum.InOrderTypeEnum;
+import com.ruoyi.common.bean.typeEnum.AllotProgressEnum;
 import com.ruoyi.common.bean.typeEnum.OrderStatusEnum;
 import com.ruoyi.common.bean.typeEnum.StockRecordTypeEnum;
 import com.ruoyi.common.core.domain.AjaxResult;
@@ -27,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 入库单Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Service
@@ -37,11 +38,11 @@ public class StockInOrderServiceImpl implements IStockInOrderService {
     @Autowired
     private StockInDetailMapper stockInDetailMapper;
     @Autowired
-    private StockMatLabelMapper stockMatLabelMapper;
-    @Autowired
     private StockInfoMapper stockInfoMapper;
     @Autowired
     private StockRecordMapper stockRecordMapper;
+    @Autowired
+    private StockAllotOrderMapper stockAllotOrderMapper;
 
     /**
      * 查询入库单数量
@@ -102,19 +103,13 @@ public class StockInOrderServiceImpl implements IStockInOrderService {
         List<StockInDetail> detailList = stockInOrder.getDetailList();
         if(CollectionUtils.isNotEmpty(detailList)){
             int i = 1;
-            StockMatLabel label = null;
             for(StockInDetail detail : detailList){
                 detail.setOrderNo(orderNo);
                 detail.setLineNo(i);
+                detail.setWarehouseCode(stockInOrder.getWarehouseCode());
                 detail.setQualifiedQuantity(detail.getQuantity());
                 detail.setCreateBy(username);
                 detail.setCreateTime(nowDate);
-                //修改物料标签-订单号
-                label = new StockMatLabel();
-                label.setLabelId(detail.getLabelId());
-                label.setOrderNo(orderNo);
-                label.setOrderType(orderType);
-                stockMatLabelMapper.updateStockMatLabel(label);
                 i++;
             }
         }
@@ -206,11 +201,6 @@ public class StockInOrderServiceImpl implements IStockInOrderService {
             String warehouseCode = detail.getWarehouseCode();
             String locationCode = detail.getLocationCode();
 
-            // 如果有物料标签ID，才更新物料标签（调拨入库没有labelId）
-            if (detail.getLabelId() != null) {
-                stockMatLabelMapper.updateUsableQuantity(detail.getLabelId(), username, nowDate, warehouseCode, locationCode, qualifiedQuantity);
-            }
-
             //修改入库单详情信息
             detail.setStockInQuantity(qualifiedQuantity);
             detail.setUpdateBy(username);
@@ -253,6 +243,23 @@ public class StockInOrderServiceImpl implements IStockInOrderService {
         inOrder.setUpdateBy(username);
         inOrder.setUpdateTime(nowDate);
         stockInOrderMapper.updateStockInOrderByOrderNo(inOrder);
+
+        // 如果是调拨入库单，回写调拨单进度为调拨完成
+        if (InOrderTypeEnum.ALLOT.getValue().equals(inOrder.getOrderType())) {
+            // 从数据库查询完整入库单信息以获取allotNo（前端可能未传递）
+            StockInOrder fullInOrder = stockInOrderMapper.selectStockInOrderByOrderNo(inOrder.getOrderNo());
+            String allotNo = fullInOrder != null ? fullInOrder.getAllotNo() : null;
+            if (allotNo != null && !allotNo.isEmpty()) {
+                StockAllotOrder allotOrder = stockAllotOrderMapper.selectStockAllotOrderByAllotNo(allotNo);
+                if (allotOrder != null) {
+                    allotOrder.setAllotProgress(AllotProgressEnum.COMPLETED.getValue());
+                    allotOrder.setUpdateBy(username);
+                    allotOrder.setUpdateTime(nowDate);
+                    stockAllotOrderMapper.updateStockAllotOrder(allotOrder);
+                }
+            }
+        }
+
         return AjaxResult.success("提交成功");
     }
 

@@ -7,7 +7,7 @@ import com.ruoyi.stock.domain.StockProdOrder;
 /**
  * 生产订单Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface StockProdOrderMapper {
@@ -66,4 +66,11 @@ public interface StockProdOrderMapper {
      * @return 结果
      */
     public int deleteStockProdOrderByOrderIds(Long[] orderIds);
+
+    /**
+     * 查询最大工令号
+     *
+     * @return 最大工令号
+     */
+    public String selectMaxWorkNo();
 }

@@ -13,7 +13,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 入库单详情对象 stock_in_detail
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data

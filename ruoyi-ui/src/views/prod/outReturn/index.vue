@@ -150,18 +150,6 @@
         </el-row>
         <el-row>
           <el-col :span="8">
-            <el-form-item label="仓库" prop="warehouseCode">
-              <el-select v-model="form.warehouseCode" disabled placeholder="请选择仓库">
-                <el-option
-                  v-for="item in warehouseList"
-                  :key="item.warehouseCode"
-                  :label="item.warehouseName"
-                  :value="item.warehouseCode"
-                ></el-option>
-              </el-select>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
             <el-form-item label="车间" prop="workshopCode">
               <el-select v-model="form.workshopCode" disabled placeholder="请选择车间">
                 <el-option
@@ -173,24 +161,24 @@
               </el-select>
             </el-form-item>
           </el-col>
-        </el-row>
-        <el-row>
-          <el-form-item label="退货原因" prop="returnReason">
-            <el-input v-model="form.returnReason" placeholder="请输入退货原因" />
-          </el-form-item>
+          <el-col :span="16">
+            <el-form-item label="退货原因" prop="returnReason">
+              <el-input v-model="form.returnReason" placeholder="请输入退货原因" />
+            </el-form-item>
+          </el-col>
         </el-row>
       </el-form>
       <el-table v-loading="loading" :data="outReturnDetailList">
-        <el-table-column label="物料编码" fixed align="center" prop="matCode" width="120" />
-        <el-table-column label="物料名称" fixed align="center" prop="matName" width="180" />
+        <el-table-column label="物料编码" align="center" prop="matCode" width="120" />
+        <el-table-column label="物料名称" align="center" prop="matName" width="180" />
         <el-table-column label="财务编码" align="center" prop="fdCode" width="120" />
         <el-table-column label="图号" align="center" prop="figNum" width="120" />
         <el-table-column label="仓库" align="center" prop="warehouseName" width="80" />
         <el-table-column label="货位" align="center" prop="locationCode" width="80" />
-        <el-table-column label="已领取" align="center" prop="receivedQuantity" width="80" />
+        <el-table-column label="可退数量" align="center" prop="receivedQuantity" width="80" />
         <el-table-column label="需退货" align="center" prop="quantity" width="100">
           <template slot-scope="scope">
-            <el-input-number v-model="scope.row.quantity" style="width: 90px" size="small" controls-position="right" :min="0" />
+            <el-input-number v-model="scope.row.quantity" style="width: 90px" size="small" controls-position="right" :min="0" :max="scope.row.receivedQuantity" />
           </template>
         </el-table-column>
         <el-table-column label="单位" align="center" prop="unitCode" width="80">
@@ -202,14 +190,14 @@
         <el-table-column label="供应商" align="center" prop="supplierName" width="180" />
         <el-table-column label="批次" align="center" prop="batch" width="180" />
         <el-table-column label="保管员" align="center" prop="createBy" width="120" />
-        <el-table-column label="操作时间" fixed="right" align="center" prop="createTime" width="160">
+        <el-table-column label="操作时间" align="center" prop="createTime" width="160">
           <template slot-scope="scope">
             <span>{{$moment(scope.row.createTime).format('YYYY-MM-DD HH:mm')}}</span>
           </template>
         </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -248,11 +236,6 @@
             </el-form-item>
           </el-col>
           <el-col :span="8">
-            <el-form-item label="仓库：">
-              <span>{{form.warehouseName}}</span>
-            </el-form-item>
-          </el-col>
-          <el-col :span="8">
             <el-form-item label="车间：">
               <span>{{form.workshopName}}</span>
             </el-form-item>
@@ -281,6 +264,7 @@
         <el-table-column label="物料名称" align="center" prop="matName" width="180" />
         <el-table-column label="财务编码" align="center" prop="fdCode" width="120" />
         <el-table-column label="图号" align="center" prop="figNum" width="120" />
+        <el-table-column label="仓库" align="center" prop="warehouseName" width="120" />
         <el-table-column label="需退货数" align="center" prop="quantity" width="80" />
         <el-table-column label="已退货数" align="center" prop="returnQuantity" width="80" />
         <el-table-column label="单位" align="center" prop="unitCode" width="80">
@@ -332,6 +316,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 提交loading
+      submitLoading: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -354,9 +340,6 @@ export default {
         ],
         prodOrderNo: [
           { required: true, message: "生产订单号不能为空", trigger: "blur" },
-        ],
-        warehouseCode: [
-          { required: true, message: "仓库不能为空", trigger: "blur" },
         ],
         workshopCode: [
           { required: true, message: "车间不能为空", trigger: "blur" },
@@ -391,6 +374,8 @@ export default {
       listOutReturn(this.queryParams).then(response => {
         this.outReturnList = response.rows;
         this.total = response.total;
+        this.loading = false;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -471,13 +456,21 @@ export default {
         return;
       }
       let checkFlag = false;
+      let overFlag = false;
       that.outReturnDetailList.forEach(item => {
         if(item.quantity > 0){
           checkFlag = true;
         }
+        if(item.quantity > item.receivedQuantity){
+          overFlag = true;
+        }
       });
       if(!checkFlag){
         that.$modal.msgError("请至少选择一项退货");
+        return;
+      }
+      if(overFlag){
+        that.$modal.msgError("需退货数量不能超过可退数量");
         return;
       }
       that.$refs["form"].validate(valid => {
@@ -485,12 +478,15 @@ export default {
           that.$modal.confirm('是否确认创建出库退货单？').then(function() {
             that.form.detailList = that.outReturnDetailList;
             that.form.returnType = 'production_return';
+            that.submitLoading = true;
             addOutReturn(that.form).then(response => {
               that.$modal.msgSuccess("新增成功");
               that.open = false;
               that.getList();
               that.reset();
               that.outReturnDetailList = [];
+            }).finally(() => {
+              that.submitLoading = false;
             });
           });
         }
@@ -539,7 +535,20 @@ export default {
       //查询出库单详情
       returnListRecord(item.orderNo).then(response => {
         let recordList = response.data;
-        recordList && recordList.length > 0 && recordList.forEach(record => {
+        if(!recordList || recordList.length === 0){
+          this.$modal.msgWarning("该出库单已全部退货完成，无可退物料");
+          this.form.orderNo = null;
+          this.form.warehouseCode = null;
+          this.form.workshopCode = null;
+          this.form.prodOrderNo = null;
+          return;
+        }
+        // 如果出库单主表没有仓库编码（生产出库单），从流水记录中取第一条的仓库自动回填
+        if(!this.form.warehouseCode && recordList.length > 0){
+          this.form.warehouseCode = recordList[0].warehouseCode;
+        }
+        this.outReturnDetailList = [];
+        recordList.forEach(record => {
           let outReturnDetail = {
             warehouseCode: record.warehouseCode,
             warehouseName: record.warehouseName,

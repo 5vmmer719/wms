@@ -44,7 +44,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 入库单退货Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @RestController
@@ -178,11 +178,13 @@ public class StockInReturnController extends BaseController {
         OutputStream out = response.getOutputStream();
         StockInReturn inReturn = stockInReturnService.selectStockInReturnByReturnId(returnId);
         if(inReturn != null){
-            //更新入库退货单状态
-            inReturn.setReturnStatus(OrderStatusEnum.PRINTED.getValue());
-            inReturn.setUpdateBy(getUsername());
-            inReturn.setUpdateTime(DateUtils.getNowDate());
-            stockInReturnService.updateStockInReturn(inReturn);
+            //更新入库退货单状态（仅在已创建状态时更新为已打印，避免覆盖退货后的状态）
+            if(OrderStatusEnum.CREATED.getValue().equals(inReturn.getReturnStatus())){
+                inReturn.setReturnStatus(OrderStatusEnum.PRINTED.getValue());
+                inReturn.setUpdateBy(getUsername());
+                inReturn.setUpdateTime(DateUtils.getNowDate());
+                stockInReturnService.updateStockInReturn(inReturn);
+            }
             //入库退货单
             InReturnPdfData returnPdfData = new InReturnPdfData();
             BeanUtils.copyBeanProp(returnPdfData, inReturn);

@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 /**
  * 入库单Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface IStockInOrderService {

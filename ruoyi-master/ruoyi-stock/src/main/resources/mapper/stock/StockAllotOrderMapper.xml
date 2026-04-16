@@ -17,10 +17,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="createTime"    column="create_time"    />
         <result property="updateBy"    column="update_by"    />
         <result property="updateTime"    column="update_time"    />
+        <result property="remark"    column="remark"    />
     </resultMap>
 
     <sql id="selectStockAllotOrderVo">
-        select allot_id, allot_no, allot_reason, src_warehouse_code, dest_warehouse_code, allot_status, allot_progress, del_flag, create_by, create_time, update_by, update_time from stock_allot_order
+        select allot_id, allot_no, allot_reason, src_warehouse_code, dest_warehouse_code, allot_status, allot_progress, del_flag, create_by, create_time, update_by, update_time, remark from stock_allot_order
     </sql>
 
     <select id="selectStockAllotOrderList" parameterType="StockAllotOrder" resultMap="StockAllotOrderResult">
@@ -32,6 +33,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="destWarehouseCode != null  and destWarehouseCode != ''"> and dest_warehouse_code = #{destWarehouseCode}</if>
         <if test="allotStatus != null  and allotStatus != ''"> and allot_status = #{allotStatus}</if>
         <if test="allotProgress != null  and allotProgress != ''"> and allot_progress = #{allotProgress}</if>
+        ORDER BY create_time DESC
     </select>
     
     <select id="selectStockAllotOrderByAllotId" parameterType="Long" resultMap="StockAllotOrderResult">
@@ -88,6 +90,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="createTime != null">create_time = #{createTime},</if>
             <if test="updateBy != null">update_by = #{updateBy},</if>
             <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
         </trim>
         where allot_id = #{allotId}
     </update>

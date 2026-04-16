@@ -41,6 +41,16 @@
           @keyup.enter.native="handleQuery"
         />
       </el-form-item>
+      <el-form-item label="流水类型" prop="recordType">
+        <el-select v-model="queryParams.recordType" placeholder="请选择流水类型" clearable>
+          <el-option
+            v-for="item in recordTypeOptions"
+            :key="item.value"
+            :label="item.label"
+            :value="item.value"
+          ></el-option>
+        </el-select>
+      </el-form-item>
       <el-form-item label="创建时间">
         <el-date-picker
           v-model="dateRange"
@@ -72,33 +82,31 @@
       <right-toolbar :showSearch.sync="showSearch" @queryTable="getList"></right-toolbar>
     </el-row>
 
-    <el-table v-loading="loading" :data="recordList">
-      <el-table-column label="流水类型" fixed align="center" prop="recordTypeLabel" width="120" />
-      <el-table-column label="物料编码" fixed align="center" prop="matCode" width="120" />
-      <el-table-column label="物料名称" fixed align="center" prop="matName" width="180" />
-      <el-table-column label="财务编码" align="center" prop="fdCode" width="120" />
-      <el-table-column label="图号" align="center" prop="figNum" width="120" />
-      <el-table-column label="物料组" align="center" prop="matGroupName" width="80" />
-      <el-table-column label="物料分类" align="center" prop="matClassName" width="80" />
-      <el-table-column label="仓库" align="center" prop="warehouseName" width="80" />
-      <el-table-column label="货位" align="center" prop="locationCode" width="80" />
+    <el-table v-loading="loading" :data="recordList" border>
+      <el-table-column label="流水类型" fixed align="center" prop="recordTypeLabel" width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="仓库" align="center" prop="warehouseName" width="110" :show-overflow-tooltip="true" />
+      <el-table-column label="货位" align="center" prop="locationCode" width="80" :show-overflow-tooltip="true" />
+      <el-table-column label="物料编码" align="center" prop="matCode" width="120" :show-overflow-tooltip="true" />
+      <el-table-column label="物料名称" align="center" prop="matName" min-width="140" :show-overflow-tooltip="true" />
+      <el-table-column label="图号" align="center" prop="figNum" width="120" :show-overflow-tooltip="true" />
       <el-table-column label="数量" align="center" prop="quantity" width="80" />
-      <el-table-column label="单位" align="center" prop="unitCode" width="80">
+      <el-table-column label="单位" align="center" prop="unitCode" width="70">
         <template slot-scope="scope">
-            <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
-          </template>
+          <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
+        </template>
       </el-table-column>
-      <el-table-column label="供应商" align="center" prop="supplierName" width="180" />
-      <el-table-column label="批次" align="center" prop="batch" width="180" />
-      <el-table-column label="单据号" align="center" prop="orderNo" width="180" />
-      <el-table-column label="车间" align="center" prop="workshopName" width="120" />
-      <el-table-column label="创建时间" fixed="right" align="center" prop="createTime" width="180">
+      <el-table-column label="供应商" align="center" prop="supplierName" width="140" :show-overflow-tooltip="true" />
+      <el-table-column label="批次" align="center" prop="batch" width="160" :show-overflow-tooltip="true" />
+      <el-table-column label="单据号" align="center" prop="orderNo" width="180" :show-overflow-tooltip="true" />
+      <el-table-column label="车间" align="center" prop="workshopName" width="100" :show-overflow-tooltip="true" />
+      <el-table-column label="操作人" align="center" prop="createBy" width="80" />
+      <el-table-column label="创建时间" fixed="right" align="center" prop="createTime" width="150">
         <template slot-scope="scope">
-          <span>{{$moment(scope.row.createTime).format('YYYY-MM-DD HH:mm')}}</span>
+          <span>{{ $moment(scope.row.createTime).format('YYYY-MM-DD HH:mm') }}</span>
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -151,6 +159,24 @@ export default {
 
       // 日期范围
       dateRange: [],
+
+      // 流水类型选项
+      recordTypeOptions: [
+        { value: 'in_purchase', label: '原料入库' },
+        { value: 'in_outsourcing', label: '外协入库' },
+        { value: 'in_production', label: '车间入库' },
+        { value: 'out_production', label: '生产领料' },
+        { value: 'out_repair', label: '补领出库' },
+        { value: 'out_common', label: '销售出库' },
+        { value: 'in_purchase_return', label: '原料入库退货' },
+        { value: 'out_production_return', label: '生产领料退货' },
+        { value: 'out_repair_return', label: '补领出库退货' },
+        { value: 'out_common_return', label: '销售出库退货' },
+        { value: 'upper', label: '上架' },
+        { value: 'lower', label: '下架' },
+        { value: 'allot_in', label: '调拨入库' },
+        { value: 'allot_out', label: '调拨出库' },
+      ],
     };
   },
   created() {

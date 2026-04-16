@@ -8,7 +8,7 @@ import com.ruoyi.stock.domain.StockAllotOrder;
 /**
  * 调拨单Service接口
  * 
- * @author ruoyi
+ * @author summer
  * @date 2022-08-05
  */
 public interface IStockAllotOrderService 

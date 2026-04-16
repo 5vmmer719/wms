@@ -7,7 +7,7 @@ import com.ruoyi.stock.domain.StockMatLabel;
 /**
  * 物料标签Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface IStockMatLabelService {
@@ -18,6 +18,14 @@ public interface IStockMatLabelService {
      * @return 物料标签
      */
     public StockMatLabel selectStockMatLabelByLabelId(Long labelId);
+
+    /**
+     * 根据标签编码查询物料标签
+     *
+     * @param labelCode 标签编码
+     * @return 物料标签
+     */
+    public StockMatLabel selectStockMatLabelByLabelCode(String labelCode);
 
     /**
      * 查询物料标签列表
@@ -50,6 +58,15 @@ public interface IStockMatLabelService {
      * @return 结果
      */
     public int updateStockMatLabel(StockMatLabel stockMatLabel);
+
+    /**
+     * 修改物料标签状态
+     *
+     * @param labelId 标签ID
+     * @param status 状态
+     * @return 结果
+     */
+    public int updateStatus(Long labelId, String status);
 
     /**
      * 批量删除物料标签

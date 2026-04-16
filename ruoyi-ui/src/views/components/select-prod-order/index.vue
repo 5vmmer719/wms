@@ -78,7 +78,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -142,7 +142,12 @@ export default {
       selectMatOpen: false,
 
       //生产订单状态
-      orderStatusOptions:[{value: 'ongoing', label: '进行中'}, {value: 'finished', label: '已完成'}],
+      orderStatusOptions:[
+        {value: 'planned', label: '待排产'},
+        {value: 'ongoing', label: '生产中'},
+        {value: 'completed', label: '已完工'},
+        {value: 'closed', label: '已关闭'}
+      ],
     };
   },
   created() {

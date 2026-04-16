@@ -25,7 +25,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 物料组Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @RestController

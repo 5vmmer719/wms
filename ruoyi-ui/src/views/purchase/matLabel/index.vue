@@ -1,6 +1,14 @@
 <template>
   <div class="app-container">
     <el-form :model="queryParams" ref="queryForm" size="small" :inline="true" v-show="showSearch" label-width="68px">
+      <el-form-item label="标签编码" prop="labelCode">
+        <el-input
+          v-model="queryParams.labelCode"
+          placeholder="请输入标签编码"
+          clearable
+          @keyup.enter.native="handleQuery"
+        />
+      </el-form-item>
       <el-form-item label="物料编码" prop="matCode">
         <el-input
           v-model="queryParams.matCode"
@@ -77,13 +85,15 @@
           placeholder="请选择生产时间">
         </el-date-picker>
       </el-form-item>
-      <el-form-item label="入库单号" prop="orderNo">
-        <el-input
-          v-model="queryParams.orderNo"
-          placeholder="请输入入库单号"
-          clearable
-          @keyup.enter.native="handleQuery"
-        />
+      <el-form-item label="状态" prop="status">
+        <el-select v-model="queryParams.status" placeholder="请选择状态" clearable>
+          <el-option
+            v-for="dict in dict.type.mat_label_status"
+            :key="dict.value"
+            :label="dict.label"
+            :value="dict.value"
+          ></el-option>
+        </el-select>
       </el-form-item>
       <el-form-item>
         <el-button type="primary" icon="el-icon-search" size="mini" @click="handleQuery">搜索</el-button>
@@ -143,12 +153,9 @@
       <el-table-column label="物料描述" fixed align="center" prop="matName" width="120" />
       <el-table-column label="财务编码" align="center" prop="fdCode" width="100" />
       <el-table-column label="图号" align="center" prop="figNum" width="150" />
+      <el-table-column label="标签编码" align="center" prop="labelCode" width="180" />
       <el-table-column label="物料组" align="center" prop="matGroupName" width="80" />
       <el-table-column label="分类" align="center" prop="matClassName" width="80" />
-      <el-table-column label="数量" align="center" prop="quantity" width="80" />
-      <el-table-column label="可用数" align="center" prop="usableQuantity" width="80" />
-      <el-table-column label="已领数" align="center" prop="receivedQuantity" width="80" />
-      <el-table-column label="单价" align="center" prop="unitPrice" width="80" />
       <el-table-column label="基本单位" align="center" prop="unitCode" width="80">
         <template slot-scope="scope">
           <dict-tag :options="dict.type.base_mat_unit" :value="scope.row.unitCode"/>
@@ -161,9 +168,27 @@
           <span>{{ parseTime(scope.row.prodTime, '{y}-{m}-{d}') }}</span>
         </template>
       </el-table-column>
-      <el-table-column label="入库单号" align="center" prop="orderNo" width="180" />
-      <el-table-column label="操作" fixed="right" align="center" width="120" class-name="small-padding fixed-width">
+      <el-table-column label="状态" align="center" prop="status" width="100">
         <template slot-scope="scope">
+          <el-switch
+            v-model="scope.row.status"
+            active-value="0"
+            inactive-value="1"
+            @change="handleStatusChange(scope.row)"
+            v-hasRole="['admin']"
+          ></el-switch>
+          <dict-tag v-if="!$auth.hasRole('admin')" :options="dict.type.mat_label_status" :value="scope.row.status"/>
+        </template>
+      </el-table-column>
+      <el-table-column label="操作" fixed="right" align="center" width="180" class-name="small-padding fixed-width">
+        <template slot-scope="scope">
+          <el-button
+            size="mini"
+            type="text"
+            icon="el-icon-edit"
+            @click="handleUpdate(scope.row)"
+            v-hasPermi="['stock:matLabel:edit']"
+          >编辑</el-button>
           <el-button
             size="mini"
             type="text"
@@ -181,7 +206,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -285,19 +310,14 @@
         </el-row>
         <el-row>
           <el-col :span="12">
-            <el-form-item label="数量" prop="quantity">
-              <el-input-number v-model="form.quantity" controls-position="right" :min="1" />
-            </el-form-item>
-          </el-col>
-          <el-col :span="12">
-            <el-form-item label="单价" prop="unitPrice">
-              <el-input-number v-model="form.unitPrice" controls-position="right" :min="0" />
+            <el-form-item label="标签编码" prop="labelCode">
+              <el-input v-model="form.labelCode" placeholder="自动生成" disabled />
             </el-form-item>
           </el-col>
         </el-row>
       </el-form>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -319,7 +339,7 @@
 </template>
 
 <script>
-import { listMatLabel, getMatLabel, delMatLabel, addMatLabel, updateMatLabel, printLabel, printLabelBatch } from "@/api/stock/matLabel";
+import { listMatLabel, getMatLabel, delMatLabel, addMatLabel, updateMatLabel, printLabel, printLabelBatch, changeMatLabelStatus } from "@/api/stock/matLabel";
 import { listAllGroup } from "@/api/base/group";
 import { listAllClass } from "@/api/base/class";
 import selectMat from "../../components/select-mat/index"
@@ -327,7 +347,7 @@ import selectSupplier from "../../components/select-supplier/index"
 
 export default {
   name: "MatLabel",
-  dicts: ['base_mat_unit'],
+  dicts: ['base_mat_unit', 'mat_label_status'],
   components: { selectMat, selectSupplier },
   data() {
     return {
@@ -349,11 +369,14 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 提交loading
+      submitLoading: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
         pageSize: 10,
         labelType: null,
+        labelCode: null,
         matCode: null,
         matName: null,
         fdCode: null,
@@ -365,10 +388,7 @@ export default {
         supplierCode: null,
         supplierName: null,
         prodTime: null,
-        quantity: null,
-        unitPrice: null,
-        orderNo: null,
-        orderType: null,
+        status: null,
       },
       // 表单参数
       form: {},
@@ -407,12 +427,6 @@ export default {
         prodTime: [
           { required: true, message: "请选择生产时间", trigger: "blur" },
         ],
-        quantity: [
-          { required: true, message: "请输入数量", trigger: "blur" },
-        ],
-        unitPrice: [
-          { required: true, message: "请输入单价", trigger: "blur" },
-        ],
       },
 
       //组、分类
@@ -439,6 +453,8 @@ export default {
         this.matLabelList = response.rows;
         this.total = response.total;
         this.loading = false;
+      }).finally(() => {
+        this.loading = false;
       });
     },
     // 取消按钮
@@ -451,6 +467,7 @@ export default {
       this.form = {
         labelId: null,
         labelType: null,
+        labelCode: null,
         matCode: null,
         matName: null,
         fdCode: null,
@@ -462,12 +479,7 @@ export default {
         supplierCode: null,
         supplierName: null,
         prodTime: null,
-        quantity: null,
-        qualifiedQuantity: null,
-        receivedQuantity: null,
-        unitPrice: null,
-        orderNo: null,
-        orderType: null,
+        status: '0',
         delFlag: null,
         createBy: null,
         createTime: null,
@@ -514,16 +526,22 @@ export default {
         if (valid) {
           this.form.labelType = 'purchase';
           if (this.form.labelId != null) {
+            this.submitLoading = true;
             updateMatLabel(this.form).then(response => {
               this.$modal.msgSuccess("修改成功");
               this.open = false;
               this.getList();
+            }).finally(() => {
+              this.submitLoading = false;
             });
           } else {
+            this.submitLoading = true;
             addMatLabel(this.form).then(response => {
               this.$modal.msgSuccess("新增成功");
               this.open = false;
               this.getList();
+            }).finally(() => {
+              this.submitLoading = false;
             });
           }
         }
@@ -582,6 +600,8 @@ export default {
       this.form.matClass = item.matClass;
       this.form.unitCode = item.unitCode;
       this.form.batch = 'CG'+ this.$moment().format('YYYYMMDDHHmmss');
+      // 自动生成标签编码：LB + 时间戳
+      this.form.labelCode = 'LB' + this.$moment().format('YYYYMMDDHHmmss');
       this.selectMatOpen = false;
     },
     //选择供应商
@@ -603,6 +623,17 @@ export default {
         binaryData.push(response);
         let pdfUrl = window.URL.createObjectURL(new Blob(binaryData, { type: "application/pdf" }));
         window.open(pdfUrl);
+      });
+    },
+    /** 标签状态修改（启用/停用） */
+    handleStatusChange(row) {
+      let text = row.status === "0" ? "启用" : "停用";
+      this.$modal.confirm('确认要' + text + '标签编码为"' + row.labelCode + '"的标签吗？').then(() => {
+        return changeMatLabelStatus(row.labelId, row.status);
+      }).then(() => {
+        this.$modal.msgSuccess(text + "成功");
+      }).catch(() => {
+        row.status = row.status === "0" ? "1" : "0";
       });
     },
   }

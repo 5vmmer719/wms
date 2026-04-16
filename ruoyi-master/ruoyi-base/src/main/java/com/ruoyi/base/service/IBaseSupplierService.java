@@ -6,7 +6,7 @@ import com.ruoyi.base.domain.BaseSupplier;
 /**
  * 供应商Service接口
  * 
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 public interface IBaseSupplierService 

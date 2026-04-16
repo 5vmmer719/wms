@@ -11,10 +11,12 @@ import java.util.Map;
 public enum OrderStatusEnum {
 
     CREATED("created", "已创建"),
+    CONFIRMED("confirmed", "已确认"),
     PRINTED( "printed","已打印"),
     ENTERED( "entered","已入库"),
     RECEIVED( "received","已领料"),
     RETURNED("returned", "已退料"),
+    PARTIAL_RETURNED("partial_returned", "部分退货"),
     PICKING("picking","部分领料");
 
     private String value;

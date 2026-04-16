@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 用户管理的物料分类Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-11
  */
 public interface SysUserClassMapper {

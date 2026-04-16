@@ -12,7 +12,7 @@ import com.ruoyi.stock.domain.stats.StockOutStats;
 /**
  * 出库单Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface IStockOutOrderService {

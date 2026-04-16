@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * 物料标签对象 stock_mat_label
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data

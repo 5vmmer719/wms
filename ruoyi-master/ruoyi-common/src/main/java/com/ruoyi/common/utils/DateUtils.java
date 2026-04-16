@@ -17,7 +17,7 @@ import org.springframework.util.unit.DataUnit;
 /**
  * 时间工具类
  *
- * @author ruoyi
+ * @author summer
  */
 public class DateUtils extends org.apache.commons.lang3.time.DateUtils {
     public static String YYYY = "yyyy";

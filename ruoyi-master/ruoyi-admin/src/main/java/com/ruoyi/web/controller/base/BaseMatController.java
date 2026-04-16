@@ -34,7 +34,7 @@ import org.springframework.web.multipart.MultipartFile;
 /**
  * 物料主数据Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @RestController

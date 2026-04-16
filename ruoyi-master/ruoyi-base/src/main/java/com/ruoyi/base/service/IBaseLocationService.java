@@ -6,7 +6,7 @@ import com.ruoyi.base.domain.BaseLocation;
 /**
  * 货位Service接口
  * 
- * @author ruoyi
+ * @author summer
  * @date 2022-07-24
  */
 public interface IBaseLocationService 

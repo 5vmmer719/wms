@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.stock.mapper.StockCustomerOrderMapper">
+
+    <resultMap type="StockCustomerOrder" id="StockCustomerOrderResult">
+        <result property="orderId"             column="order_id"              />
+        <result property="orderNo"             column="order_no"              />
+        <result property="customerCode"        column="customer_code"         />
+        <result property="customerName"        column="customer_name"         />
+        <result property="orderDate"           column="order_date"            />
+        <result property="deliveryDate"        column="delivery_date"         />
+        <result property="actualDeliveryDate"  column="actual_delivery_date"  />
+        <result property="orderStatus"         column="order_status"          />
+        <result property="totalAmount"         column="total_amount"          />
+        <result property="delFlag"             column="del_flag"              />
+        <result property="createBy"            column="create_by"             />
+        <result property="createTime"          column="create_time"           />
+        <result property="updateBy"            column="update_by"             />
+        <result property="updateTime"          column="update_time"           />
+        <result property="remark"              column="remark"                />
+    </resultMap>
+
+    <sql id="selectStockCustomerOrderVo">
+        select order_id, order_no, customer_code, customer_name, order_date, delivery_date,
+               actual_delivery_date, order_status, total_amount, del_flag,
+               create_by, create_time, update_by, update_time, remark
+        from stock_customer_order
+    </sql>
+
+    <select id="selectStockCustomerOrderList" parameterType="StockCustomerOrder" resultMap="StockCustomerOrderResult">
+        <include refid="selectStockCustomerOrderVo"/>
+        WHERE del_flag = '0'
+        <if test="orderNo != null and orderNo != ''"> and order_no = #{orderNo}</if>
+        <if test="customerCode != null and customerCode != ''"> and customer_code = #{customerCode}</if>
+        <if test="customerName != null and customerName != ''"> and customer_name like concat('%', #{customerName}, '%')</if>
+        <if test="orderStatus != null and orderStatus != ''"> and order_status = #{orderStatus}</if>
+        <if test="params.beginOrderDate != null and params.beginOrderDate != ''"> and order_date &gt;= #{params.beginOrderDate}</if>
+        <if test="params.endOrderDate != null and params.endOrderDate != ''"> and order_date &lt;= #{params.endOrderDate}</if>
+        ORDER BY create_time DESC
+    </select>
+
+    <select id="selectStockCustomerOrderByOrderId" parameterType="Long" resultMap="StockCustomerOrderResult">
+        <include refid="selectStockCustomerOrderVo"/>
+        where del_flag = '0' and order_id = #{orderId}
+    </select>
+
+    <select id="selectStockCustomerOrderByOrderNo" resultMap="StockCustomerOrderResult">
+        <include refid="selectStockCustomerOrderVo"/>
+        where del_flag = '0' and order_no = #{orderNo}
+    </select>
+
+    <insert id="insertStockCustomerOrder" parameterType="StockCustomerOrder" useGeneratedKeys="true" keyProperty="orderId">
+        insert into stock_customer_order
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="orderNo != null">order_no,</if>
+            <if test="customerCode != null">customer_code,</if>
+            <if test="customerName != null">customer_name,</if>
+            <if test="orderDate != null">order_date,</if>
+            <if test="deliveryDate != null">delivery_date,</if>
+            <if test="actualDeliveryDate != null">actual_delivery_date,</if>
+            <if test="orderStatus != null">order_status,</if>
+            <if test="totalAmount != null">total_amount,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="orderNo != null">#{orderNo},</if>
+            <if test="customerCode != null">#{customerCode},</if>
+            <if test="customerName != null">#{customerName},</if>
+            <if test="orderDate != null">#{orderDate},</if>
+            <if test="deliveryDate != null">#{deliveryDate},</if>
+            <if test="actualDeliveryDate != null">#{actualDeliveryDate},</if>
+            <if test="orderStatus != null">#{orderStatus},</if>
+            <if test="totalAmount != null">#{totalAmount},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateStockCustomerOrder" parameterType="StockCustomerOrder">
+        update stock_customer_order
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="orderNo != null">order_no = #{orderNo},</if>
+            <if test="customerCode != null">customer_code = #{customerCode},</if>
+            <if test="customerName != null">customer_name = #{customerName},</if>
+            <if test="orderDate != null">order_date = #{orderDate},</if>
+            <if test="deliveryDate != null">delivery_date = #{deliveryDate},</if>
+            <if test="actualDeliveryDate != null">actual_delivery_date = #{actualDeliveryDate},</if>
+            <if test="orderStatus != null">order_status = #{orderStatus},</if>
+            <if test="totalAmount != null">total_amount = #{totalAmount},</if>
+            <if test="delFlag != null">del_flag = #{delFlag},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where order_id = #{orderId}
+    </update>
+
+    <update id="deleteStockCustomerOrderByOrderId" parameterType="Long">
+        update stock_customer_order set del_flag = '1' where order_id = #{orderId}
+    </update>
+
+    <update id="deleteStockCustomerOrderByOrderIds" parameterType="String">
+        update stock_customer_order set del_flag = '1' where order_id in
+        <foreach item="orderId" collection="array" open="(" separator="," close=")">
+            #{orderId}
+        </foreach>
+    </update>
+</mapper>
+

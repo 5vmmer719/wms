@@ -1,0 +1,55 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam nodesep 10
+skinparam ranksep 40
+
+together {
+  actor "生产主管" as Planner
+  actor "质检员" as Inspector
+  actor "仓管员" as Keeper
+}
+Planner -[hidden]down-> Inspector
+Inspector -[hidden]down-> Keeper
+
+usecase "客户订单管理" as UC_CustOrder
+usecase "生产计划管理" as UC_Plan
+usecase "生产工单管理\n（含排产/开工/报工/完工）" as UC_ProdOrder
+usecase "领料出库" as UC_ProdOut
+usecase "交付管理" as UC_Delivery
+
+usecase "质检与不合格品管理" as UC_QTask
+usecase "质量追溯" as UC_Trace
+
+usecase "入库确认" as UC_InConfirm
+usecase "出库确认" as UC_OutConfirm
+usecase "库存查询" as UC_Stock
+usecase "库存盘点" as UC_Check
+usecase "调拨管理" as UC_Allot
+usecase "物料标签管理" as UC_Label
+
+' --- 用例间关系 ---
+UC_ProdOrder ..> UC_ProdOut : <<include>>
+UC_ProdOrder ..> UC_InConfirm : <<include>>
+UC_InConfirm ..> UC_QTask : <<include>>
+
+' --- 生产主管 ---
+Planner --> UC_CustOrder
+Planner --> UC_Plan
+Planner --> UC_ProdOrder
+Planner --> UC_Delivery
+
+' --- 仓管员 ---
+UC_InConfirm <-- Keeper
+UC_OutConfirm <-- Keeper
+UC_Stock <-- Keeper
+UC_Check <-- Keeper
+UC_Allot <-- Keeper
+UC_Label <-- Keeper
+
+' --- 质检员 ---
+UC_QTask <-- Inspector
+UC_Trace <-- Inspector
+
+@enduml
+

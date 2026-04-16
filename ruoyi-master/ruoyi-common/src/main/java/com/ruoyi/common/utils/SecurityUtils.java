@@ -10,7 +10,7 @@ import com.ruoyi.common.exception.ServiceException;
 /**
  * 安全服务工具类
  *
- * @author ruoyi
+ * @author summer
  */
 public class SecurityUtils {
     /**

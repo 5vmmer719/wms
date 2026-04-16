@@ -7,7 +7,7 @@ import com.ruoyi.base.domain.BaseMatClass;
 /**
  * 物料分类Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 public interface BaseMatClassMapper {

@@ -8,7 +8,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 用户管理的物料分类对象 sys_user_class
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-08-11
  */
 public class SysUserClass extends BaseEntity {

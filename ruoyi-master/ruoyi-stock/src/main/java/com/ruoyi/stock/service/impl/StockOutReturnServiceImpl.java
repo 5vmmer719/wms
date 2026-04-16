@@ -28,7 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 出库单退货Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Service
@@ -159,6 +159,8 @@ public class StockOutReturnServiceImpl implements IStockOutReturnService {
 
     /**
      * 扫码提交出库单退货-退货
+     * 注意：物料标签已重构，不再存储数量信息
+     * returnQuantity 在原有已退数量基础上累加
      */
     @Override
     @Transactional
@@ -169,35 +171,56 @@ public class StockOutReturnServiceImpl implements IStockOutReturnService {
             return AjaxResult.error("系统繁忙，请稍后再试！");
         }
         String warehouseCode = stockOutReturn.getWarehouseCode();
-        String workshopCode = stockOutReturn.getWorkshopCode();
         StockRecord record = null;
         for(StockOutReturnDetail detail : detailList){
-            Long labelId = detail.getLabelId();
-            BigDecimal returnQuantity = detail.getReturnQuantity();
+            BigDecimal thisReturnQuantity = detail.getReturnQuantity();
+            //查询当前已退数量，累加本次退货数量
+            StockOutReturnDetail existingDetail = stockOutReturnDetailMapper.selectStockOutReturnDetailByDetailId(detail.getDetailId());
+            if(existingDetail != null && existingDetail.getReturnQuantity() != null){
+                detail.setReturnQuantity(existingDetail.getReturnQuantity().add(thisReturnQuantity));
+            }
             //修改退货单详情
             detail.setUpdateBy(username);
             detail.setUpdateTime(nowDate);
             stockOutReturnDetailMapper.updateStockOutReturnDetail(detail);
-            //修改物料标签
-            stockMatLabelMapper.updateReceivedQuantity(labelId, username, nowDate, returnQuantity.multiply(new BigDecimal("-1")));
-            //修改库存信息
-            stockInfoMapper.updateQuantity(warehouseCode, detail.getLocationCode(), detail.getBatch(),
-                    detail.getSupplierCode(), detail.getMatCode(), detail.getReturnQuantity().multiply(new BigDecimal("-1")));
+            //修改库存信息（退货是加回库存，所以用负数）
+            // 优先使用明细行的仓库编码（生产出库单每行可能属于不同仓库）
+            String detailWarehouseCode = (detail.getWarehouseCode() != null && !detail.getWarehouseCode().isEmpty())
+                    ? detail.getWarehouseCode() : warehouseCode;
+            stockInfoMapper.updateQuantity(detailWarehouseCode, detail.getLocationCode(), detail.getBatch(),
+                    detail.getSupplierCode(), detail.getMatCode(), thisReturnQuantity.multiply(new BigDecimal("-1")));
             //新增库存操作信息
             record = new StockRecord();
             BeanUtils.copyBeanProp(record, detail);
+            record.setQuantity(thisReturnQuantity);
             record.setOrderNo(stockOutReturn.getOrderNo());
             record.setRecordType(StockRecordTypeEnum.getStockOutReturnRecordType(stockOutReturn.getReturnType()));
             record.setCreateBy(username);
             record.setCreateTime(nowDate);
             stockRecordMapper.insertStockRecord(record);
         }
-        //修改退货单
-        stockOutReturn.setReturnStatus(OrderStatusEnum.RETURNED.getValue());
-        stockOutReturn.setReturnNo(stockOutReturn.getReturnNo());
-        stockOutReturn.setUpdateBy(username);
-        stockOutReturn.setUpdateTime(nowDate);
-        stockOutReturnMapper.updateStockOutReturn(stockOutReturn);
+        //判断退货单是否全部退完
+        List<StockOutReturnDetail> allDetails = stockOutReturnDetailMapper.selectStockOutReturnDetailListByReturnNo(stockOutReturn.getReturnNo());
+        boolean allReturned = true;
+        if(CollectionUtils.isNotEmpty(allDetails)){
+            for(StockOutReturnDetail d : allDetails){
+                BigDecimal qty = d.getQuantity() != null ? d.getQuantity() : BigDecimal.ZERO;
+                BigDecimal rtnQty = d.getReturnQuantity() != null ? d.getReturnQuantity() : BigDecimal.ZERO;
+                if(rtnQty.compareTo(qty) < 0){
+                    allReturned = false;
+                    break;
+                }
+            }
+        }
+        //修改退货单状态
+        // 扫码端只传 returnNo 不传 returnId，需要先查询出完整的退货单信息
+        StockOutReturn dbOutReturn = stockOutReturnMapper.selectStockOutReturnByReturnNo(stockOutReturn.getReturnNo());
+        if(dbOutReturn != null){
+            dbOutReturn.setReturnStatus(allReturned ? OrderStatusEnum.RETURNED.getValue() : OrderStatusEnum.PARTIAL_RETURNED.getValue());
+            dbOutReturn.setUpdateBy(username);
+            dbOutReturn.setUpdateTime(nowDate);
+            stockOutReturnMapper.updateStockOutReturn(dbOutReturn);
+        }
         return AjaxResult.success("提交成功");
     }
 

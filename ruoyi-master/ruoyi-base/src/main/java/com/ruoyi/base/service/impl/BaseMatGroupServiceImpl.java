@@ -12,7 +12,7 @@ import com.ruoyi.base.service.IBaseMatGroupService;
 /**
  * 物料组Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @Service

@@ -8,7 +8,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 出库退货详情Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface StockOutReturnDetailMapper {

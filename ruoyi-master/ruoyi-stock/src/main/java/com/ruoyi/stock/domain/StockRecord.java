@@ -11,7 +11,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 库存流水对象 stock_record
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data

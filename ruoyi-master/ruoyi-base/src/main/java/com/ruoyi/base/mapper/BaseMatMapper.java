@@ -9,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 物料主数据Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 public interface BaseMatMapper {

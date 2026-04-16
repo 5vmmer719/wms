@@ -7,7 +7,7 @@ import com.ruoyi.stock.domain.StockInDetail;
 /**
  * 入库单详情Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface IStockInDetailService {

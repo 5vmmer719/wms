@@ -4,6 +4,8 @@ import java.util.List;
 import javax.servlet.http.HttpServletResponse;
 
 import com.ruoyi.base.service.IBaseWorkshopService;
+import com.ruoyi.base.service.IBaseProcessRouteService;
+import com.ruoyi.base.domain.BaseProcessRoute;
 import com.ruoyi.common.bean.typeEnum.ProdOrderStatusEnum;
 import com.ruoyi.common.utils.OrderNoUtil;
 import org.apache.commons.collections4.CollectionUtils;
@@ -29,7 +31,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 生产订单Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @RestController
@@ -39,6 +41,8 @@ public class StockProdOrderController extends BaseController {
     private IStockProdOrderService stockProdOrderService;
     @Autowired
     private IBaseWorkshopService baseWorkshopService;
+    @Autowired
+    private IBaseProcessRouteService baseProcessRouteService;
 
     /**
      * 查询生产订单列表
@@ -52,6 +56,13 @@ public class StockProdOrderController extends BaseController {
             for(StockProdOrder prodOrder : list){
                 prodOrder.setWorkshopName(baseWorkshopService.selectBaseWorkshopByWorkshopCode(prodOrder.getWorkshopCode()));
                 prodOrder.setOrderStatusLabel(ProdOrderStatusEnum.getLabel(prodOrder.getOrderStatus()));
+                // 关联工艺路线名称
+                if (prodOrder.getRouteCode() != null && !prodOrder.getRouteCode().isEmpty()) {
+                    BaseProcessRoute route = baseProcessRouteService.selectBaseProcessRouteByRouteCode(prodOrder.getRouteCode());
+                    if (route != null) {
+                        prodOrder.setRouteName(route.getRouteName());
+                    }
+                }
             }
         }
         return getDataTable(list);
@@ -67,6 +78,15 @@ public class StockProdOrderController extends BaseController {
         List<StockProdOrder> list = stockProdOrderService.selectStockProdOrderList(stockProdOrder);
         ExcelUtil<StockProdOrder> util = new ExcelUtil<StockProdOrder>(StockProdOrder.class);
         util.exportExcel(response, list, "生产订单数据");
+    }
+
+    /**
+     * 查询工单详情（含关联出库单和入库单）
+     */
+    @PreAuthorize("@ss.hasPermi('stock:prodOrder:query')")
+    @GetMapping("/detail/{orderId}")
+    public AjaxResult detail(@PathVariable Long orderId) {
+        return AjaxResult.success(stockProdOrderService.getDetail(orderId));
     }
 
     /**
@@ -86,7 +106,8 @@ public class StockProdOrderController extends BaseController {
     @PostMapping
     public AjaxResult add(@RequestBody StockProdOrder stockProdOrder) {
         stockProdOrder.setOrderNo(OrderNoUtil.generateUniqueKey(OrderNoUtil.PROD_PREFIX));
-        stockProdOrder.setOrderStatus(ProdOrderStatusEnum.ONGOING.getValue());
+        stockProdOrder.setWorkNo(stockProdOrderService.generateWorkNo());
+        stockProdOrder.setOrderStatus(ProdOrderStatusEnum.PLANNED.getValue());
         stockProdOrder.setCreateBy(getUsername());
         return toAjax(stockProdOrderService.insertStockProdOrder(stockProdOrder));
     }
@@ -109,5 +130,45 @@ public class StockProdOrderController extends BaseController {
     @DeleteMapping("/{orderIds}")
     public AjaxResult remove(@PathVariable Long[] orderIds) {
         return toAjax(stockProdOrderService.deleteStockProdOrderByOrderIds(orderIds));
+    }
+
+    /**
+     * 排产 - 设置计划时间和优先级
+     */
+    @PreAuthorize("@ss.hasPermi('stock:prodOrder:edit')")
+    @Log(title = "生产订单排产", businessType = BusinessType.UPDATE)
+    @PutMapping("/schedule")
+    public AjaxResult schedule(@RequestBody StockProdOrder stockProdOrder) {
+        return stockProdOrderService.schedule(getUsername(), stockProdOrder);
+    }
+
+    /**
+     * 开工
+     */
+    @PreAuthorize("@ss.hasPermi('stock:prodOrder:edit')")
+    @Log(title = "生产订单开工", businessType = BusinessType.UPDATE)
+    @PutMapping("/start/{orderId}")
+    public AjaxResult start(@PathVariable Long orderId) {
+        return stockProdOrderService.start(getUsername(), orderId);
+    }
+
+    /**
+     * 报工完工
+     */
+    @PreAuthorize("@ss.hasPermi('stock:prodOrder:edit')")
+    @Log(title = "生产订单报工", businessType = BusinessType.UPDATE)
+    @PutMapping("/complete")
+    public AjaxResult complete(@RequestBody StockProdOrder stockProdOrder) {
+        return stockProdOrderService.complete(getUsername(), stockProdOrder);
+    }
+
+    /**
+     * 关闭工单
+     */
+    @PreAuthorize("@ss.hasPermi('stock:prodOrder:edit')")
+    @Log(title = "生产订单关闭", businessType = BusinessType.UPDATE)
+    @PutMapping("/close/{orderId}")
+    public AjaxResult close(@PathVariable Long orderId) {
+        return stockProdOrderService.close(getUsername(), orderId);
     }
 }

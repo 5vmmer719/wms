@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.BaseProcessParamMapper">
+
+    <resultMap type="BaseProcessParam" id="BaseProcessParamResult">
+        <result property="paramId"       column="param_id"       />
+        <result property="stepId"        column="step_id"        />
+        <result property="paramName"     column="param_name"     />
+        <result property="paramUnit"     column="param_unit"     />
+        <result property="standardValue" column="standard_value" />
+        <result property="minValue"      column="min_value"      />
+        <result property="maxValue"      column="max_value"      />
+        <result property="isKey"         column="is_key"         />
+        <result property="delFlag"       column="del_flag"       />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"        column="remark"         />
+    </resultMap>
+
+    <sql id="selectBaseProcessParamVo">
+        select param_id, step_id, param_name, param_unit, standard_value, min_value, max_value, is_key, del_flag, create_by, create_time, update_by, update_time, remark
+        from base_process_param
+    </sql>
+
+    <select id="selectBaseProcessParamList" parameterType="BaseProcessParam" resultMap="BaseProcessParamResult">
+        <include refid="selectBaseProcessParamVo"/>
+        WHERE del_flag = '0'
+        <if test="stepId != null"> and step_id = #{stepId}</if>
+        <if test="paramName != null and paramName != ''"> and param_name like concat('%', #{paramName}, '%')</if>
+        <if test="isKey != null and isKey != ''"> and is_key = #{isKey}</if>
+        ORDER BY param_id ASC
+    </select>
+
+    <select id="selectBaseProcessParamByParamId" parameterType="Long" resultMap="BaseProcessParamResult">
+        <include refid="selectBaseProcessParamVo"/>
+        where del_flag = '0' AND param_id = #{paramId}
+    </select>
+
+    <select id="selectBaseProcessParamByStepId" parameterType="Long" resultMap="BaseProcessParamResult">
+        <include refid="selectBaseProcessParamVo"/>
+        where del_flag = '0' AND step_id = #{stepId}
+        ORDER BY param_id ASC
+    </select>
+
+    <insert id="insertBaseProcessParam" parameterType="BaseProcessParam" useGeneratedKeys="true" keyProperty="paramId">
+        insert into base_process_param
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stepId != null">step_id,</if>
+            <if test="paramName != null and paramName != ''">param_name,</if>
+            <if test="paramUnit != null">param_unit,</if>
+            <if test="standardValue != null">standard_value,</if>
+            <if test="minValue != null">min_value,</if>
+            <if test="maxValue != null">max_value,</if>
+            <if test="isKey != null">is_key,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stepId != null">#{stepId},</if>
+            <if test="paramName != null and paramName != ''">#{paramName},</if>
+            <if test="paramUnit != null">#{paramUnit},</if>
+            <if test="standardValue != null">#{standardValue},</if>
+            <if test="minValue != null">#{minValue},</if>
+            <if test="maxValue != null">#{maxValue},</if>
+            <if test="isKey != null">#{isKey},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBaseProcessParam" parameterType="BaseProcessParam">
+        update base_process_param
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stepId != null">step_id = #{stepId},</if>
+            <if test="paramName != null and paramName != ''">param_name = #{paramName},</if>
+            <if test="paramUnit != null">param_unit = #{paramUnit},</if>
+            <if test="standardValue != null">standard_value = #{standardValue},</if>
+            <if test="minValue != null">min_value = #{minValue},</if>
+            <if test="maxValue != null">max_value = #{maxValue},</if>
+            <if test="isKey != null">is_key = #{isKey},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where param_id = #{paramId}
+    </update>
+
+    <update id="deleteBaseProcessParamByParamId" parameterType="Long">
+        update base_process_param set del_flag = '1' where param_id = #{paramId}
+    </update>
+
+    <update id="deleteBaseProcessParamByParamIds" parameterType="String">
+        update base_process_param set del_flag = '1' where param_id in
+        <foreach item="paramId" collection="array" open="(" separator="," close=")">
+            #{paramId}
+        </foreach>
+    </update>
+
+    <update id="deleteBaseProcessParamByStepId" parameterType="Long">
+        update base_process_param set del_flag = '1' where step_id = #{stepId}
+    </update>
+
+</mapper>
+

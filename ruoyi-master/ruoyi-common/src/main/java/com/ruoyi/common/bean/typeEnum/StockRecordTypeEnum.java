@@ -25,7 +25,10 @@ public enum StockRecordTypeEnum {
     LOWER("lower", "下架"),
     //调拨
     ALLOT_IN("allot_in", "调拨入库"),
-    ALLOT_OUT("allot_out", "调拨出库");
+    ALLOT_OUT("allot_out", "调拨出库"),
+    // 盘点
+    CHECK_PROFIT("check_profit", "盘盈入库"),
+    CHECK_LOSS("check_loss", "盘亏出库");
 
     private String value;
     private String label;

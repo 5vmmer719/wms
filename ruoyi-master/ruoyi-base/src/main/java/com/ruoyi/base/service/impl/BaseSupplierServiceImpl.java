@@ -11,7 +11,7 @@ import com.ruoyi.base.service.IBaseSupplierService;
 /**
  * 供应商Service业务层处理
  * 
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @Service

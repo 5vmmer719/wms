@@ -42,3 +42,45 @@ export function delProdOrder(orderId) {
     method: 'delete'
   })
 }
+
+// 排产
+export function scheduleProdOrder(data) {
+  return request({
+    url: '/stock/prodOrder/schedule',
+    method: 'put',
+    data: data
+  })
+}
+
+// 开工
+export function startProdOrder(orderId) {
+  return request({
+    url: '/stock/prodOrder/start/' + orderId,
+    method: 'put'
+  })
+}
+
+// 报工完工
+export function completeProdOrder(data) {
+  return request({
+    url: '/stock/prodOrder/complete',
+    method: 'put',
+    data: data
+  })
+}
+
+// 关闭工单
+export function closeProdOrder(orderId) {
+  return request({
+    url: '/stock/prodOrder/close/' + orderId,
+    method: 'put'
+  })
+}
+
+// 查询工单详情（含关联出库单和入库单）
+export function getDetailProdOrder(orderId) {
+  return request({
+    url: '/stock/prodOrder/detail/' + orderId,
+    method: 'get'
+  })
+}

@@ -1,20 +1,18 @@
 package com.ruoyi.common.bean;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
-import com.ruoyi.common.annotation.Excel;
-import com.ruoyi.common.core.domain.BaseEntity;
 import lombok.Data;
-import org.apache.commons.lang3.builder.ToStringBuilder;
-import org.apache.commons.lang3.builder.ToStringStyle;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.Date;
 
 /**
- * 物料标签对象 stock_mat_label
+ * 物料标签打印数据对象
+ * 注意：物料标签已重构，不再存储数量、单价等业务数据
+ * 数量和单价信息应在入库单明细中维护
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data
@@ -26,6 +24,11 @@ public class MatLabelPdfData implements Serializable {
     private Long labelId;
 
     /**
+     * 标签编码
+     */
+    private String labelCode;
+
+    /**
      * 标签类型
      */
     private String labelType;
@@ -34,42 +37,6 @@ public class MatLabelPdfData implements Serializable {
      * 物料编码
      */
     private String matCode;
-
-    /**
-     * 物料描述
-     */
-    private String matName;
-
-    /**
-     * 财务编码
-     */
-    private String fdCode;
-
-    /**
-     * 图号
-     */
-    private String figNum;
-
-    /**
-     * 物料组
-     */
-    private String matGroup;
-
-    private String matGroupName;
-
-    /**
-     * 分类
-     */
-    private String matClass;
-
-    private String matClassName;
-
-    /**
-     * 基本单位
-     */
-    private String unitCode;
-
-    private String unitName;
 
     /**
      * 批次
@@ -89,28 +56,17 @@ public class MatLabelPdfData implements Serializable {
     /**
      * 生产时间
      */
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private Date prodTime;
 
     /**
-     * 数量
+     * 状态(created/in_stored/in_transit)
      */
-    private BigDecimal quantity;
+    private String status;
 
     /**
-     * 单价
+     * 备注
      */
-    private BigDecimal unitPrice;
-
-    /**
-     * 入库单号
-     */
-    private String orderNo;
-
-    /**
-     * 入库单类型
-     */
-    private String orderType;
-
-    private  String orderTypeLabel;
+    private String remark;
 
 }

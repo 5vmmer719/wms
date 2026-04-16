@@ -15,6 +15,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="unitCode"    column="unit_code"    />
         <result property="grossWeight"    column="gross_weight"    />
         <result property="safetyStock"    column="safety_stock"    />
+        <result property="maxStock"    column="max_stock"    />
         <result property="standardPrice"    column="standard_price"    />
         <result property="delFlag"    column="del_flag"    />
         <result property="createBy"    column="create_by"    />
@@ -24,7 +25,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectBaseMatVo">
-        select mat_id, mat_code, mat_name, fd_code, fig_num, mat_group, mat_class, unit_code, gross_weight, safety_stock, standard_price, del_flag, create_by, create_time, update_by, update_time from base_mat
+        select mat_id, mat_code, mat_name, fd_code, fig_num, mat_group, mat_class, unit_code, gross_weight, safety_stock, max_stock, standard_price, del_flag, create_by, create_time, update_by, update_time from base_mat
     </sql>
 
     <select id="selectBaseMatTotal" resultType="java.lang.Integer">
@@ -44,6 +45,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="grossWeight != null "> and gross_weight = #{grossWeight}</if>
         <if test="safetyStock != null "> and safety_stock = #{safetyStock}</if>
         <if test="standardPrice != null "> and standard_price = #{standardPrice}</if>
+        ORDER BY create_time DESC
     </select>
     
     <select id="selectBaseMatByMatId" parameterType="Long" resultMap="BaseMatResult">
@@ -83,6 +85,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="unitCode != null">unit_code,</if>
             <if test="grossWeight != null">gross_weight,</if>
             <if test="safetyStock != null">safety_stock,</if>
+            <if test="maxStock != null">max_stock,</if>
             <if test="standardPrice != null">standard_price,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
@@ -100,6 +103,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="unitCode != null">#{unitCode},</if>
             <if test="grossWeight != null">#{grossWeight},</if>
             <if test="safetyStock != null">#{safetyStock},</if>
+            <if test="maxStock != null">#{maxStock},</if>
             <if test="standardPrice != null">#{standardPrice},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>
@@ -121,6 +125,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="unitCode != null">unit_code = #{unitCode},</if>
             <if test="grossWeight != null">gross_weight = #{grossWeight},</if>
             <if test="safetyStock != null">safety_stock = #{safetyStock},</if>
+            <if test="maxStock != null">max_stock = #{maxStock},</if>
             <if test="standardPrice != null">standard_price = #{standardPrice},</if>
             <if test="delFlag != null">del_flag = #{delFlag},</if>
             <if test="createBy != null">create_by = #{createBy},</if>

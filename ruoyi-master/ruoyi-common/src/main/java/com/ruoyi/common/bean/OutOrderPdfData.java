@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * 出库单对象 stock_out_order
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data

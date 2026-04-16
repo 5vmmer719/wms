@@ -11,8 +11,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <result property="matCode"    column="mat_code"    />
         <result property="matName"    column="mat_name"    />
         <result property="workshopCode"    column="workshop_code"    />
+        <result property="routeCode"    column="route_code"    />
+        <result property="equipmentCode"    column="equipment_code"    />
+        <result property="stationCode"    column="station_code"    />
         <result property="quantity"    column="quantity"    />
+        <result property="actualQuantity"    column="actual_quantity"    />
+        <result property="priority"    column="priority"    />
+        <result property="planStartDate"    column="plan_start_date"    />
+        <result property="planEndDate"    column="plan_end_date"    />
+        <result property="actualStartDate"    column="actual_start_date"    />
+        <result property="actualEndDate"    column="actual_end_date"    />
         <result property="orderStatus"    column="order_status"    />
+        <result property="customerOrderNo"    column="customer_order_no"    />
+        <result property="planNo"    column="plan_no"    />
         <result property="delFlag"    column="del_flag"    />
         <result property="createBy"    column="create_by"    />
         <result property="createTime"    column="create_time"    />
@@ -21,7 +32,7 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
     </resultMap>
 
     <sql id="selectStockProdOrderVo">
-        select order_id, order_no, work_no, mat_code, mat_name, workshop_code, quantity, order_status, del_flag, create_by, create_time, update_by, update_time from stock_prod_order
+        select order_id, order_no, work_no, mat_code, mat_name, workshop_code, route_code, equipment_code, station_code, quantity, actual_quantity, priority, plan_start_date, plan_end_date, actual_start_date, actual_end_date, order_status, customer_order_no, plan_no, del_flag, create_by, create_time, update_by, update_time from stock_prod_order
     </sql>
 
     <select id="selectStockProdOrderList" parameterType="StockProdOrder" resultMap="StockProdOrderResult">
@@ -34,6 +45,10 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         <if test="workshopCode != null  and workshopCode != ''"> and workshop_code = #{workshopCode}</if>
         <if test="quantity != null "> and quantity = #{quantity}</if>
         <if test="orderStatus != null  and orderStatus != ''"> and order_status = #{orderStatus}</if>
+        <if test="customerOrderNo != null and customerOrderNo != ''"> and customer_order_no = #{customerOrderNo}</if>
+        <if test="planNo != null and planNo != ''"> and plan_no = #{planNo}</if>
+        <if test="priority != null"> and priority = #{priority}</if>
+        ORDER BY priority DESC, create_time DESC
     </select>
     
     <select id="selectStockProdOrderByOrderId" parameterType="Long" resultMap="StockProdOrderResult">
@@ -54,8 +69,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="matCode != null">mat_code,</if>
             <if test="matName != null">mat_name,</if>
             <if test="workshopCode != null">workshop_code,</if>
+            <if test="routeCode != null">route_code,</if>
+            <if test="equipmentCode != null">equipment_code,</if>
+            <if test="stationCode != null">station_code,</if>
             <if test="quantity != null">quantity,</if>
+            <if test="actualQuantity != null">actual_quantity,</if>
+            <if test="priority != null">priority,</if>
+            <if test="planStartDate != null">plan_start_date,</if>
+            <if test="planEndDate != null">plan_end_date,</if>
+            <if test="actualStartDate != null">actual_start_date,</if>
+            <if test="actualEndDate != null">actual_end_date,</if>
             <if test="orderStatus != null">order_status,</if>
+            <if test="customerOrderNo != null">customer_order_no,</if>
+            <if test="planNo != null">plan_no,</if>
             <if test="delFlag != null">del_flag,</if>
             <if test="createBy != null">create_by,</if>
             <if test="createTime != null">create_time,</if>
@@ -68,8 +94,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="matCode != null">#{matCode},</if>
             <if test="matName != null">#{matName},</if>
             <if test="workshopCode != null">#{workshopCode},</if>
+            <if test="routeCode != null">#{routeCode},</if>
+            <if test="equipmentCode != null">#{equipmentCode},</if>
+            <if test="stationCode != null">#{stationCode},</if>
             <if test="quantity != null">#{quantity},</if>
+            <if test="actualQuantity != null">#{actualQuantity},</if>
+            <if test="priority != null">#{priority},</if>
+            <if test="planStartDate != null">#{planStartDate},</if>
+            <if test="planEndDate != null">#{planEndDate},</if>
+            <if test="actualStartDate != null">#{actualStartDate},</if>
+            <if test="actualEndDate != null">#{actualEndDate},</if>
             <if test="orderStatus != null">#{orderStatus},</if>
+            <if test="customerOrderNo != null">#{customerOrderNo},</if>
+            <if test="planNo != null">#{planNo},</if>
             <if test="delFlag != null">#{delFlag},</if>
             <if test="createBy != null">#{createBy},</if>
             <if test="createTime != null">#{createTime},</if>
@@ -86,8 +123,19 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             <if test="matCode != null">mat_code = #{matCode},</if>
             <if test="matName != null">mat_name = #{matName},</if>
             <if test="workshopCode != null">workshop_code = #{workshopCode},</if>
+            <if test="routeCode != null">route_code = #{routeCode},</if>
+            <if test="equipmentCode != null">equipment_code = #{equipmentCode},</if>
+            <if test="stationCode != null">station_code = #{stationCode},</if>
             <if test="quantity != null">quantity = #{quantity},</if>
+            <if test="actualQuantity != null">actual_quantity = #{actualQuantity},</if>
+            <if test="priority != null">priority = #{priority},</if>
+            <if test="planStartDate != null">plan_start_date = #{planStartDate},</if>
+            <if test="planEndDate != null">plan_end_date = #{planEndDate},</if>
+            <if test="actualStartDate != null">actual_start_date = #{actualStartDate},</if>
+            <if test="actualEndDate != null">actual_end_date = #{actualEndDate},</if>
             <if test="orderStatus != null">order_status = #{orderStatus},</if>
+            <if test="customerOrderNo != null">customer_order_no = #{customerOrderNo},</if>
+            <if test="planNo != null">plan_no = #{planNo},</if>
             <if test="delFlag != null">del_flag = #{delFlag},</if>
             <if test="createBy != null">create_by = #{createBy},</if>
             <if test="createTime != null">create_time = #{createTime},</if>
@@ -107,4 +155,11 @@ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
             #{orderId}
         </foreach>
     </update>
+
+    <select id="selectMaxWorkNo" resultType="String">
+        select work_no from stock_prod_order
+        where del_flag = 0 and work_no like 'TGL-%'
+        order by work_no desc
+        limit 1
+    </select>
 </mapper>

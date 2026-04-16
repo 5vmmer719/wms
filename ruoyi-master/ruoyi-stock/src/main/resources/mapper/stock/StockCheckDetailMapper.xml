@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.stock.mapper.StockCheckDetailMapper">
+
+    <resultMap type="StockCheckDetail" id="StockCheckDetailResult">
+        <result property="detailId"       column="detail_id"       />
+        <result property="checkNo"        column="check_no"        />
+        <result property="matCode"        column="mat_code"        />
+        <result property="matName"        column="mat_name"        />
+        <result property="warehouseCode"  column="warehouse_code"  />
+        <result property="locationCode"   column="location_code"   />
+        <result property="batch"          column="batch"           />
+        <result property="unitCode"       column="unit_code"       />
+        <result property="systemQty"      column="system_qty"      />
+        <result property="actualQty"      column="actual_qty"      />
+        <result property="diffQty"        column="diff_qty"        />
+        <result property="diffReason"     column="diff_reason"     />
+        <result property="adjustFlag"     column="adjust_flag"     />
+        <result property="delFlag"        column="del_flag"        />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateBy"       column="update_by"       />
+        <result property="updateTime"     column="update_time"     />
+        <result property="remark"         column="remark"          />
+    </resultMap>
+
+    <sql id="selectStockCheckDetailVo">
+        select detail_id, check_no, mat_code, mat_name, warehouse_code, location_code,
+               batch, unit_code, system_qty, actual_qty, diff_qty, diff_reason, adjust_flag,
+               del_flag, create_by, create_time, update_by, update_time, remark
+        from stock_check_detail
+    </sql>
+
+    <select id="selectStockCheckDetailByDetailId" parameterType="Long" resultMap="StockCheckDetailResult">
+        <include refid="selectStockCheckDetailVo"/>
+        where del_flag = '0' and detail_id = #{detailId}
+    </select>
+
+    <select id="selectStockCheckDetailByCheckNo" parameterType="String" resultMap="StockCheckDetailResult">
+        <include refid="selectStockCheckDetailVo"/>
+        where del_flag = '0' and check_no = #{checkNo}
+        order by mat_code, location_code
+    </select>
+
+    <insert id="insertStockCheckDetail" parameterType="StockCheckDetail" useGeneratedKeys="true" keyProperty="detailId">
+        insert into stock_check_detail
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="checkNo != null">check_no,</if>
+            <if test="matCode != null">mat_code,</if>
+            <if test="matName != null">mat_name,</if>
+            <if test="warehouseCode != null">warehouse_code,</if>
+            <if test="locationCode != null">location_code,</if>
+            <if test="batch != null">batch,</if>
+            <if test="unitCode != null">unit_code,</if>
+            <if test="systemQty != null">system_qty,</if>
+            <if test="actualQty != null">actual_qty,</if>
+            <if test="diffQty != null">diff_qty,</if>
+            <if test="diffReason != null">diff_reason,</if>
+            <if test="adjustFlag != null">adjust_flag,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="checkNo != null">#{checkNo},</if>
+            <if test="matCode != null">#{matCode},</if>
+            <if test="matName != null">#{matName},</if>
+            <if test="warehouseCode != null">#{warehouseCode},</if>
+            <if test="locationCode != null">#{locationCode},</if>
+            <if test="batch != null">#{batch},</if>
+            <if test="unitCode != null">#{unitCode},</if>
+            <if test="systemQty != null">#{systemQty},</if>
+            <if test="actualQty != null">#{actualQty},</if>
+            <if test="diffQty != null">#{diffQty},</if>
+            <if test="diffReason != null">#{diffReason},</if>
+            <if test="adjustFlag != null">#{adjustFlag},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertBatchStockCheckDetail" parameterType="java.util.List">
+        insert into stock_check_detail (check_no, mat_code, mat_name, warehouse_code, location_code,
+            batch, unit_code, system_qty, actual_qty, diff_qty, adjust_flag, del_flag, create_by, create_time)
+        values
+        <foreach item="item" collection="list" separator=",">
+            (#{item.checkNo}, #{item.matCode}, #{item.matName}, #{item.warehouseCode}, #{item.locationCode},
+             #{item.batch}, #{item.unitCode}, #{item.systemQty}, #{item.actualQty}, #{item.diffQty},
+             '0', '0', #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateStockCheckDetail" parameterType="StockCheckDetail">
+        update stock_check_detail
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="actualQty != null">actual_qty = #{actualQty},</if>
+            <if test="diffQty != null">diff_qty = #{diffQty},</if>
+            <if test="diffReason != null">diff_reason = #{diffReason},</if>
+            <if test="adjustFlag != null">adjust_flag = #{adjustFlag},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where detail_id = #{detailId}
+    </update>
+
+    <update id="deleteStockCheckDetailByCheckNo" parameterType="String">
+        update stock_check_detail set del_flag = '1' where check_no = #{checkNo}
+    </update>
+
+    <update id="deleteStockCheckDetailByDetailId" parameterType="Long">
+        update stock_check_detail set del_flag = '1' where detail_id = #{detailId}
+    </update>
+</mapper>
+

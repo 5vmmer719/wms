@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 
 import com.ruoyi.common.bean.request.StockOutRequestBody;
+import com.ruoyi.common.bean.typeEnum.AllotProgressEnum;
+import com.ruoyi.common.bean.typeEnum.InOrderCheckStatusEnum;
 import com.ruoyi.common.bean.typeEnum.InOrderTypeEnum;
 import com.ruoyi.common.bean.typeEnum.OrderStatusEnum;
 import com.ruoyi.common.bean.typeEnum.OutOrderTypeEnum;
@@ -19,9 +21,11 @@ import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.stock.domain.*;
 import com.ruoyi.stock.domain.stats.StockOutStats;
 import com.ruoyi.stock.mapper.*;
+import com.ruoyi.stock.service.IStockDeliveryRecordService;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.ruoyi.stock.service.IStockOutOrderService;
@@ -49,6 +53,12 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
     private StockInOrderMapper stockInOrderMapper;
     @Autowired
     private StockInDetailMapper stockInDetailMapper;
+    @Autowired
+    private StockAllotOrderMapper stockAllotOrderMapper;
+    @Autowired
+    private IStockDeliveryRecordService stockDeliveryRecordService;
+    @Autowired
+    private StockCustomerOrderMapper stockCustomerOrderMapper;
 
     /**
      * 查询出库单数量
@@ -98,6 +108,7 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
      * @return 结果
      */
     @Override
+    @Transactional
     public int insertStockOutOrder(String username, StockOutOrder stockOutOrder) {
         //出库单
         String orderNo = OrderNoUtil.getOutOrderNo(stockOutOrder.getOrderType());
@@ -112,7 +123,10 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
             int i = 1;
             for(StockOutDetail detail : detailList){
                 detail.setLineNo(i);
-                detail.setWarehouseCode(stockOutOrder.getWarehouseCode());
+                // 仅在明细行没有自己的仓库编码时，才用订单级的值覆盖（生产出库单每行有独立仓库）
+                if (detail.getWarehouseCode() == null || detail.getWarehouseCode().isEmpty()) {
+                    detail.setWarehouseCode(stockOutOrder.getWarehouseCode());
+                }
                 detail.setWorkshopCode(stockOutOrder.getWorkshopCode());
                 detail.setProdOrderNo(stockOutOrder.getProdOrderNo());
                 detail.setOrderNo(orderNo);
@@ -122,7 +136,50 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
             }
         }
         stockOutDetailMapper.insertStockOutDetailList(detailList);
-        return stockOutOrderMapper.insertStockOutOrder(stockOutOrder);
+        int result = stockOutOrderMapper.insertStockOutOrder(stockOutOrder);
+
+        // 销售出库关联了客户订单时，自动创建交付单
+        if (StringUtils.isNotEmpty(stockOutOrder.getCustomerOrderNo())) {
+            createDeliveryForOutOrder(username, stockOutOrder);
+        }
+
+        return result;
+    }
+
+    /**
+     * 根据销售出库单自动创建交付单
+     */
+    private void createDeliveryForOutOrder(String username, StockOutOrder stockOutOrder) {
+        // 查询客户订单获取客户信息
+        StockCustomerOrder customerOrder = stockCustomerOrderMapper.selectStockCustomerOrderByOrderNo(stockOutOrder.getCustomerOrderNo());
+
+        StockDeliveryRecord deliveryRecord = new StockDeliveryRecord();
+        deliveryRecord.setOrderNo(stockOutOrder.getCustomerOrderNo());
+        deliveryRecord.setOutOrderNo(stockOutOrder.getOrderNo());
+        if (customerOrder != null) {
+            deliveryRecord.setCustomerCode(customerOrder.getCustomerCode());
+            deliveryRecord.setCustomerName(customerOrder.getCustomerName());
+        }
+
+        // 将出库明细转为交付明细
+        List<StockOutDetail> outDetails = stockOutOrder.getDetailList();
+        List<StockDeliveryDetail> deliveryDetails = new ArrayList<>();
+        if (CollectionUtils.isNotEmpty(outDetails)) {
+            for (StockOutDetail outDetail : outDetails) {
+                if (outDetail.getQuantity() != null && outDetail.getQuantity().compareTo(BigDecimal.ZERO) > 0) {
+                    StockDeliveryDetail dd = new StockDeliveryDetail();
+                    dd.setMatCode(outDetail.getMatCode());
+                    dd.setMatName(outDetail.getMatName());
+                    dd.setSpec(outDetail.getFigNum());
+                    dd.setQuantity(outDetail.getQuantity());
+                    dd.setUnitCode(outDetail.getUnitCode());
+                    deliveryDetails.add(dd);
+                }
+            }
+        }
+        deliveryRecord.setDetailList(deliveryDetails);
+
+        stockDeliveryRecordService.insertStockDeliveryRecord(username, deliveryRecord);
     }
 
     /**
@@ -214,11 +271,16 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
                 return AjaxResult.error("物料[" + matCode + "]出库数量超出剩余应出库数量！剩余：" + remaining.stripTrailingZeros().toPlainString() + "，申请：" + receivedQuantity.stripTrailingZeros().toPlainString());
             }
 
-            // Bug修复3: 检查库存是否充足
-            StockInfo stockInfo = stockInfoMapper.selectStockInfoByMatCode(warehouseCode, matCode);
-            if (stockInfo == null || stockInfo.getQuantity() == null || stockInfo.getQuantity().compareTo(receivedQuantity) < 0) {
-                BigDecimal currentStock = (stockInfo != null && stockInfo.getQuantity() != null) ? stockInfo.getQuantity() : BigDecimal.ZERO;
-                return AjaxResult.error("物料[" + matCode + "]库存不足！当前库存：" + currentStock.stripTrailingZeros().toPlainString() + "，申请出库：" + receivedQuantity.stripTrailingZeros().toPlainString());
+            // 优先使用明细行的仓库编码（生产出库单每行可能属于不同仓库），其次使用出库单主表的
+            String detailWarehouseCode = outDetail.getWarehouseCode();
+            if (detailWarehouseCode == null || detailWarehouseCode.isEmpty()) {
+                detailWarehouseCode = warehouseCode;
+            }
+
+            // Bug修复3: 检查库存是否充足（使用库存总和，而非单条记录）
+            BigDecimal totalStock = stockInfoMapper.selectStockTotalByMatCode(detailWarehouseCode, matCode);
+            if (totalStock.compareTo(receivedQuantity) < 0) {
+                return AjaxResult.error("物料[" + matCode + "]库存不足！当前库存：" + totalStock.stripTrailingZeros().toPlainString() + "，申请出库：" + receivedQuantity.stripTrailingZeros().toPlainString());
             }
 
             // 更新出库单详情的已领数量
@@ -229,16 +291,35 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
             String supplierCode = outDetail.getSupplierCode();
             if (batch != null && !batch.isEmpty() && supplierCode != null && !supplierCode.isEmpty()) {
                 // 按仓库+物料+批次+供应商精确扣减库存
-                stockInfoMapper.updateQuantityByMatCodeAndBatch(warehouseCode, matCode, batch, supplierCode, receivedQuantity);
+                stockInfoMapper.updateQuantityByMatCodeAndBatch(detailWarehouseCode, matCode, batch, supplierCode, receivedQuantity);
             } else {
-                // 兜底：只按仓库+物料扣减
-                stockInfoMapper.updateQuantityByMatCode(warehouseCode, matCode, receivedQuantity);
+                // 兜底：按仓库+物料跨多条库存记录循环扣减
+                BigDecimal remainToDeduct = receivedQuantity;
+                List<StockInfo> stockList = stockInfoMapper.selectStockInfoListByMatCode(detailWarehouseCode, matCode);
+                for (StockInfo si : stockList) {
+                    if (remainToDeduct.compareTo(BigDecimal.ZERO) <= 0) {
+                        break;
+                    }
+                    BigDecimal available = si.getQuantity();
+                    BigDecimal deduct = available.min(remainToDeduct);
+                    stockInfoMapper.updateQuantityByMatCode(detailWarehouseCode, matCode, deduct);
+                    remainToDeduct = remainToDeduct.subtract(deduct);
+                }
             }
 
             // 新增库存操作流水信息
             StockRecord record = new StockRecord();
             record.setMatCode(matCode);
-            record.setWarehouseCode(warehouseCode);
+            record.setMatName(outDetail.getMatName());
+            record.setFdCode(outDetail.getFdCode());
+            record.setFigNum(outDetail.getFigNum());
+            record.setMatGroup(outDetail.getMatGroup());
+            record.setMatClass(outDetail.getMatClass());
+            record.setUnitCode(outDetail.getUnitCode());
+            record.setBatch(outDetail.getBatch());
+            record.setSupplierCode(outDetail.getSupplierCode());
+            record.setSupplierName(outDetail.getSupplierName());
+            record.setWarehouseCode(detailWarehouseCode);
             record.setWorkshopCode(workshopCode);
             record.setRecordType(StockRecordTypeEnum.getStockOutRecordType(stockOutOrder.getOrderType()));
             record.setQuantity(receivedQuantity);
@@ -272,6 +353,7 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
             StockInOrder inOrder = new StockInOrder();
             inOrder.setOrderType(InOrderTypeEnum.ALLOT.getValue());
             inOrder.setOrderStatus(OrderStatusEnum.CREATED.getValue());
+            inOrder.setCheckStatus(InOrderCheckStatusEnum.CHECKOUT.getValue()); // 调拨入库不需要质检
             inOrder.setAllotNo(stockOutOrder.getAllotNo());
             inOrder.setWarehouseCode(stockOutOrder.getDestWarehouseCode()); // 目标仓库
             inOrder.setCreateBy(username);
@@ -281,11 +363,10 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
             String inOrderNo = OrderNoUtil.generate(OrderNoUtil.OrderPrefix.IN_ALLOT);
             inOrder.setOrderNo(inOrderNo);
 
-            // 创建对应的入库单详情（复用之前查询的outDetails）
+            // 创建对应的入库单详情（使用更新后重新查询的detailList，包含最新的receivedQuantity）
             List<StockInDetail> inDetails = new ArrayList<>();
             int lineNo = 1;
-            for (StockOutDetail outDetail : outDetails) {
-                // Bug修复1: 处理receivedQuantity为null的情况
+            for (StockOutDetail outDetail : detailList) {
                 BigDecimal receivedQty = outDetail.getReceivedQuantity();
                 if (receivedQty == null || receivedQty.compareTo(BigDecimal.ZERO) <= 0) {
                     continue; // 跳过没有实际出库数量的明细
@@ -316,8 +397,17 @@ public class StockOutOrderServiceImpl implements IStockOutOrderService {
             stockInOrderMapper.insertStockInOrder(inOrder);
             stockInDetailMapper.insertStockInDetailList(inDetails);
 
-            // 入库单保持"已创建"状态，等待扫码确认入库
-            // 后续在入库模块扫码确认后才会执行入库操作
+            // 回写调拨单进度为已出库
+            String allotNo = stockOutOrder.getAllotNo();
+            if (allotNo != null && !allotNo.isEmpty()) {
+                StockAllotOrder allotOrder = stockAllotOrderMapper.selectStockAllotOrderByAllotNo(allotNo);
+                if (allotOrder != null) {
+                    allotOrder.setAllotProgress(AllotProgressEnum.OUT_COMPLETED.getValue());
+                    allotOrder.setUpdateBy(username);
+                    allotOrder.setUpdateTime(nowDate);
+                    stockAllotOrderMapper.updateStockAllotOrder(allotOrder);
+                }
+            }
         }
 
         return AjaxResult.success("提交成功");

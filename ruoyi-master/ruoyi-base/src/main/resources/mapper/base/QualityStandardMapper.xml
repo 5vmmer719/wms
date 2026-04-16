@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.QualityStandardMapper">
+
+    <resultMap type="QualityStandard" id="QualityStandardResult">
+        <result property="standardId"     column="standard_id"     />
+        <result property="standardCode"   column="standard_code"   />
+        <result property="standardName"   column="standard_name"   />
+        <result property="checkType"      column="check_type"      />
+        <result property="matCode"        column="mat_code"        />
+        <result property="standardStatus" column="standard_status" />
+        <result property="delFlag"        column="del_flag"        />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateBy"       column="update_by"       />
+        <result property="updateTime"     column="update_time"     />
+        <result property="remark"         column="remark"          />
+    </resultMap>
+
+    <sql id="selectQualityStandardVo">
+        select standard_id, standard_code, standard_name, check_type, mat_code, standard_status, del_flag, create_by, create_time, update_by, update_time, remark from quality_standard
+    </sql>
+
+    <select id="selectQualityStandardByStandardId" parameterType="Long" resultMap="QualityStandardResult">
+        <include refid="selectQualityStandardVo"/>
+        where del_flag = '0' AND standard_id = #{standardId}
+    </select>
+
+    <select id="selectQualityStandardByStandardCode" parameterType="String" resultMap="QualityStandardResult">
+        <include refid="selectQualityStandardVo"/>
+        where del_flag = '0' AND standard_code = #{standardCode}
+    </select>
+
+    <select id="selectQualityStandardList" parameterType="QualityStandard" resultMap="QualityStandardResult">
+        <include refid="selectQualityStandardVo"/>
+        <where>
+            del_flag = '0'
+            <if test="standardCode != null and standardCode != ''"> and standard_code like concat('%', #{standardCode}, '%')</if>
+            <if test="standardName != null and standardName != ''"> and standard_name like concat('%', #{standardName}, '%')</if>
+            <if test="checkType != null and checkType != ''"> and check_type = #{checkType}</if>
+            <if test="matCode != null and matCode != ''"> and mat_code = #{matCode}</if>
+            <if test="standardStatus != null and standardStatus != ''"> and standard_status = #{standardStatus}</if>
+        </where>
+        order by create_time desc
+    </select>
+
+    <select id="selectMaxStandardCodeByPrefix" resultType="String">
+        select max(standard_code) from quality_standard
+        where del_flag = '0' and standard_code like concat(#{prefix}, '%')
+    </select>
+
+    <insert id="insertQualityStandard" parameterType="QualityStandard" useGeneratedKeys="true" keyProperty="standardId">
+        insert into quality_standard
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="standardCode != null and standardCode != ''">standard_code,</if>
+            <if test="standardName != null and standardName != ''">standard_name,</if>
+            <if test="checkType != null and checkType != ''">check_type,</if>
+            <if test="matCode != null">mat_code,</if>
+            <if test="standardStatus != null">standard_status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="standardCode != null and standardCode != ''">#{standardCode},</if>
+            <if test="standardName != null and standardName != ''">#{standardName},</if>
+            <if test="checkType != null and checkType != ''">#{checkType},</if>
+            <if test="matCode != null">#{matCode},</if>
+            <if test="standardStatus != null">#{standardStatus},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateQualityStandard" parameterType="QualityStandard">
+        update quality_standard
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="standardCode != null and standardCode != ''">standard_code = #{standardCode},</if>
+            <if test="standardName != null and standardName != ''">standard_name = #{standardName},</if>
+            <if test="checkType != null and checkType != ''">check_type = #{checkType},</if>
+            <if test="matCode != null">mat_code = #{matCode},</if>
+            <if test="standardStatus != null">standard_status = #{standardStatus},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where standard_id = #{standardId}
+    </update>
+
+    <update id="deleteQualityStandardByStandardId" parameterType="Long">
+        update quality_standard set del_flag = '1' where standard_id = #{standardId}
+    </update>
+
+    <update id="deleteQualityStandardByStandardIds" parameterType="String">
+        update quality_standard set del_flag = '1' where standard_id in
+        <foreach item="standardId" collection="array" open="(" separator="," close=")">
+            #{standardId}
+        </foreach>
+    </update>
+
+</mapper>
+

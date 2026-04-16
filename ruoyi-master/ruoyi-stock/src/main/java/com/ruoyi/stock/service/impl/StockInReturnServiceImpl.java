@@ -17,6 +17,7 @@ import com.ruoyi.stock.domain.StockInReturnDetail;
 import com.ruoyi.stock.domain.StockMatLabel;
 import com.ruoyi.stock.domain.StockRecord;
 import com.ruoyi.stock.mapper.*;
+import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.ArrayUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 入库单退货Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Service
@@ -164,6 +165,7 @@ public class StockInReturnServiceImpl implements IStockInReturnService {
 
     /**
      * 扫码提交入库单退货-退货
+     * 注意：物料标签已重构，不再存储数量信息，数量信息从入库退货详情获取
      */
     @Override
     @Transactional
@@ -181,20 +183,37 @@ public class StockInReturnServiceImpl implements IStockInReturnService {
             Long labelId = entry.getKey();
             BigDecimal labelQuantity = entry.getValue();
             matLabel = stockMatLabelMapper.selectStockMatLabelByLabelId(labelId);
-            if(matLabel == null ||
-                    matLabel.getUsableQuantity().subtract(matLabel.getReceivedQuantity()).compareTo(labelQuantity) == -1){
-                return AjaxResult.error("系统繁忙，请稍后再试！");
+            if(matLabel == null){
+                return AjaxResult.error("物料标签不存在！");
             }
-            //修改物料标签
-            stockMatLabelMapper.updateReceivedQuantity(labelId, username, nowDate, labelQuantity);
+            // 查询入库退货详情获取仓库、货位等信息
+            StockInReturnDetail queryDetail = new StockInReturnDetail();
+            queryDetail.setReturnNo(returnNo);
+            queryDetail.setLabelId(labelId);
+            List<StockInReturnDetail> detailList = stockInReturnDetailMapper.selectStockInReturnDetailList(queryDetail);
+            if(CollectionUtils.isEmpty(detailList)){
+                return AjaxResult.error("退货详情不存在！");
+            }
+            StockInReturnDetail detail = detailList.get(0);
             //修改退货详情
             stockInReturnDetailMapper.updateReturnQuantity(returnNo, labelId, username, nowDate, labelQuantity);
             //修改库存
-            stockInfoMapper.updateQuantity(matLabel.getWarehouseCode(), matLabel.getLocationCode(), matLabel.getBatch(),
-                    matLabel.getSupplierCode(), matLabel.getMatCode(), labelQuantity);
+            stockInfoMapper.updateQuantity(detail.getWarehouseCode(), detail.getLocationCode(), detail.getBatch(),
+                    detail.getSupplierCode(), detail.getMatCode(), labelQuantity);
             //新增库存操作信息
             record = new StockRecord();
-            BeanUtils.copyBeanProp(record, matLabel);
+            record.setWarehouseCode(detail.getWarehouseCode());
+            record.setLocationCode(detail.getLocationCode());
+            record.setMatCode(detail.getMatCode());
+            record.setMatName(detail.getMatName());
+            record.setFdCode(detail.getFdCode());
+            record.setFigNum(detail.getFigNum());
+            record.setMatGroup(detail.getMatGroup());
+            record.setMatClass(detail.getMatClass());
+            record.setUnitCode(detail.getUnitCode());
+            record.setBatch(detail.getBatch());
+            record.setSupplierCode(detail.getSupplierCode());
+            record.setSupplierName(detail.getSupplierName());
             record.setRecordType(StockRecordTypeEnum.getStockInReturnRecordType(stockInReturn.getReturnType()));
             record.setQuantity(labelQuantity);
             record.setOrderNo(stockInReturn.getReturnNo());
@@ -202,8 +221,21 @@ public class StockInReturnServiceImpl implements IStockInReturnService {
             record.setCreateTime(nowDate);
             stockRecordMapper.insertStockRecord(record);
         }
-        //修改退货单
-        stockInReturn.setReturnStatus(OrderStatusEnum.RETURNED.getValue());
+        //判断退货单是否全部退完
+        List<StockInReturnDetail> allDetails = stockInReturnDetailMapper.selectStockInReturnDetailListByReturnNo(returnNo);
+        boolean allReturned = true;
+        if(CollectionUtils.isNotEmpty(allDetails)){
+            for(StockInReturnDetail d : allDetails){
+                BigDecimal qty = d.getQuantity() != null ? d.getQuantity() : BigDecimal.ZERO;
+                BigDecimal rtnQty = d.getReturnQuantity() != null ? d.getReturnQuantity() : BigDecimal.ZERO;
+                if(rtnQty.compareTo(qty) < 0){
+                    allReturned = false;
+                    break;
+                }
+            }
+        }
+        //修改退货单状态
+        stockInReturn.setReturnStatus(allReturned ? OrderStatusEnum.RETURNED.getValue() : OrderStatusEnum.PARTIAL_RETURNED.getValue());
         stockInReturn.setUpdateBy(username);
         stockInReturn.setUpdateTime(nowDate);
         stockInReturnMapper.updateStockInReturn(stockInReturn);

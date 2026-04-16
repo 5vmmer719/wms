@@ -1,0 +1,71 @@
+package com.ruoyi.base.service;
+
+import java.util.List;
+
+import com.ruoyi.base.domain.BaseProcessStep;
+
+/**
+ * 工序Service接口
+ *
+ * @author summer
+ * @date 2026-04-11
+ */
+public interface IBaseProcessStepService {
+
+    /**
+     * 查询工序
+     *
+     * @param stepId 工序主键
+     * @return 工序
+     */
+    public BaseProcessStep selectBaseProcessStepByStepId(Long stepId);
+
+    /**
+     * 根据工艺路线编码查询工序列表
+     *
+     * @param routeCode 工艺路线编码
+     * @return 工序集合
+     */
+    public List<BaseProcessStep> selectBaseProcessStepByRouteCode(String routeCode);
+
+    /**
+     * 查询工序列表
+     *
+     * @param baseProcessStep 工序
+     * @return 工序集合
+     */
+    public List<BaseProcessStep> selectBaseProcessStepList(BaseProcessStep baseProcessStep);
+
+    /**
+     * 新增工序
+     *
+     * @param baseProcessStep 工序
+     * @return 结果
+     */
+    public int insertBaseProcessStep(BaseProcessStep baseProcessStep);
+
+    /**
+     * 修改工序
+     *
+     * @param baseProcessStep 工序
+     * @return 结果
+     */
+    public int updateBaseProcessStep(BaseProcessStep baseProcessStep);
+
+    /**
+     * 批量删除工序
+     *
+     * @param stepIds 需要删除的工序主键集合
+     * @return 结果
+     */
+    public int deleteBaseProcessStepByStepIds(Long[] stepIds);
+
+    /**
+     * 删除工序信息
+     *
+     * @param stepId 工序主键
+     * @return 结果
+     */
+    public int deleteBaseProcessStepByStepId(Long stepId);
+}
+

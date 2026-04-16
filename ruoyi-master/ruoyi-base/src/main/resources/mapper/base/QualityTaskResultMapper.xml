@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.QualityTaskResultMapper">
+
+    <resultMap type="QualityTaskResult" id="QualityTaskResultResult">
+        <result property="resultId"       column="result_id"       />
+        <result property="taskNo"         column="task_no"         />
+        <result property="itemNo"         column="item_no"         />
+        <result property="itemName"       column="item_name"       />
+        <result property="standardValue"  column="standard_value"  />
+        <result property="actualValue"    column="actual_value"    />
+        <result property="minValue"       column="min_value"       />
+        <result property="maxValue"       column="max_value"       />
+        <result property="judgeResult"    column="judge_result"    />
+        <result property="defectType"     column="defect_type"     />
+        <result property="defectLevel"    column="defect_level"    />
+        <result property="delFlag"        column="del_flag"        />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateBy"       column="update_by"       />
+        <result property="updateTime"     column="update_time"     />
+        <result property="remark"         column="remark"          />
+    </resultMap>
+
+    <sql id="selectQualityTaskResultVo">
+        select result_id, task_no, item_no, item_name, standard_value, actual_value, min_value, max_value, judge_result, defect_type, defect_level, del_flag, create_by, create_time, update_by, update_time, remark from quality_task_result
+    </sql>
+
+    <select id="selectQualityTaskResultByResultId" parameterType="Long" resultMap="QualityTaskResultResult">
+        <include refid="selectQualityTaskResultVo"/>
+        where del_flag = '0' AND result_id = #{resultId}
+    </select>
+
+    <select id="selectQualityTaskResultByTaskNo" parameterType="String" resultMap="QualityTaskResultResult">
+        <include refid="selectQualityTaskResultVo"/>
+        where del_flag = '0' AND task_no = #{taskNo}
+        order by item_no asc
+    </select>
+
+    <select id="selectQualityTaskResultList" parameterType="QualityTaskResult" resultMap="QualityTaskResultResult">
+        <include refid="selectQualityTaskResultVo"/>
+        <where>
+            del_flag = '0'
+            <if test="taskNo != null and taskNo != ''"> and task_no = #{taskNo}</if>
+            <if test="itemName != null and itemName != ''"> and item_name like concat('%', #{itemName}, '%')</if>
+            <if test="judgeResult != null and judgeResult != ''"> and judge_result = #{judgeResult}</if>
+        </where>
+        order by item_no asc
+    </select>
+
+    <insert id="insertQualityTaskResult" parameterType="QualityTaskResult" useGeneratedKeys="true" keyProperty="resultId">
+        insert into quality_task_result
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">task_no,</if>
+            <if test="itemNo != null">item_no,</if>
+            <if test="itemName != null">item_name,</if>
+            <if test="standardValue != null">standard_value,</if>
+            <if test="actualValue != null">actual_value,</if>
+            <if test="minValue != null">min_value,</if>
+            <if test="maxValue != null">max_value,</if>
+            <if test="judgeResult != null">judge_result,</if>
+            <if test="defectType != null">defect_type,</if>
+            <if test="defectLevel != null">defect_level,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">#{taskNo},</if>
+            <if test="itemNo != null">#{itemNo},</if>
+            <if test="itemName != null">#{itemName},</if>
+            <if test="standardValue != null">#{standardValue},</if>
+            <if test="actualValue != null">#{actualValue},</if>
+            <if test="minValue != null">#{minValue},</if>
+            <if test="maxValue != null">#{maxValue},</if>
+            <if test="judgeResult != null">#{judgeResult},</if>
+            <if test="defectType != null">#{defectType},</if>
+            <if test="defectLevel != null">#{defectLevel},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <insert id="insertQualityTaskResultList">
+        insert into quality_task_result (task_no, item_no, item_name, standard_value, actual_value, min_value, max_value, judge_result, defect_type, defect_level, create_by, create_time)
+        values
+        <foreach item="item" index="index" collection="list" separator=",">
+            (#{item.taskNo}, #{item.itemNo}, #{item.itemName}, #{item.standardValue}, #{item.actualValue}, #{item.minValue}, #{item.maxValue}, #{item.judgeResult}, #{item.defectType}, #{item.defectLevel}, #{item.createBy}, #{item.createTime})
+        </foreach>
+    </insert>
+
+    <update id="updateQualityTaskResult" parameterType="QualityTaskResult">
+        update quality_task_result
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="actualValue != null">actual_value = #{actualValue},</if>
+            <if test="judgeResult != null">judge_result = #{judgeResult},</if>
+            <if test="defectType != null">defect_type = #{defectType},</if>
+            <if test="defectLevel != null">defect_level = #{defectLevel},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where result_id = #{resultId}
+    </update>
+
+    <update id="deleteQualityTaskResultByTaskNo" parameterType="String">
+        update quality_task_result set del_flag = '1' where task_no = #{taskNo}
+    </update>
+
+</mapper>
+

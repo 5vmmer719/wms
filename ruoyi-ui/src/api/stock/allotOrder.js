@@ -54,3 +54,12 @@ export function printAllotOrder(allotId) {
     },
   })
 }
+
+// 确认调拨
+export function confirmAllot(allotNo) {
+  return request({
+    url: '/stock/allotOrder/confirmAllot',
+    method: 'post',
+    data: { allotNo: allotNo }
+  })
+}

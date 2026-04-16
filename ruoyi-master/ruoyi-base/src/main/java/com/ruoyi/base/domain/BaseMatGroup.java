@@ -9,7 +9,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 物料组对象 base_mat_group
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-23
  */
 @Data

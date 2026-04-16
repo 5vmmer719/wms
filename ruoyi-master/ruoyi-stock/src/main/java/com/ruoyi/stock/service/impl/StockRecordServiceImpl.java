@@ -14,7 +14,7 @@ import com.ruoyi.stock.service.IStockRecordService;
 /**
  * 库存流水Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Service

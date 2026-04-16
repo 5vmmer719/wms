@@ -1,0 +1,92 @@
+@startuml
+hide members
+hide methods
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 30
+skinparam ranksep 80
+
+' ========== 第1行：基础数据 ==========
+class BaseMat
+class BaseMatBom
+class BaseWarehouse
+class BaseLocation
+
+' ========== 第2行：生产计划与调度 ==========
+class StockCustomerOrder
+class StockProdPlan
+class StockProdOrder
+
+' ========== 第3行：生产执行与质量 ==========
+class StockOutOrder
+class StockInOrder
+class QualityTask
+class QualityDefectHandle
+
+' ========== 第3.5行：交付与标签 ==========
+class StockDeliveryRecord
+class StockMatLabel
+
+' ========== 第4行：仓储与库存 ==========
+class StockInfo
+class StockRecord
+class StockCheckOrder
+class StockAllotOrder
+
+' === 强制分层 ===
+BaseMat -[hidden]down- StockCustomerOrder
+StockCustomerOrder -[hidden]down- StockOutOrder
+StockOutOrder -[hidden]down- StockInfo
+
+' === 同层对齐 ===
+BaseMat -[hidden]right- BaseMatBom
+BaseMatBom -[hidden]right- BaseWarehouse
+BaseWarehouse -[hidden]right- BaseLocation
+
+StockCustomerOrder -[hidden]right- StockProdPlan
+StockProdPlan -[hidden]right- StockProdOrder
+
+StockOutOrder -[hidden]right- StockInOrder
+StockInOrder -[hidden]right- QualityTask
+QualityTask -[hidden]right- QualityDefectHandle
+
+StockInfo -[hidden]right- StockRecord
+StockRecord -[hidden]right- StockCheckOrder
+StockCheckOrder -[hidden]right- StockAllotOrder
+
+StockDeliveryRecord -[hidden]right- StockMatLabel
+QualityDefectHandle -[hidden]down- StockDeliveryRecord
+StockDeliveryRecord -[hidden]down- StockInfo
+
+' --- 基础数据关联 ---
+BaseMatBom --> BaseMat : 父子物料
+BaseWarehouse --> BaseLocation : 包含货位
+
+' --- 生产计划与调度 ---
+StockCustomerOrder --> StockProdPlan : 生成计划
+StockProdPlan --> StockProdOrder : 生成工单
+StockProdOrder ..> BaseMat : 关联产品
+StockProdOrder ..> BaseMatBom : BOM展开
+
+' --- 生产执行与质量 ---
+StockProdOrder --> StockOutOrder : 领料出库
+StockProdOrder --> StockInOrder : 完工入库
+StockInOrder --> QualityTask : 触发质检
+QualityTask --> QualityDefectHandle : 不合格处理
+
+' --- 仓储与库存 ---
+StockInOrder ..> BaseWarehouse : 入库仓库
+StockOutOrder ..> BaseWarehouse : 出库仓库
+StockInOrder --> StockInfo : 更新库存
+StockInfo --> StockRecord : 产生流水
+StockCheckOrder ..> StockInfo : 快照与调整
+StockAllotOrder --> StockOutOrder : 调拨出库
+StockAllotOrder --> StockInOrder : 调拨入库
+
+' --- 交付与标签 ---
+StockCustomerOrder --> StockDeliveryRecord : 交付记录
+StockDeliveryRecord ..> StockOutOrder : 关联出库
+StockInOrder --> StockMatLabel : 生成标签
+StockMatLabel ..> BaseLocation : 所在货位
+
+@enduml

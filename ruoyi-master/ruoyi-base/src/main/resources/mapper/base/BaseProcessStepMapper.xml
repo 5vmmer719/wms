@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.BaseProcessStepMapper">
+
+    <resultMap type="BaseProcessStep" id="BaseProcessStepResult">
+        <result property="stepId"        column="step_id"        />
+        <result property="routeCode"     column="route_code"     />
+        <result property="stepNo"        column="step_no"        />
+        <result property="stepCode"      column="step_code"      />
+        <result property="stepName"      column="step_name"      />
+        <result property="stepType"      column="step_type"      />
+        <result property="standardHours" column="standard_hours" />
+        <result property="delFlag"       column="del_flag"       />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"        column="remark"         />
+    </resultMap>
+
+    <sql id="selectBaseProcessStepVo">
+        select step_id, route_code, step_no, step_code, step_name, step_type, standard_hours, del_flag, create_by, create_time, update_by, update_time, remark
+        from base_process_step
+    </sql>
+
+    <select id="selectBaseProcessStepList" parameterType="BaseProcessStep" resultMap="BaseProcessStepResult">
+        <include refid="selectBaseProcessStepVo"/>
+        WHERE del_flag = '0'
+        <if test="routeCode != null and routeCode != ''"> and route_code = #{routeCode}</if>
+        <if test="stepCode != null and stepCode != ''"> and step_code like concat('%', #{stepCode}, '%')</if>
+        <if test="stepName != null and stepName != ''"> and step_name like concat('%', #{stepName}, '%')</if>
+        <if test="stepType != null and stepType != ''"> and step_type = #{stepType}</if>
+        ORDER BY step_no ASC
+    </select>
+
+    <select id="selectBaseProcessStepByStepId" parameterType="Long" resultMap="BaseProcessStepResult">
+        <include refid="selectBaseProcessStepVo"/>
+        where del_flag = '0' AND step_id = #{stepId}
+    </select>
+
+    <select id="selectBaseProcessStepByRouteCode" resultMap="BaseProcessStepResult">
+        <include refid="selectBaseProcessStepVo"/>
+        where del_flag = '0' AND route_code = #{routeCode}
+        ORDER BY step_no ASC
+    </select>
+
+    <insert id="insertBaseProcessStep" parameterType="BaseProcessStep" useGeneratedKeys="true" keyProperty="stepId">
+        insert into base_process_step
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="routeCode != null and routeCode != ''">route_code,</if>
+            <if test="stepNo != null">step_no,</if>
+            <if test="stepCode != null and stepCode != ''">step_code,</if>
+            <if test="stepName != null and stepName != ''">step_name,</if>
+            <if test="stepType != null">step_type,</if>
+            <if test="standardHours != null">standard_hours,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="routeCode != null and routeCode != ''">#{routeCode},</if>
+            <if test="stepNo != null">#{stepNo},</if>
+            <if test="stepCode != null and stepCode != ''">#{stepCode},</if>
+            <if test="stepName != null and stepName != ''">#{stepName},</if>
+            <if test="stepType != null">#{stepType},</if>
+            <if test="standardHours != null">#{standardHours},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBaseProcessStep" parameterType="BaseProcessStep">
+        update base_process_step
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="routeCode != null and routeCode != ''">route_code = #{routeCode},</if>
+            <if test="stepNo != null">step_no = #{stepNo},</if>
+            <if test="stepCode != null and stepCode != ''">step_code = #{stepCode},</if>
+            <if test="stepName != null and stepName != ''">step_name = #{stepName},</if>
+            <if test="stepType != null">step_type = #{stepType},</if>
+            <if test="standardHours != null">standard_hours = #{standardHours},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where step_id = #{stepId}
+    </update>
+
+    <update id="deleteBaseProcessStepByStepId" parameterType="Long">
+        update base_process_step set del_flag = '1' where step_id = #{stepId}
+    </update>
+
+    <update id="deleteBaseProcessStepByStepIds" parameterType="String">
+        update base_process_step set del_flag = '1' where step_id in
+        <foreach item="stepId" collection="array" open="(" separator="," close=")">
+            #{stepId}
+        </foreach>
+    </update>
+
+    <update id="deleteBaseProcessStepByRouteCode">
+        update base_process_step set del_flag = '1' where route_code = #{routeCode}
+    </update>
+
+</mapper>
+

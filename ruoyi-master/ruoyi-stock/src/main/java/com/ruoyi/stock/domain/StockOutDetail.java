@@ -11,7 +11,7 @@ import com.ruoyi.base.domain.BaseWarehouse;
 /**
  * 出库单详情对象 stock_out_detail
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data

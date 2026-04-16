@@ -50,3 +50,11 @@ export function delBom(matCodes) {
     method: 'delete'
   })
 }
+
+// 通过bomId删除物料BOM
+export function delBomByIds(bomIds) {
+  return request({
+    url: '/base/bom/ids/' + bomIds,
+    method: 'delete'
+  })
+}

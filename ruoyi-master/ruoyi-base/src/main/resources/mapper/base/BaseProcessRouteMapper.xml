@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.BaseProcessRouteMapper">
+
+    <resultMap type="BaseProcessRoute" id="BaseProcessRouteResult">
+        <result property="routeId"       column="route_id"       />
+        <result property="routeCode"     column="route_code"     />
+        <result property="routeName"     column="route_name"     />
+        <result property="matCode"       column="mat_code"       />
+        <result property="routeVersion"  column="route_version"  />
+        <result property="routeStatus"   column="route_status"   />
+        <result property="delFlag"       column="del_flag"       />
+        <result property="createBy"      column="create_by"      />
+        <result property="createTime"    column="create_time"    />
+        <result property="updateBy"      column="update_by"      />
+        <result property="updateTime"    column="update_time"    />
+        <result property="remark"        column="remark"         />
+    </resultMap>
+
+    <sql id="selectBaseProcessRouteVo">
+        select route_id, route_code, route_name, mat_code, route_version, route_status, del_flag, create_by, create_time, update_by, update_time, remark
+        from base_process_route
+    </sql>
+
+    <select id="selectBaseProcessRouteList" parameterType="BaseProcessRoute" resultMap="BaseProcessRouteResult">
+        <include refid="selectBaseProcessRouteVo"/>
+        WHERE del_flag = '0'
+        <if test="routeCode != null and routeCode != ''"> and route_code like concat('%', #{routeCode}, '%')</if>
+        <if test="routeName != null and routeName != ''"> and route_name like concat('%', #{routeName}, '%')</if>
+        <if test="matCode != null and matCode != ''"> and mat_code = #{matCode}</if>
+        <if test="routeStatus != null and routeStatus != ''"> and route_status = #{routeStatus}</if>
+        ORDER BY route_id ASC
+    </select>
+
+    <select id="selectBaseProcessRouteByRouteId" parameterType="Long" resultMap="BaseProcessRouteResult">
+        <include refid="selectBaseProcessRouteVo"/>
+        where del_flag = '0' AND route_id = #{routeId}
+    </select>
+
+    <select id="selectBaseProcessRouteByRouteCode" resultMap="BaseProcessRouteResult">
+        <include refid="selectBaseProcessRouteVo"/>
+        where del_flag = '0' AND route_code = #{routeCode}
+    </select>
+
+    <select id="selectMaxRouteCodeByPrefix" resultType="String">
+        select max(route_code) from base_process_route
+        where del_flag = '0' and route_code like concat(#{prefix}, '%')
+    </select>
+
+    <insert id="insertBaseProcessRoute" parameterType="BaseProcessRoute" useGeneratedKeys="true" keyProperty="routeId">
+        insert into base_process_route
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="routeCode != null and routeCode != ''">route_code,</if>
+            <if test="routeName != null and routeName != ''">route_name,</if>
+            <if test="matCode != null">mat_code,</if>
+            <if test="routeVersion != null">route_version,</if>
+            <if test="routeStatus != null">route_status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="updateBy != null">update_by,</if>
+            <if test="updateTime != null">update_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="routeCode != null and routeCode != ''">#{routeCode},</if>
+            <if test="routeName != null and routeName != ''">#{routeName},</if>
+            <if test="matCode != null">#{matCode},</if>
+            <if test="routeVersion != null">#{routeVersion},</if>
+            <if test="routeStatus != null">#{routeStatus},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="updateBy != null">#{updateBy},</if>
+            <if test="updateTime != null">#{updateTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBaseProcessRoute" parameterType="BaseProcessRoute">
+        update base_process_route
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="routeCode != null and routeCode != ''">route_code = #{routeCode},</if>
+            <if test="routeName != null and routeName != ''">route_name = #{routeName},</if>
+            <if test="matCode != null">mat_code = #{matCode},</if>
+            <if test="routeVersion != null">route_version = #{routeVersion},</if>
+            <if test="routeStatus != null">route_status = #{routeStatus},</if>
+            <if test="createBy != null">create_by = #{createBy},</if>
+            <if test="createTime != null">create_time = #{createTime},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where route_id = #{routeId}
+    </update>
+
+    <update id="deleteBaseProcessRouteByRouteId" parameterType="Long">
+        update base_process_route set del_flag = '1' where route_id = #{routeId}
+    </update>
+
+    <update id="deleteBaseProcessRouteByRouteIds" parameterType="String">
+        update base_process_route set del_flag = '1' where route_id in
+        <foreach item="routeId" collection="array" open="(" separator="," close=")">
+            #{routeId}
+        </foreach>
+    </update>
+
+</mapper>
+

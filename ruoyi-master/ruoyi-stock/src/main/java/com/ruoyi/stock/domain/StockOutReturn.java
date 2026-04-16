@@ -11,7 +11,7 @@ import java.util.List;
 /**
  * 出库单退货对象 stock_out_return
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data

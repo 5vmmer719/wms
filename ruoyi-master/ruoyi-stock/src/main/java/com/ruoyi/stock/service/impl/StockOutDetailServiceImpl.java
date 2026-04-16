@@ -12,7 +12,7 @@ import com.ruoyi.stock.service.IStockOutDetailService;
 /**
  * 出库单详情Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Service

@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.BaseWorkstationMapper">
+
+    <resultMap type="BaseWorkstation" id="BaseWorkstationResult">
+        <result property="stationId"       column="station_id"       />
+        <result property="stationCode"     column="station_code"     />
+        <result property="stationName"     column="station_name"     />
+        <result property="equipmentCode"   column="equipment_code"   />
+        <result property="workshopCode"    column="workshop_code"    />
+        <result property="operatorId"      column="operator_id"      />
+        <result property="operatorName"    column="operator_name"    />
+        <result property="stationStatus"   column="station_status"   />
+        <result property="delFlag"         column="del_flag"         />
+        <result property="createBy"        column="create_by"        />
+        <result property="createTime"      column="create_time"      />
+        <result property="updateBy"        column="update_by"        />
+        <result property="updateTime"      column="update_time"      />
+        <result property="remark"          column="remark"           />
+    </resultMap>
+
+    <sql id="selectBaseWorkstationVo">
+        select w.station_id, w.station_code, w.station_name, w.equipment_code, w.workshop_code,
+               w.operator_id, w.operator_name, w.station_status, w.del_flag,
+               w.create_by, w.create_time, w.update_by, w.update_time, w.remark,
+               e.equipment_name
+        from base_workstation w
+        left join base_equipment e on w.equipment_code = e.equipment_code and e.del_flag = '0'
+    </sql>
+
+    <select id="selectBaseWorkstationByStationId" parameterType="Long" resultMap="BaseWorkstationResult">
+        <include refid="selectBaseWorkstationVo"/>
+        where w.station_id = #{stationId} and w.del_flag = '0'
+    </select>
+
+    <select id="selectBaseWorkstationByStationCode" parameterType="String" resultMap="BaseWorkstationResult">
+        <include refid="selectBaseWorkstationVo"/>
+        where w.station_code = #{stationCode} and w.del_flag = '0'
+    </select>
+
+    <select id="selectBaseWorkstationList" parameterType="BaseWorkstation" resultMap="BaseWorkstationResult">
+        <include refid="selectBaseWorkstationVo"/>
+        <where>
+            w.del_flag = '0'
+            <if test="stationCode != null and stationCode != ''"> and w.station_code like concat('%', #{stationCode}, '%')</if>
+            <if test="stationName != null and stationName != ''"> and w.station_name like concat('%', #{stationName}, '%')</if>
+            <if test="equipmentCode != null and equipmentCode != ''"> and w.equipment_code = #{equipmentCode}</if>
+            <if test="workshopCode != null and workshopCode != ''"> and w.workshop_code = #{workshopCode}</if>
+            <if test="stationStatus != null and stationStatus != ''"> and w.station_status = #{stationStatus}</if>
+        </where>
+        order by w.station_id desc
+    </select>
+
+    <select id="selectMaxStationCodeByPrefix" resultType="String">
+        select max(station_code) from base_workstation
+        where del_flag = '0' and station_code like concat(#{prefix}, '%')
+    </select>
+
+    <insert id="insertBaseWorkstation" parameterType="BaseWorkstation" useGeneratedKeys="true" keyProperty="stationId">
+        insert into base_workstation
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="stationCode != null and stationCode != ''">station_code,</if>
+            <if test="stationName != null and stationName != ''">station_name,</if>
+            <if test="equipmentCode != null">equipment_code,</if>
+            <if test="workshopCode != null">workshop_code,</if>
+            <if test="operatorId != null">operator_id,</if>
+            <if test="operatorName != null">operator_name,</if>
+            <if test="stationStatus != null">station_status,</if>
+            <if test="delFlag != null">del_flag,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="stationCode != null and stationCode != ''">#{stationCode},</if>
+            <if test="stationName != null and stationName != ''">#{stationName},</if>
+            <if test="equipmentCode != null">#{equipmentCode},</if>
+            <if test="workshopCode != null">#{workshopCode},</if>
+            <if test="operatorId != null">#{operatorId},</if>
+            <if test="operatorName != null">#{operatorName},</if>
+            <if test="stationStatus != null">#{stationStatus},</if>
+            <if test="delFlag != null">#{delFlag},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateBaseWorkstation" parameterType="BaseWorkstation">
+        update base_workstation
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="stationName != null and stationName != ''">station_name = #{stationName},</if>
+            <if test="equipmentCode != null">equipment_code = #{equipmentCode},</if>
+            <if test="workshopCode != null">workshop_code = #{workshopCode},</if>
+            <if test="operatorId != null">operator_id = #{operatorId},</if>
+            <if test="operatorName != null">operator_name = #{operatorName},</if>
+            <if test="stationStatus != null">station_status = #{stationStatus},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where station_id = #{stationId}
+    </update>
+
+    <update id="deleteBaseWorkstationByStationId" parameterType="Long">
+        update base_workstation set del_flag = '1' where station_id = #{stationId}
+    </update>
+
+    <update id="deleteBaseWorkstationByStationIds" parameterType="String">
+        update base_workstation set del_flag = '1' where station_id in
+        <foreach item="stationId" collection="array" open="(" separator="," close=")">
+            #{stationId}
+        </foreach>
+    </update>
+
+</mapper>
+

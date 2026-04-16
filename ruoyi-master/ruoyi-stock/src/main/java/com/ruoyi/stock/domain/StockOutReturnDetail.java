@@ -11,7 +11,7 @@ import com.ruoyi.common.core.domain.BaseEntity;
 /**
  * 出库退货详情对象 stock_out_return_detail
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data
@@ -27,6 +27,11 @@ public class StockOutReturnDetail extends BaseEntity {
      */
     @Excel(name = "仓库")
     private String warehouseCode;
+
+    /**
+     * 仓库名称（非数据库字段，用于前端展示）
+     */
+    private String warehouseName;
 
     /**
      * 车间

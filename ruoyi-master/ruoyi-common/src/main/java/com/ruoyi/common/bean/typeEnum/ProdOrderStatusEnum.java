@@ -9,8 +9,10 @@ import java.util.Map;
 @Getter
 public enum ProdOrderStatusEnum {
 
-    ONGOING("ongoing", "进行中"),
-    FINISHED( "finished","已完成");
+    PLANNED("planned", "待排产"),
+    ONGOING("ongoing", "生产中"),
+    COMPLETED("completed", "已完工"),
+    CLOSED( "closed","已关闭");
 
     private String value;
     private String label;

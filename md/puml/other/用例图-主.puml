@@ -1,0 +1,33 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam nodesep 20
+skinparam ranksep 40
+
+actor "管理员" as Admin
+actor "生产主管" as Planner
+
+usecase "基础数据管理" as UC_Base
+usecase "生产计划与调度" as UC_Plan
+usecase "生产执行与质量" as UC_Exec
+usecase "仓储与库存管理" as UC_Stock
+usecase "统计报表" as UC_Stats
+usecase "系统管理" as UC_Sys
+
+actor "仓管员" as Keeper
+actor "质检员" as Inspector
+
+Admin --> UC_Base
+Admin --> UC_Sys
+Admin --> UC_Stats
+
+Planner --> UC_Plan
+Planner --> UC_Exec
+
+UC_Stock <-- Keeper
+UC_Exec <-- Keeper
+
+UC_Exec <-- Inspector
+
+@enduml
+

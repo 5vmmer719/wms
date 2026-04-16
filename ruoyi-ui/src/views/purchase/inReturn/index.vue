@@ -102,7 +102,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -162,7 +162,7 @@
         <el-table-column label="供应商" align="center" prop="supplierName" width="180" />
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">确 定</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="submitForm">确 定</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -275,6 +275,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 提交loading
+      submitLoading: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -323,6 +325,8 @@ export default {
       listInReturn(this.queryParams).then(response => {
         this.inReturnList = response.rows;
         this.total = response.total;
+        this.loading = false;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -415,12 +419,15 @@ export default {
           that.$modal.confirm('是否确认创建入库退货单？').then(function() {
             that.form.detailList = that.inReturnDetailList;
             that.form.returnType = 'purchase_return';
+            that.submitLoading = true;
             addInReturn(that.form).then(response => {
               that.$modal.msgSuccess("新增成功");
               that.open = false;
               that.getList();
               that.reset();
               that.inReturnDetailList = [];
+            }).finally(() => {
+              that.submitLoading = false;
             });
           });
         }

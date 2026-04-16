@@ -7,7 +7,7 @@ import com.ruoyi.base.domain.BaseWarehouse;
 /**
  * 仓库Service接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-24
  */
 public interface IBaseWarehouseService {

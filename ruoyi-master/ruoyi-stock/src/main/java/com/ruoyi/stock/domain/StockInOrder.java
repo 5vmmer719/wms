@@ -9,7 +9,7 @@ import java.util.List;
 /**
  * 入库单对象 stock_in_order
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Data
@@ -61,6 +61,11 @@ public class StockInOrder extends BaseEntity {
      */
     @Excel(name = "调拨单号")
     private String allotNo;
+
+    /**
+     * 关联生产工单号（完工入库时使用）
+     */
+    private String prodOrderNo;
 
     /**
      * 仓库编码

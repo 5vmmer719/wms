@@ -1,0 +1,37 @@
+@startuml
+left to right direction
+skinparam shadowing false
+skinparam nodesep 10
+skinparam ranksep 40
+
+actor "管理员" as Admin
+
+usecase "物料管理" as UC_Mat
+usecase "物料BOM管理" as UC_Bom
+usecase "仓库与货位管理" as UC_Wh
+usecase "工艺路线管理" as UC_Route
+usecase "设备管理" as UC_Equip
+usecase "供应商与客户管理" as UC_Partner
+usecase "质量标准管理" as UC_QStd
+usecase "用户与角色管理" as UC_User
+usecase "菜单与权限配置" as UC_Menu
+usecase "字典与参数配置" as UC_Dict
+usecase "出入库统计" as UC_Stats
+
+' --- 用例间关系 ---
+UC_User ..> UC_Menu : <<include>>
+
+' --- 管理员关联 ---
+Admin --> UC_Mat
+Admin --> UC_Bom
+Admin --> UC_Wh
+Admin --> UC_Route
+Admin --> UC_Equip
+Admin --> UC_Partner
+Admin --> UC_QStd
+Admin --> UC_User
+Admin --> UC_Dict
+Admin --> UC_Stats
+
+@enduml
+

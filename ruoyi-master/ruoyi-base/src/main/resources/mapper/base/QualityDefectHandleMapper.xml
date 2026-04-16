@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.ruoyi.base.mapper.QualityDefectHandleMapper">
+
+    <resultMap type="QualityDefectHandle" id="QualityDefectHandleResult">
+        <result property="handleId"       column="handle_id"       />
+        <result property="taskNo"         column="task_no"         />
+        <result property="handleType"     column="handle_type"     />
+        <result property="handleQty"      column="handle_qty"      />
+        <result property="handleDesc"     column="handle_desc"     />
+        <result property="handleBy"       column="handle_by"       />
+        <result property="handleDate"     column="handle_date"     />
+        <result property="handleStatus"   column="handle_status"   />
+        <result property="delFlag"        column="del_flag"        />
+        <result property="createBy"       column="create_by"       />
+        <result property="createTime"     column="create_time"     />
+        <result property="updateBy"       column="update_by"       />
+        <result property="updateTime"     column="update_time"     />
+        <result property="remark"         column="remark"          />
+    </resultMap>
+
+    <sql id="selectQualityDefectHandleVo">
+        select h.handle_id, h.task_no, h.handle_type, h.handle_qty, h.handle_desc, h.handle_by, h.handle_date, h.handle_status,
+               h.del_flag, h.create_by, h.create_time, h.update_by, h.update_time, h.remark,
+               t.mat_code, t.mat_name, t.check_type, t.quantity, t.unqualified_qty
+        from quality_defect_handle h
+        left join quality_task t on h.task_no = t.task_no and t.del_flag = '0'
+    </sql>
+
+    <select id="selectQualityDefectHandleByHandleId" parameterType="Long" resultMap="QualityDefectHandleResult">
+        <include refid="selectQualityDefectHandleVo"/>
+        where h.del_flag = '0' AND h.handle_id = #{handleId}
+    </select>
+
+    <select id="selectQualityDefectHandleList" parameterType="QualityDefectHandle" resultMap="QualityDefectHandleResult">
+        <include refid="selectQualityDefectHandleVo"/>
+        <where>
+            h.del_flag = '0'
+            <if test="taskNo != null and taskNo != ''"> and h.task_no like concat('%', #{taskNo}, '%')</if>
+            <if test="handleType != null and handleType != ''"> and h.handle_type = #{handleType}</if>
+            <if test="handleStatus != null and handleStatus != ''"> and h.handle_status = #{handleStatus}</if>
+            <if test="handleBy != null and handleBy != ''"> and h.handle_by like concat('%', #{handleBy}, '%')</if>
+        </where>
+        order by h.create_time desc
+    </select>
+
+    <select id="selectQualityDefectHandleByTaskNo" parameterType="String" resultMap="QualityDefectHandleResult">
+        <include refid="selectQualityDefectHandleVo"/>
+        where h.del_flag = '0' AND h.task_no = #{taskNo}
+        order by h.create_time desc
+    </select>
+
+    <insert id="insertQualityDefectHandle" parameterType="QualityDefectHandle" useGeneratedKeys="true" keyProperty="handleId">
+        insert into quality_defect_handle
+        <trim prefix="(" suffix=")" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">task_no,</if>
+            <if test="handleType != null and handleType != ''">handle_type,</if>
+            <if test="handleQty != null">handle_qty,</if>
+            <if test="handleDesc != null">handle_desc,</if>
+            <if test="handleBy != null">handle_by,</if>
+            <if test="handleDate != null">handle_date,</if>
+            <if test="handleStatus != null">handle_status,</if>
+            <if test="createBy != null">create_by,</if>
+            <if test="createTime != null">create_time,</if>
+            <if test="remark != null">remark,</if>
+        </trim>
+        <trim prefix="values (" suffix=")" suffixOverrides=",">
+            <if test="taskNo != null and taskNo != ''">#{taskNo},</if>
+            <if test="handleType != null and handleType != ''">#{handleType},</if>
+            <if test="handleQty != null">#{handleQty},</if>
+            <if test="handleDesc != null">#{handleDesc},</if>
+            <if test="handleBy != null">#{handleBy},</if>
+            <if test="handleDate != null">#{handleDate},</if>
+            <if test="handleStatus != null">#{handleStatus},</if>
+            <if test="createBy != null">#{createBy},</if>
+            <if test="createTime != null">#{createTime},</if>
+            <if test="remark != null">#{remark},</if>
+        </trim>
+    </insert>
+
+    <update id="updateQualityDefectHandle" parameterType="QualityDefectHandle">
+        update quality_defect_handle
+        <trim prefix="SET" suffixOverrides=",">
+            <if test="handleType != null and handleType != ''">handle_type = #{handleType},</if>
+            <if test="handleQty != null">handle_qty = #{handleQty},</if>
+            <if test="handleDesc != null">handle_desc = #{handleDesc},</if>
+            <if test="handleBy != null">handle_by = #{handleBy},</if>
+            <if test="handleDate != null">handle_date = #{handleDate},</if>
+            <if test="handleStatus != null">handle_status = #{handleStatus},</if>
+            <if test="updateBy != null">update_by = #{updateBy},</if>
+            <if test="updateTime != null">update_time = #{updateTime},</if>
+            <if test="remark != null">remark = #{remark},</if>
+        </trim>
+        where handle_id = #{handleId}
+    </update>
+
+    <update id="deleteQualityDefectHandleByHandleId" parameterType="Long">
+        update quality_defect_handle set del_flag = '1' where handle_id = #{handleId}
+    </update>
+
+    <update id="deleteQualityDefectHandleByHandleIds" parameterType="String">
+        update quality_defect_handle set del_flag = '1' where handle_id in
+        <foreach item="handleId" collection="array" open="(" separator="," close=")">
+            #{handleId}
+        </foreach>
+    </update>
+
+</mapper>
+

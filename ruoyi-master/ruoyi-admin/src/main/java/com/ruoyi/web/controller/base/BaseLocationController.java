@@ -39,7 +39,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 货位Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-24
  */
 @RestController

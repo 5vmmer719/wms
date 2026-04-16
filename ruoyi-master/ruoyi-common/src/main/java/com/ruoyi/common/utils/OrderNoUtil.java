@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicLong;
  * 支持多种类型单号自动生成，格式：前缀 + 年月日时分 + 随机数/序列号
  * 所有前缀定义在 {@link OrderPrefix} 枚举中，便于统一管理和扩展
  *
- * @author ruoyi
+ * @author summer
  */
 public class OrderNoUtil {
 
@@ -22,6 +22,7 @@ public class OrderNoUtil {
     public enum OrderPrefix {
         // 入库单
         IN_PURCHASE("IP", "原料入库单"),
+        IN_PRODUCTION("IPD", "车间入库单"),
         IN_ALLOT("IA", "调拨入库单"),
 
         // 出库单
@@ -42,7 +43,22 @@ public class OrderNoUtil {
         ALLOT("A", "调拨单"),
 
         // 生产订单
-        PRODUCTION("P", "生产订单");
+        PRODUCTION("P", "生产订单"),
+
+        // 客户订单
+        CUSTOMER_ORDER("CO", "客户订单"),
+
+        // 交付单
+        DELIVERY("DL", "交付单"),
+
+        // 生产计划
+        PROD_PLAN("PP", "生产计划"),
+
+        // 盘点单
+        STOCK_CHECK("SC", "盘点单"),
+
+        // 工令号
+        WORK_ORDER("TGL-", "工令号");
 
         private final String prefix;
         private final String description;
@@ -91,7 +107,7 @@ public class OrderNoUtil {
             }
             // 按前缀长度降序检查，避免误判（如 IPR vs IP）
             OrderPrefix[] prefixes = {
-                IN_PURCHASE_RETURN, IN_ALLOT,
+                IN_PURCHASE_RETURN, IN_ALLOT, IN_PRODUCTION,
                 OUT_PRODUCTION_RETURN, OUT_REPAIR_RETURN, OUT_COMMON_RETURN, OUT_ALLOT,
                 IN_PURCHASE,
                 OUT_PRODUCTION, OUT_REPAIR, OUT_COMMON,
@@ -168,6 +184,11 @@ public class OrderNoUtil {
      */
     @Deprecated
     public static String getInOrderNo(String orderType) {
+        if ("production".equals(orderType)) {
+            return generate(OrderPrefix.IN_PRODUCTION);
+        } else if ("allot".equals(orderType)) {
+            return generate(OrderPrefix.IN_ALLOT);
+        }
         return generate(OrderPrefix.IN_PURCHASE);
     }
 

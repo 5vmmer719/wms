@@ -128,7 +128,7 @@
         </template>
       </el-table-column>
     </el-table>
-    
+
     <pagination
       v-show="total>0"
       :total="total"
@@ -206,7 +206,7 @@
         </el-table-column>
       </el-table>
       <div slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="submitForm">创 建</el-button>
+        <el-button type="primary" :loading="submitLoading" @click="submitForm">创 建</el-button>
         <el-button @click="cancel">取 消</el-button>
       </div>
     </el-dialog>
@@ -310,6 +310,8 @@ export default {
       title: "",
       // 是否显示弹出层
       open: false,
+      // 提交loading
+      submitLoading: false,
       // 查询参数
       queryParams: {
         pageNum: 1,
@@ -346,7 +348,7 @@ export default {
 
       //单据状态
       orderStatusOptions:[
-        {value: 'created', label: '已创建'}, 
+        {value: 'created', label: '已创建'},
         {value: 'printed', label: '已打印'},
         {value: 'received', label: '已领料'},
       ],
@@ -374,6 +376,8 @@ export default {
       listOutOrder(this.addDateRange(this.queryParams, this.dateRange)).then(response => {
         this.outOrderList = response.rows;
         this.total = response.total;
+        this.loading = false;
+      }).finally(() => {
         this.loading = false;
       });
     },
@@ -472,12 +476,15 @@ export default {
           that.$modal.confirm('是否确认创建出库单？').then(function() {
             that.form.detailList = that.outOrderDetailList;
             that.form.orderType = 'common';
+            that.submitLoading = true;
             addOutOrder(that.form).then(response => {
               that.$modal.msgSuccess("新增成功");
               that.open = false;
               that.getList();
               that.reset();
               that.outOrderDetailList = [];
+            }).finally(() => {
+              that.submitLoading = false;
             });
           });
         }

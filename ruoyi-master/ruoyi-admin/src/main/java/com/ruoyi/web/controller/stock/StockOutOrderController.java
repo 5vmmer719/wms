@@ -19,12 +19,15 @@ import com.ruoyi.common.bean.*;
 import com.ruoyi.common.bean.request.StockOutRequestBody;
 import com.ruoyi.common.bean.typeEnum.OrderStatusEnum;
 import com.ruoyi.common.bean.typeEnum.OutOrderTypeEnum;
+import com.ruoyi.common.bean.typeEnum.ProdOrderStatusEnum;
 import com.ruoyi.common.service.PDFService;
 import com.ruoyi.common.utils.DateUtils;
 import com.ruoyi.common.utils.bean.BeanUtils;
 import com.ruoyi.stock.domain.StockOutDetail;
+import com.ruoyi.stock.domain.StockProdOrder;
 import com.ruoyi.stock.service.IStockInfoService;
 import com.ruoyi.stock.service.IStockOutDetailService;
+import com.ruoyi.stock.service.IStockProdOrderService;
 import com.ruoyi.system.service.ISysDictDataService;
 import com.ruoyi.web.utils.MatBomTreeUtil;
 import org.apache.commons.collections4.CollectionUtils;
@@ -52,7 +55,7 @@ import com.ruoyi.common.core.page.TableDataInfo;
 /**
  * 出库单Controller
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @RestController
@@ -74,6 +77,8 @@ public class StockOutOrderController extends BaseController {
     private IBaseWarehouseService baseWarehouseService;
     @Autowired
     private IStockInfoService stockInfoService;
+    @Autowired
+    private IStockProdOrderService stockProdOrderService;
     @Autowired
     private PDFService pdfService;
 
@@ -125,7 +130,10 @@ public class StockOutOrderController extends BaseController {
             if(CollectionUtils.isNotEmpty(detailList)){
                 //设置推荐货位
                 for(StockOutDetail detail : detailList){
-                    String recommendLocation = stockInfoService.selectRecommendLocation(detail.getMatCode(), warehouseCode);
+                    // 优先使用明细行的仓库编码（生产出库单每行可能属于不同仓库）
+                    String detailWarehouseCode = StringUtils.isNotEmpty(detail.getWarehouseCode()) ? detail.getWarehouseCode() : warehouseCode;
+                    detail.setWarehouseName(baseWarehouseService.selectBaseWarehouseNameByWarehouseCode(detailWarehouseCode));
+                    String recommendLocation = stockInfoService.selectRecommendLocation(detail.getMatCode(), detailWarehouseCode);
                     if(StringUtils.isEmpty(recommendLocation)){
                         recommendLocation = "暂无库存";
                     }
@@ -152,8 +160,12 @@ public class StockOutOrderController extends BaseController {
         if(CollectionUtils.isEmpty(detailList)){
             return AjaxResult.error("系统繁忙，请稍后再试！");
         }
-        //过滤已完成的详情
-        detailList = detailList.stream().filter(item -> item.getQuantity().compareTo(item.getReceivedQuantity()) == 1).collect(Collectors.toList());
+        //过滤已完成的详情（quantity和receivedQuantity可能为null，视为0）
+        detailList = detailList.stream().filter(item -> {
+            java.math.BigDecimal qty = item.getQuantity() != null ? item.getQuantity() : java.math.BigDecimal.ZERO;
+            java.math.BigDecimal received = item.getReceivedQuantity() != null ? item.getReceivedQuantity() : java.math.BigDecimal.ZERO;
+            return qty.compareTo(java.math.BigDecimal.ZERO) > 0 && qty.compareTo(received) > 0;
+        }).collect(Collectors.toList());
         if(CollectionUtils.isEmpty(detailList)){
             return AjaxResult.error("出库单已完成");
         }
@@ -173,6 +185,17 @@ public class StockOutOrderController extends BaseController {
     public AjaxResult add(@RequestBody StockOutOrder stockOutOrder) {
         if(stockOutOrder == null || CollectionUtils.isEmpty(stockOutOrder.getDetailList())){
             return error("系统繁忙，请稍后再试！");
+        }
+        // 生产领料出库单校验：工单状态必须为"生产中"
+        if (OutOrderTypeEnum.PRODUCTION.getValue().equals(stockOutOrder.getOrderType())
+                && StringUtils.isNotEmpty(stockOutOrder.getProdOrderNo())) {
+            StockProdOrder prodOrder = stockProdOrderService.selectStockProdOrderByOrderNo(stockOutOrder.getProdOrderNo());
+            if (prodOrder == null) {
+                return error("关联的生产工单不存在");
+            }
+            if (!ProdOrderStatusEnum.ONGOING.getValue().equals(prodOrder.getOrderStatus())) {
+                return error("只有[生产中]状态的工单才能创建领料出库单，当前状态：" + ProdOrderStatusEnum.getLabel(prodOrder.getOrderStatus()));
+            }
         }
         return toAjax(stockOutOrderService.insertStockOutOrder(getUsername(), stockOutOrder));
     }

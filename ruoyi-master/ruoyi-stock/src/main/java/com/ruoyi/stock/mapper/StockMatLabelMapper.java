@@ -1,6 +1,5 @@
 package com.ruoyi.stock.mapper;
 
-import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
@@ -10,7 +9,7 @@ import org.apache.ibatis.annotations.Param;
 /**
  * 物料标签Mapper接口
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 public interface StockMatLabelMapper {
@@ -21,6 +20,14 @@ public interface StockMatLabelMapper {
      * @return 物料标签
      */
     public StockMatLabel selectStockMatLabelByLabelId(Long labelId);
+
+    /**
+     * 根据标签编码查询物料标签
+     *
+     * @param labelCode 标签编码
+     * @return 物料标签
+     */
+    public StockMatLabel selectStockMatLabelByLabelCode(String labelCode);
 
     /**
      * 查询物料标签列表
@@ -55,38 +62,16 @@ public interface StockMatLabelMapper {
     public int updateStockMatLabel(StockMatLabel stockMatLabel);
 
     /**
-     * 修改物料标签合格数
+     * 修改物料标签状态
+     *
+     * @param labelId 标签ID
+     * @param status 状态
+     * @param updateBy 更新人
+     * @param updateTime 更新时间
+     * @return 结果
      */
-    public int updateUsableQuantity(@Param("labelId") Long labelId, @Param("updateBy") String updateBy, @Param("updateTime") Date updateTime,
-        @Param("warehouseCode") String warehouseCode, @Param("locationCode") String locationCode, @Param("usableQuantity") BigDecimal usableQuantity);
-
-    /**
-     * 修改物料标签已领取数量
-     */
-    public int updateReceivedQuantity(@Param("labelId") Long labelId, @Param("updateBy") String updateBy, @Param("updateTime") Date updateTime,
-        @Param("receivedQuantity") BigDecimal receivedQuantity);
-
-    /**
-     * 修改物料标签-上架
-     */
-    public int updatePutOn(@Param("labelId") Long labelId, @Param("warehouseCode") String warehouseCode, @Param("locationCode") String locationCode,
-        @Param("updateBy") String updateBy, @Param("updateTime") Date updateTime);
-
-    /**
-     * 修改物料标签-下架
-     */
-    public int updatePutOff(@Param("labelId") Long labelId, @Param("updateBy") String updateBy, @Param("updateTime") Date updateTime);
-
-    /**
-     * 修改物料标签-调拨入库
-     */
-    public int updateAllotIn(@Param("labelId") Long labelId, @Param("warehouseCode") String warehouseCode, @Param("locationCode") String locationCode,
-        @Param("updateBy") String updateBy, @Param("updateTime") Date updateTime);
-
-    /**
-     * 修改物料标签-调拨出库
-     */
-    public int updateAllotOut(@Param("labelId") Long labelId, @Param("updateBy") String updateBy, @Param("updateTime") Date updateTime);
+    public int updateStatus(@Param("labelId") Long labelId, @Param("status") String status,
+                            @Param("updateBy") String updateBy, @Param("updateTime") Date updateTime);
 
     /**
      * 删除物料标签

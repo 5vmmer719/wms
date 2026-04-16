@@ -26,7 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 /**
  * 库存信息Service业务层处理
  *
- * @author ruoyi
+ * @author summer
  * @date 2022-07-25
  */
 @Service
@@ -124,6 +124,7 @@ public class StockInfoServiceImpl implements IStockInfoService {
 
     /**
      * 扫码提交上架
+     * 注意：物料标签已重构，不再存储仓库货位和数量信息，数量从前端请求获取
      */
     @Override
     @Transactional
@@ -137,33 +138,41 @@ public class StockInfoServiceImpl implements IStockInfoService {
         Date nowDate = DateUtils.getNowDate();
         StockRecord record = null;
         for(MatLabelRequestData label : matLabelList){
-            label.setWarehouseCode(warehouseCode);
-            label.setLocationCode(locationCode);
-            BigDecimal quantity = label.getUsableQuantity().subtract(label.getReceivedQuantity());
+            // 数量从前端请求获取
+            BigDecimal quantity = label.getQuantity();
+            if(quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0){
+                continue;
+            }
             //修改库存信息
             stockInfoMapper.updateQuantity(warehouseCode, locationCode, label.getBatch(), label.getSupplierCode(),
                     label.getMatCode(), quantity.multiply(new BigDecimal("-1")));
             //新增库存操作信息
             record = new StockRecord();
-            BeanUtils.copyBeanProp(record, label);
+            record.setWarehouseCode(warehouseCode);
+            record.setLocationCode(locationCode);
+            record.setMatCode(label.getMatCode());
+            record.setMatName(label.getMatName());
+            record.setBatch(label.getBatch());
+            record.setSupplierCode(label.getSupplierCode());
+            record.setSupplierName(label.getSupplierName());
             record.setRecordType(StockRecordTypeEnum.UPPER.getValue());
             record.setQuantity(quantity);
             record.setCreateBy(username);
             record.setCreateTime(nowDate);
             stockRecordMapper.insertStockRecord(record);
-            //修改物料标签
-            stockMatLabelMapper.updatePutOn(label.getLabelId(), warehouseCode, locationCode, username, nowDate);
         }
         return AjaxResult.success("提交成功");
     }
 
     /**
      * 扫码提交下架
+     * 注意：物料标签已重构，不再存储仓库货位和数量信息，数量从前端请求获取
      */
     @Override
     @Transactional
     public AjaxResult submitPutOff(String username, PutOffRequestBody putOffRequestBody){
         String locationCode = putOffRequestBody.getLocationCode();
+        String warehouseCode = putOffRequestBody.getWarehouseCode();
         List<MatLabelRequestData> matLabelList = putOffRequestBody.getMatLabelList();
         if(StringUtils.isEmpty(locationCode) || CollectionUtils.isEmpty(matLabelList)){
             return AjaxResult.error("系统繁忙，请稍后再试！");
@@ -171,20 +180,28 @@ public class StockInfoServiceImpl implements IStockInfoService {
         Date nowDate = DateUtils.getNowDate();
         StockRecord record = null;
         for(MatLabelRequestData label : matLabelList){
-            //修改库存信息
-            BigDecimal quantity = label.getUsableQuantity().subtract(label.getReceivedQuantity());
-            stockInfoMapper.updateQuantity(label.getWarehouseCode(), locationCode, label.getBatch(), label.getSupplierCode(),
+            // 数量从前端请求获取
+            BigDecimal quantity = label.getQuantity();
+            if(quantity == null || quantity.compareTo(BigDecimal.ZERO) <= 0){
+                continue;
+            }
+            //修改库存信息（下架是加回库存）
+            stockInfoMapper.updateQuantity(warehouseCode, locationCode, label.getBatch(), label.getSupplierCode(),
                     label.getMatCode(), quantity);
             //新增库存操作信息
             record = new StockRecord();
-            BeanUtils.copyBeanProp(record, label);
+            record.setWarehouseCode(warehouseCode);
+            record.setLocationCode(locationCode);
+            record.setMatCode(label.getMatCode());
+            record.setMatName(label.getMatName());
+            record.setBatch(label.getBatch());
+            record.setSupplierCode(label.getSupplierCode());
+            record.setSupplierName(label.getSupplierName());
             record.setRecordType(StockRecordTypeEnum.LOWER.getValue());
             record.setQuantity(quantity);
             record.setCreateBy(username);
             record.setCreateTime(nowDate);
             stockRecordMapper.insertStockRecord(record);
-            //修改物料标签
-            stockMatLabelMapper.updatePutOff(label.getLabelId(), username, nowDate);
         }
         return AjaxResult.success("提交成功");
     }
